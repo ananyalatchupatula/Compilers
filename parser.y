@@ -7,6 +7,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <climits>
+#include <cfloat>
 
 using std::string;
 using std::vector;
@@ -23,6 +25,14 @@ extern int show_ast;
 bool main_seen = false;
 bool main_defined = false;
 
+/* Main function parameter tracking */
+struct MainParam {
+    string name;
+    int type;
+};
+vector<MainParam> main_decl_params;  // params from declaration
+vector<MainParam> main_def_params;   // params from definition
+bool parsing_main_declaration = false;  // flag for which context we're in
 
 /* TYPE DEFINITIONS */
 
@@ -170,7 +180,7 @@ int lookup(string name){
 %type <type> type
 %type <node> expr stmt stmt_list block
 %type <node> assign_stmt read_stmt write_stmt
-%type <node> func_def
+%type <node> func_def param_list_opt param_list param
 
 
 /* PRECEDENCE */
@@ -226,6 +236,10 @@ type
 id_list
     : NAME
         {
+          if(strcmp($1, "main") == 0) {
+              cout << "Semantic error: variable cannot be named main" << endl;
+              exit(1);
+          }
           if(in_function)
               local_symtab.add($1,current_decl_type);
           else
@@ -233,6 +247,10 @@ id_list
       }
     | id_list COMMA NAME
       {
+          if(strcmp($3, "main") == 0) {
+              cout << "Semantic error: variable cannot be named main" << endl;
+              exit(1);
+          }
           if(in_function)
               local_symtab.add($3,current_decl_type);
           else
@@ -253,6 +271,31 @@ func_decl
             exit(1);
         }
 
+        /* Check for char parameters in declaration and store params */
+        if($4 != NULL) {
+            ASTNode* param_node = $4;
+            while(param_node) {
+                int param_type = (int)param_node->type;
+                
+                if(param_type == TYPE_CHAR) {
+                    cout << "Semantic error: cant parse" << endl;
+                    exit(1);
+                }
+                
+                /* Extract name from label (format: "name_     Type:<type>") */
+                char* label = param_node->label;
+                char param_name[128];
+                sscanf(label, "%[^_]", param_name);
+                
+                MainParam mp;
+                mp.name = string(param_name);
+                mp.type = param_type;
+                main_decl_params.push_back(mp);
+                
+                param_node = param_node->right;
+            }
+        }
+
         main_seen = true;
     }
     
@@ -262,7 +305,9 @@ func_def
     : type NAME LEFT_ROUND_BRACKET param_list_opt RIGHT_ROUND_BRACKET
     {
         in_function = true;
-        local_symtab.table.clear();
+        main_def_params.clear();  /* Clear previous definition params */
+        local_symtab.table.clear();  /* Clear local symbol table for new function */
+        /* Parameters are already added to local_symtab in param rule */
     }
     block
     {
@@ -276,6 +321,50 @@ func_def
         if(main_defined){
             cout << "Semantic error:multiple main definitions" << endl;
             exit(1);
+        }
+
+        /* Check for char parameters in definition and store params */
+        if($4 != NULL) {
+            ASTNode* param_node = $4;
+            while(param_node) {
+                int param_type = (int)param_node->type;
+                
+                if(param_type == TYPE_CHAR) {
+                    cout << "Semantic error: cant parse" << endl;
+                    exit(1);
+                }
+                
+                /* Extract name from label (format: "name_     Type:<type>") */
+                char* label = param_node->label;
+                char param_name[128];
+                sscanf(label, "%[^_]", param_name);
+                
+                MainParam mp;
+                mp.name = string(param_name);
+                mp.type = param_type;
+                main_def_params.push_back(mp);
+                
+                param_node = param_node->right;
+            }
+        }
+
+        /* Validate main definition params match declaration if declaration exists */
+        if(main_seen && main_decl_params.size() > 0) {
+            if(main_def_params.size() != main_decl_params.size()) {
+                cout << "Semantic error: main definition parameters do not match declaration" << endl;
+                exit(1);
+            }
+            
+            for(size_t i = 0; i < main_def_params.size(); i++) {
+                if(main_def_params[i].name != main_decl_params[i].name) {
+                    cout << "Semantic error: main definition parameter name mismatch" << endl;
+                    exit(1);
+                }
+                if(main_def_params[i].type != main_decl_params[i].type) {
+                    cout << "Semantic error: main definition parameter type mismatch" << endl;
+                    exit(1);
+                }
+            }
         }
 
         main_seen = true;
@@ -300,6 +389,11 @@ func_def
 
     ASTNode* paramNode = make_node("Formal Parameters:",(DataType)TYPE_VOID,NULL,NULL,NULL);
 
+    /* Attach parameters to paramNode */
+    if($4 != NULL) {
+        paramNode->left = $4;
+    }
+
     /*END NODE*/
     ASTNode* endNode = make_node("**END: Abstract Syntax Tree",(DataType)TYPE_VOID,NULL,NULL,NULL);
 
@@ -320,18 +414,48 @@ func_def
 ;
 param_list_opt
     : param_list
+      {
+          $$ = $1;
+      }
     | /* empty */
+      {
+          $$ = NULL;
+      }
     ;
 
 param_list
     : param
+      {
+          $$ = $1;
+      }
     | param_list COMMA param
+      {
+          ASTNode* t = $1;
+          while(t->right) t = t->right;
+          t->right = $3;
+          $$ = $1;
+      }
     ;
 
 param
     : type NAME
       {
-          local_symtab.add($2,$1);
+          /* Only add to symbol table if we're in a function definition, not a declaration */
+          if(in_function) {
+              local_symtab.add($2,$1);
+          }
+          
+          /* Create AST node for this parameter */
+          const char* typestr =
+              ($1==TYPE_INT)?"<int>":
+              ($1==TYPE_FLOAT)?"<float>":
+              ($1==TYPE_BOOL)?"<bool>":
+              ($1==TYPE_STRING)?"<string>":
+              ($1==TYPE_CHAR)?"<char>":"";
+          
+          char buf[128];
+          snprintf(buf, sizeof(buf), "%s_     Type:%s", $2, typestr);
+          $$ = make_node(buf, (DataType)$1, NULL, NULL, NULL);
       }
     ;
 
@@ -650,6 +774,11 @@ expr
         cout<<"Type error in >"<<endl;
         exit(1);
     }
+    if($1->type != $3->type)
+    {
+        cout<<"Type error: relational operations require same data types"<<endl;
+        exit(1);
+    }
 
     ASTNode* closeL =
         make_node(")", (DataType)TYPE_VOID, NULL,NULL,NULL);
@@ -687,6 +816,11 @@ expr
         if(!isNumeric($1->type) || !isNumeric($3->type))
         {
             cout<<"Type error in <"<<endl;
+            exit(1);
+        }
+        if($1->type != $3->type)
+        {
+            cout<<"Type error: relational operations require same data types"<<endl;
             exit(1);
         }
         
@@ -728,6 +862,11 @@ expr
             cout<<"Type error in >="<<endl;
             exit(1);
         }
+        if($1->type != $3->type)
+        {
+            cout<<"Type error: relational operations require same data types"<<endl;
+            exit(1);
+        }
         
     ASTNode* closeL =
         make_node(")", (DataType)TYPE_VOID, NULL,NULL,NULL);
@@ -765,6 +904,11 @@ expr
         if(!isNumeric($1->type) || !isNumeric($3->type))
         {
             cout<<"Type error in <="<<endl;
+            exit(1);
+        }
+        if($1->type != $3->type)
+        {
+            cout<<"Type error: relational operations require same data types"<<endl;
             exit(1);
         }
         
@@ -806,6 +950,11 @@ expr
             cout<<"Type error in =="<<endl;
             exit(1);
         }
+        if($1->type != $3->type)
+        {
+            cout<<"Type error: relational operations require same data types"<<endl;
+            exit(1);
+        }
         
     ASTNode* closeL =
         make_node(")", (DataType)TYPE_VOID, NULL,NULL,NULL);
@@ -842,6 +991,11 @@ expr
         if(!isNumeric($1->type) || !isNumeric($3->type))
         {
             cout<<"Type error in !="<<endl;
+            exit(1);
+        }
+        if($1->type != $3->type)
+        {
+            cout<<"Type error: relational operations require same data types"<<endl;
             exit(1);
         }
         
@@ -1093,7 +1247,13 @@ ASTNode* truePart =
     | INT_NUM
     {
         char buf[128];
-        snprintf(buf, sizeof(buf), "Num : %s<int>", $1);
+        long long val = strtoll($1, NULL, 10);
+        
+        /* Adjust for overflow using two's complement wrapping */
+        int adjusted = (int)val;  /* This automatically wraps for out-of-range values */
+        
+        /* Display the adjusted value in the AST */
+        snprintf(buf, sizeof(buf), "Num : %d<int>", adjusted);
         $$ = make_node(
                 strdup(buf),
                 (DataType)TYPE_INT,
@@ -1105,7 +1265,13 @@ ASTNode* truePart =
     {
         char buf[128];
         double val = atof($1);
-        snprintf(buf, sizeof(buf), "Num : %.2f<float>", val);
+        
+        /* Adjust for overflow by clamping to float range */
+        float adjusted = (float)val;  /* Conversion handles overflow automatically */
+        if(val > FLT_MAX) adjusted = FLT_MAX;
+        else if(val < -FLT_MAX) adjusted = -FLT_MAX;
+        
+        snprintf(buf, sizeof(buf), "Num : %.2f<float>", adjusted);
         $$ = make_node(
                 strdup(buf),
                 (DataType)TYPE_FLOAT,

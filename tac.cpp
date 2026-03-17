@@ -7,6 +7,7 @@ using namespace std;
 
 FILE *tac_file = stdout;
 extern int show_tac;
+vector<string> tac_lines;
 
 // Global TACGenerator instance
 TACGenerator tac_gen;
@@ -446,15 +447,15 @@ void traverse(ASTNode *node){
 void generate_TAC(ASTNode *root){
     tac_gen.reset();
     
-    // Get the statement list
+    tac_lines.clear(); 
     ASTNode *curr = root->left->right->right->left;
     
-    // Only output TAC if there are actual statements
+  
     if(curr != NULL && show_tac) {
-        // Pre-pass: Assign temp IDs to all expression nodes
+       
         assign_temps_to_statements(curr);
         
-        // Pre-pass: Assign stemp IDs to all ternary nodes
+        
         ASTNode *stmt = curr;
         while(stmt) {
             if(strcmp(stmt->label, "Asgn:") == 0) {
@@ -476,5 +477,6 @@ void generate_TAC(ASTNode *root){
         traverse(curr);
         
         fprintf(tac_file, "**END: Three Address Code Statements\n");
+        convert_TAC_to_RTL(tac_lines);
     }
 }

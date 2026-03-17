@@ -1,0 +1,14 @@
+**PROCEDURE: main
+ Return Type: <void>
+  Formal Parameters:
+   **BEGIN: Abstract Syntax Tree    
+Write: String : "Enter your marks (out of 100). "<string>
+    Read: Name : mrks_<int>
+     Asgn:
+      LHS (Name : res_<string>)
+      RHS (
+       Condition: GE<bool>        L_Opd (Name : mrks_<int>)        R_Opd (Num : 40<int>)
+       True_Part (String : "pass"<string>)
+       False_Part (String : "fail"<string>))       
+Write: Name : res_<string>
+    **END: Abstract Syntax Tree

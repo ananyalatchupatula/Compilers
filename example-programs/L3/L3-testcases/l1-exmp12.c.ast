@@ -1,0 +1,17 @@
+**PROCEDURE: main
+ Return Type: <void>
+  Formal Parameters:
+   **BEGIN: Abstract Syntax Tree    
+Write: String : "Enter first number: "<string>
+    Read: Name : a_<int>     
+Write: String : "Enter second number: "<string>
+     Read: Name : b_<int>
+      Asgn:
+       LHS (Name : c_<int>)
+       RHS (
+        Condition: GE<bool>         L_Opd (Name : a_<int>)         R_Opd (Name : b_<int>)
+        True_Part (Name : a_<int>)
+        False_Part (Name : b_<int>))        
+Write: String : "The larger number is: "<string>        
+Write: Name : c_<int>
+    **END: Abstract Syntax Tree

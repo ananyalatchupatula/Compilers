@@ -77,6 +77,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <climits>
+#include <cfloat>
 
 using std::string;
 using std::vector;
@@ -92,6 +94,15 @@ void yyerror(const char *s)
 extern int show_ast;
 bool main_seen = false;
 bool main_defined = false;
+
+/* Main function parameter tracking */
+struct MainParam {
+    string name;
+    int type;
+};
+vector<MainParam> main_decl_params;  // params from declaration
+vector<MainParam> main_def_params;   // params from definition
+bool parsing_main_declaration = false;  // flag for which context we're in
 
 /* TYPE DEFINITIONS */
 
@@ -203,7 +214,7 @@ int lookup(string name){
 }
 
 
-#line 207 "parser.tab.cpp"
+#line 218 "parser.tab.cpp"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -678,12 +689,12 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   191,   191,   198,   208,   209,   213,   217,   218,   219,
-     220,   221,   222,   226,   233,   243,   262,   261,   321,   322,
-     326,   327,   331,   338,   353,   354,   358,   370,   377,   378,
-     379,   383,   458,   476,   494,   535,   563,   602,   645,   684,
-     723,   762,   801,   839,   882,   921,   963,  1033,  1049,  1073,
-    1092,  1103,  1115,  1126
+       0,   202,   202,   209,   219,   220,   224,   228,   229,   230,
+     231,   232,   233,   237,   248,   262,   306,   305,   416,   421,
+     427,   431,   441,   463,   478,   479,   483,   495,   502,   503,
+     504,   508,   583,   601,   619,   660,   688,   727,   770,   814,
+     858,   902,   946,   989,  1037,  1076,  1118,  1188,  1204,  1228,
+    1247,  1264,  1282,  1293
 };
 #endif
 
@@ -1316,18 +1327,7 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: globals_var_decls func_decl globals_var_decls func_def  */
-#line 192 "parser.y"
-    {
-        if(!main_defined){
-            cout << "Semantic error:main fn not defined" << endl;
-            exit(1);
-        }
-    }
-#line 1327 "parser.tab.cpp"
-    break;
-
-  case 3: /* program: globals_var_decls func_def  */
-#line 199 "parser.y"
+#line 203 "parser.y"
     {
         if(!main_defined){
             cout << "Semantic error:main fn not defined" << endl;
@@ -1337,66 +1337,85 @@ yyreduce:
 #line 1338 "parser.tab.cpp"
     break;
 
+  case 3: /* program: globals_var_decls func_def  */
+#line 210 "parser.y"
+    {
+        if(!main_defined){
+            cout << "Semantic error:main fn not defined" << endl;
+            exit(1);
+        }
+    }
+#line 1349 "parser.tab.cpp"
+    break;
+
   case 7: /* type: INTEGER  */
-#line 217 "parser.y"
+#line 228 "parser.y"
               { (yyval.type) = TYPE_INT; current_decl_type = TYPE_INT; }
-#line 1344 "parser.tab.cpp"
+#line 1355 "parser.tab.cpp"
     break;
 
   case 8: /* type: STRING  */
-#line 218 "parser.y"
+#line 229 "parser.y"
               { (yyval.type) = TYPE_STRING; current_decl_type = TYPE_STRING; }
-#line 1350 "parser.tab.cpp"
+#line 1361 "parser.tab.cpp"
     break;
 
   case 9: /* type: BOOL  */
-#line 219 "parser.y"
+#line 230 "parser.y"
               { (yyval.type) = TYPE_BOOL; current_decl_type = TYPE_BOOL; }
-#line 1356 "parser.tab.cpp"
+#line 1367 "parser.tab.cpp"
     break;
 
   case 10: /* type: FLOAT  */
-#line 220 "parser.y"
+#line 231 "parser.y"
               { (yyval.type) = TYPE_FLOAT; current_decl_type = TYPE_FLOAT; }
-#line 1362 "parser.tab.cpp"
+#line 1373 "parser.tab.cpp"
     break;
 
   case 11: /* type: CHAR  */
-#line 221 "parser.y"
+#line 232 "parser.y"
               { (yyval.type) = TYPE_CHAR; current_decl_type = TYPE_CHAR; }
-#line 1368 "parser.tab.cpp"
+#line 1379 "parser.tab.cpp"
     break;
 
   case 12: /* type: VOID  */
-#line 222 "parser.y"
+#line 233 "parser.y"
               { (yyval.type) = TYPE_VOID; current_decl_type = TYPE_VOID; }
-#line 1374 "parser.tab.cpp"
-    break;
-
-  case 13: /* id_list: NAME  */
-#line 227 "parser.y"
-        {
-          if(in_function)
-              local_symtab.add((yyvsp[0].name),current_decl_type);
-          else
-              global_symtab.add((yyvsp[0].name),current_decl_type);
-      }
 #line 1385 "parser.tab.cpp"
     break;
 
-  case 14: /* id_list: id_list COMMA NAME  */
-#line 234 "parser.y"
-      {
+  case 13: /* id_list: NAME  */
+#line 238 "parser.y"
+        {
+          if(strcmp((yyvsp[0].name), "main") == 0) {
+              cout << "Semantic error: variable cannot be named main" << endl;
+              exit(1);
+          }
           if(in_function)
               local_symtab.add((yyvsp[0].name),current_decl_type);
           else
               global_symtab.add((yyvsp[0].name),current_decl_type);
       }
-#line 1396 "parser.tab.cpp"
+#line 1400 "parser.tab.cpp"
+    break;
+
+  case 14: /* id_list: id_list COMMA NAME  */
+#line 249 "parser.y"
+      {
+          if(strcmp((yyvsp[0].name), "main") == 0) {
+              cout << "Semantic error: variable cannot be named main" << endl;
+              exit(1);
+          }
+          if(in_function)
+              local_symtab.add((yyvsp[0].name),current_decl_type);
+          else
+              global_symtab.add((yyvsp[0].name),current_decl_type);
+      }
+#line 1415 "parser.tab.cpp"
     break;
 
   case 15: /* func_decl: type NAME LEFT_ROUND_BRACKET param_list_opt RIGHT_ROUND_BRACKET SEMICOLON  */
-#line 244 "parser.y"
+#line 263 "parser.y"
         {
         if(strcmp((yyvsp[-4].name),"main") != 0 || (yyvsp[-5].type) != TYPE_VOID){
             cout << "Semantic error: only void main allowed" << endl;
@@ -1408,22 +1427,49 @@ yyreduce:
             exit(1);
         }
 
+        /* Check for char parameters in declaration and store params */
+        if((yyvsp[-2].node) != NULL) {
+            ASTNode* param_node = (yyvsp[-2].node);
+            while(param_node) {
+                int param_type = (int)param_node->type;
+                
+                if(param_type == TYPE_CHAR) {
+                    cout << "Semantic error: cant parse" << endl;
+                    exit(1);
+                }
+                
+                /* Extract name from label (format: "name_     Type:<type>") */
+                char* label = param_node->label;
+                char param_name[128];
+                sscanf(label, "%[^_]", param_name);
+                
+                MainParam mp;
+                mp.name = string(param_name);
+                mp.type = param_type;
+                main_decl_params.push_back(mp);
+                
+                param_node = param_node->right;
+            }
+        }
+
         main_seen = true;
     }
-#line 1414 "parser.tab.cpp"
+#line 1458 "parser.tab.cpp"
     break;
 
   case 16: /* $@1: %empty  */
-#line 262 "parser.y"
+#line 306 "parser.y"
     {
         in_function = true;
-        local_symtab.table.clear();
+        main_def_params.clear();  /* Clear previous definition params */
+        local_symtab.table.clear();  /* Clear local symbol table for new function */
+        /* Parameters are already added to local_symtab in param rule */
     }
-#line 1423 "parser.tab.cpp"
+#line 1469 "parser.tab.cpp"
     break;
 
   case 17: /* func_def: type NAME LEFT_ROUND_BRACKET param_list_opt RIGHT_ROUND_BRACKET $@1 block  */
-#line 267 "parser.y"
+#line 313 "parser.y"
     {
 
         /* Procedure name */
@@ -1435,6 +1481,50 @@ yyreduce:
         if(main_defined){
             cout << "Semantic error:multiple main definitions" << endl;
             exit(1);
+        }
+
+        /* Check for char parameters in definition and store params */
+        if((yyvsp[-3].node) != NULL) {
+            ASTNode* param_node = (yyvsp[-3].node);
+            while(param_node) {
+                int param_type = (int)param_node->type;
+                
+                if(param_type == TYPE_CHAR) {
+                    cout << "Semantic error: cant parse" << endl;
+                    exit(1);
+                }
+                
+                /* Extract name from label (format: "name_     Type:<type>") */
+                char* label = param_node->label;
+                char param_name[128];
+                sscanf(label, "%[^_]", param_name);
+                
+                MainParam mp;
+                mp.name = string(param_name);
+                mp.type = param_type;
+                main_def_params.push_back(mp);
+                
+                param_node = param_node->right;
+            }
+        }
+
+        /* Validate main definition params match declaration if declaration exists */
+        if(main_seen && main_decl_params.size() > 0) {
+            if(main_def_params.size() != main_decl_params.size()) {
+                cout << "Semantic error: main definition parameters do not match declaration" << endl;
+                exit(1);
+            }
+            
+            for(size_t i = 0; i < main_def_params.size(); i++) {
+                if(main_def_params[i].name != main_decl_params[i].name) {
+                    cout << "Semantic error: main definition parameter name mismatch" << endl;
+                    exit(1);
+                }
+                if(main_def_params[i].type != main_decl_params[i].type) {
+                    cout << "Semantic error: main definition parameter type mismatch" << endl;
+                    exit(1);
+                }
+            }
         }
 
         main_seen = true;
@@ -1459,6 +1549,11 @@ yyreduce:
 
     ASTNode* paramNode = make_node("Formal Parameters:",(DataType)TYPE_VOID,NULL,NULL,NULL);
 
+    /* Attach parameters to paramNode */
+    if((yyvsp[-3].node) != NULL) {
+        paramNode->left = (yyvsp[-3].node);
+    }
+
     /*END NODE*/
     ASTNode* endNode = make_node("**END: Abstract Syntax Tree",(DataType)TYPE_VOID,NULL,NULL,NULL);
 
@@ -1476,19 +1571,69 @@ yyreduce:
     generate_TAC((yyval.node));
     in_function = false;
 }
-#line 1480 "parser.tab.cpp"
+#line 1575 "parser.tab.cpp"
+    break;
+
+  case 18: /* param_list_opt: param_list  */
+#line 417 "parser.y"
+      {
+          (yyval.node) = (yyvsp[0].node);
+      }
+#line 1583 "parser.tab.cpp"
+    break;
+
+  case 19: /* param_list_opt: %empty  */
+#line 421 "parser.y"
+      {
+          (yyval.node) = NULL;
+      }
+#line 1591 "parser.tab.cpp"
+    break;
+
+  case 20: /* param_list: param  */
+#line 428 "parser.y"
+      {
+          (yyval.node) = (yyvsp[0].node);
+      }
+#line 1599 "parser.tab.cpp"
+    break;
+
+  case 21: /* param_list: param_list COMMA param  */
+#line 432 "parser.y"
+      {
+          ASTNode* t = (yyvsp[-2].node);
+          while(t->right) t = t->right;
+          t->right = (yyvsp[0].node);
+          (yyval.node) = (yyvsp[-2].node);
+      }
+#line 1610 "parser.tab.cpp"
     break;
 
   case 22: /* param: type NAME  */
-#line 332 "parser.y"
+#line 442 "parser.y"
       {
-          local_symtab.add((yyvsp[0].name),(yyvsp[-1].type));
+          /* Only add to symbol table if we're in a function definition, not a declaration */
+          if(in_function) {
+              local_symtab.add((yyvsp[0].name),(yyvsp[-1].type));
+          }
+          
+          /* Create AST node for this parameter */
+          const char* typestr =
+              ((yyvsp[-1].type)==TYPE_INT)?"<int>":
+              ((yyvsp[-1].type)==TYPE_FLOAT)?"<float>":
+              ((yyvsp[-1].type)==TYPE_BOOL)?"<bool>":
+              ((yyvsp[-1].type)==TYPE_STRING)?"<string>":
+              ((yyvsp[-1].type)==TYPE_CHAR)?"<char>":"";
+          
+          char buf[128];
+          snprintf(buf, sizeof(buf), "%s_     Type:%s", (yyvsp[0].name), typestr);
+          (yyval.node) = make_node(buf, (DataType)(yyvsp[-1].type), NULL, NULL, NULL);
       }
-#line 1488 "parser.tab.cpp"
+#line 1633 "parser.tab.cpp"
     break;
 
   case 23: /* block: LEFT_CURLY_BRACKET decl_list_opt stmt_list RIGHT_CURLY_BRACKET  */
-#line 339 "parser.y"
+#line 464 "parser.y"
 {
     (yyval.node) = make_node(
             (char*)"**BEGIN: Abstract Syntax Tree",
@@ -1499,11 +1644,11 @@ yyreduce:
 
 
 }
-#line 1503 "parser.tab.cpp"
+#line 1648 "parser.tab.cpp"
     break;
 
   case 26: /* stmt_list: stmt_list stmt  */
-#line 359 "parser.y"
+#line 484 "parser.y"
 {
     if((yyvsp[-1].node)==NULL) (yyval.node)=(yyvsp[0].node);
     else
@@ -1514,19 +1659,19 @@ yyreduce:
         (yyval.node)=(yyvsp[-1].node);
     }
 }
-#line 1518 "parser.tab.cpp"
+#line 1663 "parser.tab.cpp"
     break;
 
   case 27: /* stmt_list: %empty  */
-#line 370 "parser.y"
+#line 495 "parser.y"
 {
     (yyval.node) = NULL;
 }
-#line 1526 "parser.tab.cpp"
+#line 1671 "parser.tab.cpp"
     break;
 
   case 31: /* assign_stmt: NAME ASSIGN_OP expr  */
-#line 384 "parser.y"
+#line 509 "parser.y"
 {
     int lhs = lookup((yyvsp[-2].name));
     int rhs = (yyvsp[0].node)->type;
@@ -1596,11 +1741,11 @@ yyreduce:
             rhsWrapper,
             NULL);
 }
-#line 1600 "parser.tab.cpp"
+#line 1745 "parser.tab.cpp"
     break;
 
   case 32: /* read_stmt: READ NAME  */
-#line 459 "parser.y"
+#line 584 "parser.y"
       {
           DataType t = (DataType)lookup((yyvsp[0].name));
 
@@ -1614,11 +1759,11 @@ yyreduce:
 
           (yyval.node) = make_node(buf, t, NULL, NULL, NULL);
       }
-#line 1618 "parser.tab.cpp"
+#line 1763 "parser.tab.cpp"
     break;
 
   case 33: /* write_stmt: WRITE expr  */
-#line 477 "parser.y"
+#line 602 "parser.y"
 {
     if((yyvsp[0].node)->type == TYPE_BOOL){
         cout << "Type error: write does not support boolean variables" << endl;
@@ -1632,11 +1777,11 @@ yyreduce:
             NULL,
             NULL);
 }
-#line 1636 "parser.tab.cpp"
+#line 1781 "parser.tab.cpp"
     break;
 
   case 34: /* expr: expr PLUS expr  */
-#line 495 "parser.y"
+#line 620 "parser.y"
 {
     if(!isNumeric((yyvsp[-2].node)->type) || !isNumeric((yyvsp[0].node)->type))
     {
@@ -1674,11 +1819,11 @@ yyreduce:
 
     (yyval.node) = make_node(buf, resultType, L, R, NULL);
 }
-#line 1678 "parser.tab.cpp"
+#line 1823 "parser.tab.cpp"
     break;
 
   case 35: /* expr: expr MINUS expr  */
-#line 536 "parser.y"
+#line 661 "parser.y"
 {
     DataType resultType = (DataType)numericResult((yyvsp[-2].node)->type, (yyvsp[0].node)->type);
 
@@ -1704,11 +1849,11 @@ yyreduce:
     snprintf(buf, sizeof(buf), "Arith: Minus<%s>", type_to_string(resultType));
     (yyval.node) = make_node(buf, resultType, L, R, NULL);
 }
-#line 1708 "parser.tab.cpp"
+#line 1853 "parser.tab.cpp"
     break;
 
   case 36: /* expr: expr MULT expr  */
-#line 564 "parser.y"
+#line 689 "parser.y"
 {
     if(!isNumeric((yyvsp[-2].node)->type) || !isNumeric((yyvsp[0].node)->type))
     {
@@ -1745,11 +1890,11 @@ yyreduce:
 
     (yyval.node) = make_node(buf, resultType, L, R, NULL);
 }
-#line 1749 "parser.tab.cpp"
+#line 1894 "parser.tab.cpp"
     break;
 
   case 37: /* expr: expr DIV expr  */
-#line 603 "parser.y"
+#line 728 "parser.y"
 {
     if(!isNumeric((yyvsp[-2].node)->type) || !isNumeric((yyvsp[0].node)->type))
     {
@@ -1787,15 +1932,20 @@ yyreduce:
 
     (yyval.node) = make_node(buf, resultType, L, R, NULL);
 }
-#line 1791 "parser.tab.cpp"
+#line 1936 "parser.tab.cpp"
     break;
 
   case 38: /* expr: expr GREATER_THAN expr  */
-#line 646 "parser.y"
+#line 771 "parser.y"
 {
     if(!isNumeric((yyvsp[-2].node)->type) || !isNumeric((yyvsp[0].node)->type))
     {
         cout<<"Type error in >"<<endl;
+        exit(1);
+    }
+    if((yyvsp[-2].node)->type != (yyvsp[0].node)->type)
+    {
+        cout<<"Type error: relational operations require same data types"<<endl;
         exit(1);
     }
 
@@ -1828,15 +1978,20 @@ yyreduce:
             (DataType)TYPE_BOOL,
             L,R,NULL);
 }
-#line 1832 "parser.tab.cpp"
+#line 1982 "parser.tab.cpp"
     break;
 
   case 39: /* expr: expr LESS_THAN expr  */
-#line 685 "parser.y"
+#line 815 "parser.y"
     {
         if(!isNumeric((yyvsp[-2].node)->type) || !isNumeric((yyvsp[0].node)->type))
         {
             cout<<"Type error in <"<<endl;
+            exit(1);
+        }
+        if((yyvsp[-2].node)->type != (yyvsp[0].node)->type)
+        {
+            cout<<"Type error: relational operations require same data types"<<endl;
             exit(1);
         }
         
@@ -1870,15 +2025,20 @@ yyreduce:
             L,R,NULL);
 
     }
-#line 1874 "parser.tab.cpp"
+#line 2029 "parser.tab.cpp"
     break;
 
   case 40: /* expr: expr GREATER_THAN_EQUAL expr  */
-#line 724 "parser.y"
+#line 859 "parser.y"
     {
         if(!isNumeric((yyvsp[-2].node)->type) || !isNumeric((yyvsp[0].node)->type))
         {
             cout<<"Type error in >="<<endl;
+            exit(1);
+        }
+        if((yyvsp[-2].node)->type != (yyvsp[0].node)->type)
+        {
+            cout<<"Type error: relational operations require same data types"<<endl;
             exit(1);
         }
         
@@ -1912,15 +2072,20 @@ yyreduce:
             L,R,NULL);
 
     }
-#line 1916 "parser.tab.cpp"
+#line 2076 "parser.tab.cpp"
     break;
 
   case 41: /* expr: expr LESS_THAN_EQUAL expr  */
-#line 763 "parser.y"
+#line 903 "parser.y"
     {
         if(!isNumeric((yyvsp[-2].node)->type) || !isNumeric((yyvsp[0].node)->type))
         {
             cout<<"Type error in <="<<endl;
+            exit(1);
+        }
+        if((yyvsp[-2].node)->type != (yyvsp[0].node)->type)
+        {
+            cout<<"Type error: relational operations require same data types"<<endl;
             exit(1);
         }
         
@@ -1955,15 +2120,20 @@ yyreduce:
 
 
     }
-#line 1959 "parser.tab.cpp"
+#line 2124 "parser.tab.cpp"
     break;
 
   case 42: /* expr: expr EQUAL expr  */
-#line 802 "parser.y"
+#line 947 "parser.y"
     {
         if(!isNumeric((yyvsp[-2].node)->type) || !isNumeric((yyvsp[0].node)->type))
         {
             cout<<"Type error in =="<<endl;
+            exit(1);
+        }
+        if((yyvsp[-2].node)->type != (yyvsp[0].node)->type)
+        {
+            cout<<"Type error: relational operations require same data types"<<endl;
             exit(1);
         }
         
@@ -1996,15 +2166,20 @@ yyreduce:
             (DataType)TYPE_BOOL,
             L,R,NULL);
     }
-#line 2000 "parser.tab.cpp"
+#line 2170 "parser.tab.cpp"
     break;
 
   case 43: /* expr: expr NOT_EQUAL expr  */
-#line 840 "parser.y"
+#line 990 "parser.y"
     {
         if(!isNumeric((yyvsp[-2].node)->type) || !isNumeric((yyvsp[0].node)->type))
         {
             cout<<"Type error in !="<<endl;
+            exit(1);
+        }
+        if((yyvsp[-2].node)->type != (yyvsp[0].node)->type)
+        {
+            cout<<"Type error: relational operations require same data types"<<endl;
             exit(1);
         }
         
@@ -2038,11 +2213,11 @@ yyreduce:
             L,R,NULL);
 
     }
-#line 2042 "parser.tab.cpp"
+#line 2217 "parser.tab.cpp"
     break;
 
   case 44: /* expr: expr AND expr  */
-#line 883 "parser.y"
+#line 1038 "parser.y"
     {
         if((yyvsp[-2].node)->type!=TYPE_BOOL || (yyvsp[0].node)->type!=TYPE_BOOL)
         {
@@ -2080,11 +2255,11 @@ yyreduce:
             L,R,NULL);
 
     }
-#line 2084 "parser.tab.cpp"
+#line 2259 "parser.tab.cpp"
     break;
 
   case 45: /* expr: expr OR expr  */
-#line 922 "parser.y"
+#line 1077 "parser.y"
     {
         if((yyvsp[-2].node)->type!=TYPE_BOOL || (yyvsp[0].node)->type!=TYPE_BOOL)
         {
@@ -2123,11 +2298,11 @@ yyreduce:
 
 
     }
-#line 2127 "parser.tab.cpp"
+#line 2302 "parser.tab.cpp"
     break;
 
   case 46: /* expr: expr QUESTION_MARK expr COLON expr  */
-#line 964 "parser.y"
+#line 1119 "parser.y"
     {
         if((yyvsp[-4].node)->type != TYPE_BOOL)
         {
@@ -2196,11 +2371,11 @@ ASTNode* truePart =
         (yyval.node) = ternary_node; 
 
     }
-#line 2200 "parser.tab.cpp"
+#line 2375 "parser.tab.cpp"
     break;
 
   case 47: /* expr: NOT expr  */
-#line 1034 "parser.y"
+#line 1189 "parser.y"
     {
         ASTNode* close =
             make_node(")", (DataType)TYPE_VOID, NULL, NULL, NULL);
@@ -2215,11 +2390,11 @@ ASTNode* truePart =
         (yyval.node) = make_node("Condition: NOT<bool>", (DataType)TYPE_BOOL, childWrapper, NULL, NULL);
 
     }
-#line 2219 "parser.tab.cpp"
+#line 2394 "parser.tab.cpp"
     break;
 
   case 48: /* expr: MINUS expr  */
-#line 1050 "parser.y"
+#line 1205 "parser.y"
     {
         if(!isNumeric((yyvsp[0].node)->type)){
             cout << "Type error in unary minus" << endl;
@@ -2241,11 +2416,11 @@ ASTNode* truePart =
 
         (yyval.node) = make_node(buf, (DataType)(yyvsp[0].node)->type, L, NULL, NULL);
     }
-#line 2245 "parser.tab.cpp"
+#line 2420 "parser.tab.cpp"
     break;
 
   case 49: /* expr: NAME  */
-#line 1074 "parser.y"
+#line 1229 "parser.y"
     {
         int t = lookup((yyvsp[0].name));
 
@@ -2262,38 +2437,50 @@ ASTNode* truePart =
 
         (yyval.node) = make_node(buf,(DataType)t,NULL,NULL,NULL);
     }
-#line 2266 "parser.tab.cpp"
+#line 2441 "parser.tab.cpp"
     break;
 
   case 50: /* expr: INT_NUM  */
-#line 1093 "parser.y"
+#line 1248 "parser.y"
     {
         char buf[128];
-        snprintf(buf, sizeof(buf), "Num : %s<int>", (yyvsp[0].str));
+        long long val = strtoll((yyvsp[0].str), NULL, 10);
+        
+        /* Adjust for overflow using two's complement wrapping */
+        int adjusted = (int)val;  /* This automatically wraps for out-of-range values */
+        
+        /* Display the adjusted value in the AST */
+        snprintf(buf, sizeof(buf), "Num : %d<int>", adjusted);
         (yyval.node) = make_node(
                 strdup(buf),
                 (DataType)TYPE_INT,
                 NULL,NULL,NULL);
     }
-#line 2279 "parser.tab.cpp"
+#line 2460 "parser.tab.cpp"
     break;
 
   case 51: /* expr: FLOAT_NUM  */
-#line 1104 "parser.y"
+#line 1265 "parser.y"
     {
         char buf[128];
         double val = atof((yyvsp[0].str));
-        snprintf(buf, sizeof(buf), "Num : %.2f<float>", val);
+        
+        /* Adjust for overflow by clamping to float range */
+        float adjusted = (float)val;  /* Conversion handles overflow automatically */
+        if(val > FLT_MAX) adjusted = FLT_MAX;
+        else if(val < -FLT_MAX) adjusted = -FLT_MAX;
+        
+        snprintf(buf, sizeof(buf), "Num : %.2f<float>", adjusted);
         (yyval.node) = make_node(
                 strdup(buf),
                 (DataType)TYPE_FLOAT,
                 NULL,NULL,NULL);
     }
-#line 2293 "parser.tab.cpp"
+#line 2480 "parser.tab.cpp"
     break;
 
   case 52: /* expr: STR_CONST  */
-#line 1116 "parser.y"
+#line 1283 "parser.y"
     {
         char buf[128];
         snprintf(buf, sizeof(buf), "String : %s<string>", (yyvsp[0].str));
@@ -2302,19 +2489,19 @@ ASTNode* truePart =
                 (DataType)TYPE_STRING,
                 NULL,NULL,NULL);
     }
-#line 2306 "parser.tab.cpp"
+#line 2493 "parser.tab.cpp"
     break;
 
   case 53: /* expr: LEFT_ROUND_BRACKET expr RIGHT_ROUND_BRACKET  */
-#line 1127 "parser.y"
+#line 1294 "parser.y"
     {
         (yyval.node)=(yyvsp[-1].node);
     }
-#line 2314 "parser.tab.cpp"
+#line 2501 "parser.tab.cpp"
     break;
 
 
-#line 2318 "parser.tab.cpp"
+#line 2505 "parser.tab.cpp"
 
       default: break;
     }
@@ -2507,6 +2694,6 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 1134 "parser.y"
+#line 1301 "parser.y"
 
 

@@ -1,0 +1,10 @@
+**PROCEDURE: main
+ Return Type: <void>
+  Formal Parameters:
+   **BEGIN: Abstract Syntax Tree
+    Asgn:
+     LHS (Name : a_<int>)
+     RHS (
+      Arith: Uminus<int>
+       L_Opd (Num : -2147483648<int>))
+    **END: Abstract Syntax Tree

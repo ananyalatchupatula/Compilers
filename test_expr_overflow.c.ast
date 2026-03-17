@@ -1,0 +1,11 @@
+**PROCEDURE: main
+ Return Type: <void>
+  Formal Parameters:
+   **BEGIN: Abstract Syntax Tree
+    Asgn:
+     LHS (Name : a_<int>)
+     RHS (
+      Arith: Plus<int>
+       L_Opd (Num : -2147483648<int>)
+       R_Opd (Num : 100<int>))
+    **END: Abstract Syntax Tree
