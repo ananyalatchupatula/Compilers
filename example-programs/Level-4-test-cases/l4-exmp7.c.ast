@@ -42,5 +42,4 @@
       Asgn:
   LHS (Name : a_ <int>)
   RHS (Num : 50<int>))
-
 **END: Abstract Syntax Tree

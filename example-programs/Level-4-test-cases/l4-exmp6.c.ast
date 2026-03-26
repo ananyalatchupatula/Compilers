@@ -31,6 +31,5 @@
   Then (
     Asgn:
   LHS (Name : c_ <int>)
-  RHS (Num : 2<int>))
-)
+  RHS (Num : 2<int>)))
 **END: Abstract Syntax Tree

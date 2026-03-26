@@ -44,7 +44,6 @@ If:
     Arith: Plus<int>
    L_Opd (Name : a_ <int>)
    R_Opd (Num : 1<int>)))
-
 If:
   Condition (
     Condition: GE<bool>
@@ -57,7 +56,6 @@ If:
     Arith: Plus<int>
    L_Opd (Name : a_ <int>)
    R_Opd (Num : 1<int>)))
-
 If:
   Condition (
     Condition: LE<bool>
@@ -70,7 +68,6 @@ If:
     Arith: Plus<int>
    L_Opd (Name : a_ <int>)
    R_Opd (Num : 1<int>)))
-
 If:
   Condition (
     Condition: NE<bool>
@@ -83,7 +80,6 @@ If:
     Arith: Plus<int>
    L_Opd (Name : a_ <int>)
    R_Opd (Num : 1<int>)))
-
 If:
   Condition (
     Condition: EQ<bool>
@@ -96,7 +92,6 @@ If:
     Arith: Plus<int>
    L_Opd (Name : a_ <int>)
    R_Opd (Num : 1<int>)))
-
 If:
   Condition (
     Condition: GE<bool>
@@ -109,7 +104,6 @@ If:
     Arith: Plus<int>
    L_Opd (Name : a_ <int>)
    R_Opd (Num : 1<int>)))
-
 Do:
   Body (
     Asgn:

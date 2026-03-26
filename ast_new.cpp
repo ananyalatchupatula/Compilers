@@ -602,11 +602,13 @@ void If_Stmt::print(int indent) {
     fprintf(ast_file, "%*sThen (\n", indent+2, "");
     fprintf(ast_file, "%*s", indent+4, "");
     then_stmt->print(0);
-    fprintf(ast_file, ")\n");
     if(else_stmt) {
+        fprintf(ast_file, ")\n");
         fprintf(ast_file, "%*sElse (\n", indent+2, "");
         fprintf(ast_file, "%*s", indent+4, "");
         else_stmt->print(0);
+        fprintf(ast_file, ")");
+    } else {
         fprintf(ast_file, ")");
     }
 }

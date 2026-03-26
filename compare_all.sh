@@ -2,7 +2,7 @@
 
 MY=./old-compiler
 REF=./new-compiler
-TESTDIR=example-programs/Level-3-test-cases
+TESTDIR=example-programs/Level-1-test-cases
 MY_OUT=/tmp/my_ast
 REF_OUT=/tmp/ref_ast
 
