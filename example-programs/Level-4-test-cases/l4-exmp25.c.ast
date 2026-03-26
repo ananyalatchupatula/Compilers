@@ -1,0 +1,47 @@
+**PROCEDURE: main
+Return Type: <void>
+Formal Parameters:
+**BEGIN: Abstract Syntax Tree
+Asgn:
+ LHS (Name : maxInput_ <int>)
+ RHS (Num : 10<int>)
+Asgn:
+ LHS (Name : sum_ <int>)
+ RHS (Num : 0<int>)
+Asgn:
+ LHS (Name : i_ <int>)
+ RHS (Num : 2<int>)
+Asgn:
+ LHS (Name : number_ <int>)
+ RHS (Num : 2<int>)
+While:
+ Condition (
+  Condition: LT<bool>
+   L_Opd (Name : i_ <int>)
+   R_Opd (Name : maxInput_ <int>))
+ Body (
+  Write: Name : i_ <int>
+  Asgn:
+   LHS (Name : i_ <int>)
+   RHS (
+     Arith: Plus<int>
+     L_Opd (Name : i_ <int>)
+     R_Opd (Num : 2<int>)))
+If:
+ Condition (
+  Condition: LT<bool>
+   L_Opd (Name : number_ <int>)
+   R_Opd (Num : 3<int>))
+ Then (
+  Asgn:
+   LHS (Name : number_ <int>)
+   RHS (Num : 5<int>)
+ )
+Asgn:
+ LHS (Name : sum_ <int>)
+ RHS (
+   Arith: Plus<int>
+   L_Opd (Name : sum_ <int>)
+   R_Opd (Name : number_ <int>))
+Write: Name : sum_ <int>
+**END: Abstract Syntax Tree

@@ -7,7 +7,7 @@ using namespace std;
 
 FILE *tac_file = stdout;
 extern int show_tac;
-vector<string> tac_lines;
+
 
 // Global TACGenerator instance
 TACGenerator tac_gen;
@@ -447,7 +447,6 @@ void traverse(ASTNode *node){
 void generate_TAC(ASTNode *root){
     tac_gen.reset();
     
-    tac_lines.clear(); 
     ASTNode *curr = root->left->right->right->left;
     
   
@@ -477,6 +476,6 @@ void generate_TAC(ASTNode *root){
         traverse(curr);
         
         fprintf(tac_file, "**END: Three Address Code Statements\n");
-        convert_TAC_to_RTL(tac_lines);
+     
     }
 }

@@ -1,9 +1,8 @@
 #!/bin/bash
 
-MY=./compiler
-REF=./A3-sclp
-TESTDIR=example-programs/L3/L3-testcases
-
+MY=./old-compiler
+REF=./new-compiler
+TESTDIR=example-programs/Level-3-test-cases
 MY_OUT=/tmp/my_ast
 REF_OUT=/tmp/ref_ast
 

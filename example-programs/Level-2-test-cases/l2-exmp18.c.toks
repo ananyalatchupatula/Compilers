@@ -1,0 +1,41 @@
+	Token Name: VOID	Lexeme: void	Line no: 1
+	Token Name: NAME	Lexeme: main	Line no: 1
+	Token Name: COLON	Lexeme: (	Line no: 1
+	Token Name: COLON	Lexeme: )	Line no: 1
+	Token Name: COLON	Lexeme: {	Line no: 2
+	Token Name: FLOAT	Lexeme: float	Line no: 3
+	Token Name: NAME	Lexeme: wt	Line no: 3
+	Token Name: COLON	Lexeme: ,	Line no: 3
+	Token Name: NAME	Lexeme: ht	Line no: 3
+	Token Name: COLON	Lexeme: ,	Line no: 3
+	Token Name: NAME	Lexeme: bmi	Line no: 3
+	Token Name: COLON	Lexeme: ;	Line no: 3
+	Token Name: WRITE	Lexeme: print	Line no: 4
+	Token Name: STR_CONST	Lexeme: "Enter weight (in kilograms): "	Line no: 4
+	Token Name: COLON	Lexeme: ;	Line no: 4
+	Token Name: READ	Lexeme: read	Line no: 5
+	Token Name: NAME	Lexeme: wt	Line no: 5
+	Token Name: COLON	Lexeme: ;	Line no: 5
+	Token Name: WRITE	Lexeme: print	Line no: 6
+	Token Name: STR_CONST	Lexeme: "Enter height (in meters): "	Line no: 6
+	Token Name: COLON	Lexeme: ;	Line no: 6
+	Token Name: READ	Lexeme: read	Line no: 7
+	Token Name: NAME	Lexeme: ht	Line no: 7
+	Token Name: COLON	Lexeme: ;	Line no: 7
+	Token Name: NAME	Lexeme: bmi	Line no: 8
+	Token Name: ASSIGN_OP	Lexeme: =	Line no: 8
+	Token Name: NAME	Lexeme: wt	Line no: 8
+	Token Name: COLON	Lexeme: /	Line no: 8
+	Token Name: COLON	Lexeme: (	Line no: 8
+	Token Name: NAME	Lexeme: ht	Line no: 8
+	Token Name: COLON	Lexeme: *	Line no: 8
+	Token Name: NAME	Lexeme: ht	Line no: 8
+	Token Name: COLON	Lexeme: )	Line no: 8
+	Token Name: COLON	Lexeme: ;	Line no: 8
+	Token Name: WRITE	Lexeme: print	Line no: 9
+	Token Name: STR_CONST	Lexeme: "BMI is "	Line no: 9
+	Token Name: COLON	Lexeme: ;	Line no: 9
+	Token Name: WRITE	Lexeme: print	Line no: 10
+	Token Name: NAME	Lexeme: bmi	Line no: 10
+	Token Name: COLON	Lexeme: ;	Line no: 10
+	Token Name: COLON	Lexeme: }	Line no: 11

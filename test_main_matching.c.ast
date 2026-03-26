@@ -1,7 +1,0 @@
-**PROCEDURE: main
- Return Type: <void>
-  Formal Parameters:
-   x_     Type:<int>
-    y_     Type:<float>
-   **BEGIN: Abstract Syntax Tree
-    **END: Abstract Syntax Tree

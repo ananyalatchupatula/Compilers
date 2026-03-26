@@ -1,0 +1,10 @@
+	Token Name: VOID	Lexeme: void	Line no: 1
+	Token Name: NAME	Lexeme: main	Line no: 1
+	Token Name: COLON	Lexeme: (	Line no: 1
+	Token Name: COLON	Lexeme: )	Line no: 1
+	Token Name: COLON	Lexeme: {	Line no: 1
+	Token Name: BOOL	Lexeme: bool	Line no: 3
+	Token Name: NAME	Lexeme: b	Line no: 3
+	Token Name: COLON	Lexeme: ;	Line no: 3
+	Token Name: INTEGER	Lexeme: int	Line no: 4
+	Token Name: NAME	Lexeme: main	Line no: 4
