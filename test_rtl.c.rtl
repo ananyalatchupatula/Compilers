@@ -1,0 +1,59 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 0			;; Loading integer number 0
+    store:	test_ <- v0
+    iLoad:	v0 <- 10			;; Loading integer number 10
+    store:	loop_ <- v0
+Label2:
+    load:	v0 <- loop_			;; Loading variable loop_ into register
+    iLoad:	t1 <- 1			;; Loading integer number 1
+    sgt:	t0 <- v0 , t1
+    store:	temp0 <- t0
+    load:	v0 <- temp0			;; Loading variable temp0 into register
+    not:	t0 <- v0
+    store:	temp4 <- t0
+    load:	v0 <- temp4			;; Loading variable temp4 into register
+    bgtz:	v0 , Label3
+    load:	v0 <- loop_			;; Loading variable loop_ into register
+    iLoad:	t1 <- 1			;; Loading integer number 1
+    sub:	t0 <- v0 , t1
+    store:	temp1 <- t0
+    load:	v0 <- temp1			;; Loading variable temp1 into register
+    store:	loop_ <- v0
+    load:	v0 <- loop_			;; Loading variable loop_ into register
+    iLoad:	t1 <- 0			;; Loading integer number 0
+    seq:	t0 <- v0 , t1
+    store:	temp2 <- t0
+    load:	v0 <- temp2			;; Loading variable temp2 into register
+    not:	t0 <- v0
+    store:	temp3 <- t0
+    load:	v0 <- temp3			;; Loading variable temp3 into register
+    bgtz:	v0 , Label1
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- loop_			;; Loading variable loop_ into register
+    write:				;; This is where syscall will be made
+    goto:		Label0
+Label1:
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- test_			;; Loading variable test_ into register
+    write:				;; This is where syscall will be made
+Label0:
+    goto:		Label2
+Label3:
+Label4:
+    load:	v0 <- loop_			;; Loading variable loop_ into register
+    iLoad:	t1 <- 1			;; Loading integer number 1
+    add:	t0 <- v0 , t1
+    store:	temp5 <- t0
+    load:	v0 <- temp5			;; Loading variable temp5 into register
+    store:	loop_ <- v0
+    load:	v0 <- loop_			;; Loading variable loop_ into register
+    iLoad:	t1 <- 10			;; Loading integer number 10
+    slt:	t0 <- v0 , t1
+    store:	temp6 <- t0
+    load:	v0 <- temp6			;; Loading variable temp6 into register
+    bgtz:	v0 , Label4
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- loop_			;; Loading variable loop_ into register
+    write:				;; This is where syscall will be made
+**END: RTL Statements

@@ -1,0 +1,40 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    load:	v0 <- a_			;; Loading variable a_ into register
+    iLoad:	t1 <- 20			;; Loading integer number 20
+    sgt:	t0 <- v0 , t1
+    not:	v0 <- t0
+    not:	v0 <- v0
+    bgtz:	v0 , Label1
+    iLoad:	v0 <- 30			;; Loading integer number 30
+    store:	a_ <- v0
+    goto:		Label0
+Label1:
+    iLoad:	v0 <- 40			;; Loading integer number 40
+    store:	a_ <- v0
+Label0:
+Label2:
+    load:	v0 <- a_			;; Loading variable a_ into register
+    iLoad:	t1 <- 30			;; Loading integer number 30
+    sgt:	t0 <- v0 , t1
+    not:	v0 <- t0
+    bgtz:	v0 , Label3
+    iLoad:	v0 <- 40			;; Loading integer number 40
+    store:	a_ <- v0
+    goto:		Label2
+Label3:
+    load:	v0 <- 30			;; Loading variable 30 into register
+    uminus:	v0 <- v0
+    store:	a_ <- v0
+    load:	v0 <- a_			;; Loading variable a_ into register
+    uminus:	v0 <- v0
+    iLoad:	t2 <- 30			;; Loading integer number 30
+    sgt:	t0 <- v0 , t1
+    not:	v0 <- t0
+    bgtz:	v0 , Label5
+    iLoad:	v0 <- 50			;; Loading integer number 50
+    store:	a_ <- v0
+    goto:		Label4
+Label5:
+Label4:
+**END: RTL Statements

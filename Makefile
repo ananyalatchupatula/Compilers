@@ -15,7 +15,7 @@ NEW_YACC_SRC = parser_new.y
 NEW_YACC_CPP = parser_new.tab.cpp
 NEW_YACC_HPP = parser_new.tab.hpp
 NEW_LEX_OUT = lex_new.yy.c
-NEW_OBJS = parser_new.tab.o lex_new.yy.o ast_new.o tac_str.o tac_generator.o main_new.o
+NEW_OBJS = parser_new.tab.o lex_new.yy.o ast_new.o tac_str.o tac_generator.o rtl_new.o rtl_generator_new.o main_new.o
 
 # ---------- OLD COMPILER (original) ----------
 
@@ -74,7 +74,13 @@ tac_str.o: tac_str.cpp tac_str.h ast_new.h
 tac_generator.o: tac_generator.cpp tac_generator.h
 	$(CXX) $(CXXFLAGS) -c tac_generator.cpp
 
-main_new.o: main_new.cpp ast_new.h
+rtl_new.o: rtl_new.cpp rtl_new.h
+	$(CXX) $(CXXFLAGS) -c rtl_new.cpp
+
+rtl_generator_new.o: rtl_generator_new.cpp rtl_generator_new.h
+	$(CXX) $(CXXFLAGS) -c rtl_generator_new.cpp
+
+main_new.o: main_new.cpp ast_new.h rtl_new.h rtl_generator_new.h
 	$(CXX) $(CXXFLAGS) -c main_new.cpp -o main_new.o
 
 # ============ OLD COMPILER (original implementation) ============

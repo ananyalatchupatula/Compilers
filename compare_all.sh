@@ -23,11 +23,11 @@ for f in $TESTDIR/*.c; do
     $REF --show-ast "$f" > /dev/null
     mv "$f.ast" "$REF_OUT/$base.ast"
 
-    if diff -b -w "$MY_OUT/$base.ast" "$REF_OUT/$base.ast" > /dev/null; then
+    if diff -Bw "$MY_OUT/$base.ast" "$REF_OUT/$base.ast" > /dev/null; then
         echo "$base : OK"
     else
         echo "$base : DIFFER"
-        diff -b -w "$MY_OUT/$base.ast" "$REF_OUT/$base.ast"
+        diff -Bw "$MY_OUT/$base.ast" "$REF_OUT/$base.ast"
         echo "----------------------------------------"
     fi
 done

@@ -1,0 +1,43 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    store:	max_ <- 0
+    store:	a_ <- 5
+    store:	b_ <- 1
+    load:	v0 <- a_			;; Loading variable a_ into register
+    sgt:	t0 <- v0 , max_
+    store:	temp0 <- t0
+    load:	v0 <- temp0			;; Loading variable temp0 into register
+    not:	t0 <- v0
+    store:	temp1 <- t0
+    load:	v0 <- temp1			;; Loading variable temp1 into register
+    bgtz:	v0 , Label1
+    store:	max_ <- a_
+    goto:		Label0
+Label1:
+    load:	v0 <- b_			;; Loading variable b_ into register
+    sgt:	t0 <- v0 , max_
+    store:	temp2 <- t0
+    load:	v0 <- temp2			;; Loading variable temp2 into register
+    not:	t0 <- v0
+    store:	temp3 <- t0
+    load:	v0 <- temp3			;; Loading variable temp3 into register
+    bgtz:	v0 , Label3
+    store:	max_ <- b_
+    goto:		Label2
+Label3:
+    load:	v0 <- c_			;; Loading variable c_ into register
+    sgt:	t0 <- v0 , max_
+    store:	temp4 <- t0
+    load:	v0 <- temp4			;; Loading variable temp4 into register
+    not:	t0 <- v0
+    store:	temp5 <- t0
+    load:	v0 <- temp5			;; Loading variable temp5 into register
+    bgtz:	v0 , Label5
+    store:	max_ <- c_
+    goto:		Label4
+Label5:
+Label4:
+Label2:
+Label0:
+    store:	c_ <- 2
+**END: RTL Statements

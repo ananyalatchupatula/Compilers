@@ -1,4 +1,6 @@
 #include "ast_new.h"
+#include "rtl_new.h"
+#include "rtl_generator_new.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -9,11 +11,14 @@ extern FILE *yyin;
 extern FILE *ast_file;
 extern FILE *tac_file;
 
+FILE *rtl_file = NULL;
+
 FILE *tok_file = NULL;
 
 int show_tokens = 0;
 int show_ast = 0;
 int show_tac = 0;
+int show_rtl = 0;
 
 int sa_scan = 0;
 int sa_parse = 0;
@@ -27,6 +32,7 @@ int main(int argc, char *argv[])
 
     ast_file = NULL;
     tac_file = NULL;
+    rtl_file = NULL;
 
     /* parse command line arguments */
 
@@ -49,6 +55,9 @@ int main(int argc, char *argv[])
 
         else if (strcmp(argv[i], "--show-tac") == 0 || strcmp(argv[i], "-tac") == 0)
             show_tac = 1;
+
+        else if (strcmp(argv[i], "--show-rtl") == 0 || strcmp(argv[i], "-rtl") == 0)
+            show_rtl = 1;
 
         else if ((argv[i][0] != '-') && (input_file == NULL))
             input_file = argv[i];
@@ -111,6 +120,19 @@ int main(int argc, char *argv[])
         }
     }
 
+    /* open RTL file if needed */
+    if (show_rtl)
+    {
+        char rtl_name[256];
+        snprintf(rtl_name, sizeof(rtl_name), "%s.rtl", input_file);
+        rtl_file = fopen(rtl_name, "w");
+        if (!rtl_file)
+        {
+            perror("rtl file open failed");
+            return 1;
+        }
+    }
+
     int num_nodes = 0;
     int num_stmt_nodes = 0;
     int num_expr_nodes = 0;
@@ -137,6 +159,7 @@ int main(int argc, char *argv[])
 
     if (ast_file) fclose(ast_file);
     if (tac_file) fclose(tac_file);
+    if (rtl_file) fclose(rtl_file);
     fclose(ip_file);
     return 0;
 }

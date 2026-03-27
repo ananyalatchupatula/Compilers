@@ -1,0 +1,28 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    fLoad:	v0 <- 2.10
+    store:	b_ <- v0
+    fLoad:	v0 <- 8.30
+    store:	c_ <- v0
+    load:	v0 <- b_			;; Loading variable b_ into register
+    load:	t1 <- c_			;; Loading variable c_ into register
+    div:	t0 <- v0 , t1
+    load:	t1 <- a_			;; Loading variable a_ into register
+    div:	t1 <- t0 , t1
+    load:	t1 <- b_			;; Loading variable b_ into register
+    mul:	t0 <- t1 , t1
+    load:	v0 <- a_			;; Loading variable a_ into register
+    load:	t1 <- temp2			;; Loading variable temp2 into register
+    add:	t0 <- v0 , t1
+    fLoad:	t2 <- 0.00
+    sgt:	t1 <- t0 , t1
+    not:	v0 <- t1
+    bgtz:	v0 , Label1
+    load:	v0 <- a_			;; Loading variable a_ into register
+    fLoad:	t1 <- 1.00
+    sub:	t0 <- v0 , t1
+    store:	a_ <- t0
+    goto:		Label0
+Label1:
+Label0:
+**END: RTL Statements

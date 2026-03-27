@@ -1,0 +1,64 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 5			;; Loading integer number 5
+    read				;; This is where syscall will be made
+    store:	local_ <- v0
+    load:	v0 <- local_			;; Loading variable local_ into register
+    store:	global2_ <- v0
+    iLoad:	v0 <- 5			;; Loading integer number 5
+    store:	global1_ <- v0
+    load:	v0 <- global2_			;; Loading variable global2_ into register
+    load:	t1 <- global1_			;; Loading variable global1_ into register
+    sgt:	t0 <- v0 , t1
+    load:	v0 <- local_			;; Loading variable local_ into register
+    iLoad:	t1 <- 2			;; Loading integer number 2
+    sub:	t0 <- v0 , t1
+    iLoad:	t2 <- 0			;; Loading integer number 0
+    sne:	t1 <- t0 , t1
+    load:	t1 <- temp2			;; Loading variable temp2 into register
+    and:	t1 <- t0 , t1
+    not:	v0 <- t1
+    bgtz:	v0 , Label5
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    goto:		Label6
+Label5:
+    iLoad:	v0 <- 0			;; Loading integer number 0
+Label6:
+    load:	v0 <- stemp0			;; Loading variable stemp0 into register
+    store:	ans_ <- v0
+    load:	v0 <- ans_			;; Loading variable ans_ into register
+    iLoad:	t1 <- 1			;; Loading integer number 1
+    seq:	t0 <- v0 , t1
+    not:	v0 <- t0
+    bgtz:	v0 , Label3
+Label0:
+    load:	v0 <- global2_			;; Loading variable global2_ into register
+    iLoad:	t1 <- 0			;; Loading integer number 0
+    sgt:	t0 <- v0 , t1
+    not:	v0 <- t0
+    bgtz:	v0 , Label1
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- global2_			;; Loading variable global2_ into register
+    write				;; This is where syscall will be made
+    load:	v0 <- global2_			;; Loading variable global2_ into register
+    iLoad:	t1 <- 1			;; Loading integer number 1
+    sub:	t0 <- v0 , t1
+    store:	global2_ <- t0
+    goto:		Label0
+Label1:
+    goto:		Label2
+Label3:
+Label4:
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- global2_			;; Loading variable global2_ into register
+    write				;; This is where syscall will be made
+    load:	v0 <- global2_			;; Loading variable global2_ into register
+    iLoad:	t1 <- 1			;; Loading integer number 1
+    add:	t0 <- v0 , t1
+    store:	global2_ <- t0
+    load:	v0 <- global2_			;; Loading variable global2_ into register
+    iLoad:	t1 <- 10			;; Loading integer number 10
+    slt:	t0 <- v0 , t1
+    bgtz:	t0 , Label4
+Label2:
+**END: RTL Statements

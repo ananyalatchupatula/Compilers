@@ -1,0 +1,23 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    store:	n_ <- 3
+    load:	v0 <- n_			;; Loading variable n_ into register
+    div:	t0 <- v0 , 2
+    store:	temp0 <- t0
+    load:	v0 <- temp0			;; Loading variable temp0 into register
+    mul:	t0 <- v0 , 2
+    store:	temp1 <- t0
+    load:	v0 <- temp1			;; Loading variable temp1 into register
+    seq:	t0 <- v0 , n_
+    store:	temp2 <- t0
+    load:	v0 <- temp2			;; Loading variable temp2 into register
+    not:	t0 <- v0
+    store:	temp3 <- t0
+    load:	v0 <- temp3			;; Loading variable temp3 into register
+    bgtz:	v0 , Label1
+    store:	cntr_ <- 1
+    goto:		Label0
+Label1:
+    store:	cntr_ <- 0
+Label0:
+**END: RTL Statements

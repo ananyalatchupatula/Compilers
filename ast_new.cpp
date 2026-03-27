@@ -1,6 +1,7 @@
 #include "ast_new.h"
 #include "tac_str.h"
 #include "tac_generator.h"
+#include "rtl_generator_new.h"
 #include <cstdio>
 #include <iostream>
 
@@ -8,7 +9,13 @@ using std::cout;
 using std::endl;
 
 extern FILE *ast_file;
+extern FILE *tac_file;
+extern FILE *rtl_file;
 extern int show_ast;
+extern int show_tac;
+extern int show_rtl;
+
+extern list<Statement_Ast*> main_stmt_list;
 
 /* ============================================================================
    BASE AST CLASS IMPLEMENTATION
@@ -80,7 +87,7 @@ string Name_Expr_Ast::get_name() {
 }
 
 void Name_Expr_Ast::print(int indent) {
-    fprintf(ast_file, "Name : %s <%s>", name.c_str(), data_type_to_string(node_data_type));
+    fprintf(ast_file, "Name : %s<%s>", name.c_str(), data_type_to_string(node_data_type));
 }
 
 TAC_Opd* Name_Expr_Ast::generate_tac(list<TAC_Stmt*>& statements) {
@@ -111,9 +118,9 @@ void Unary_Expr_Ast::print(int indent) {
     Unary_Expr_Ast* opd_unary = dynamic_cast<Unary_Expr_Ast*>(operand);
     if(opd_bin || opd_tern || opd_unary) {
         fprintf(ast_file, "\n");
-        for(int i = 0; i < indent + 13; i++) fprintf(ast_file, " ");
+        for(int i = 0; i < indent + 3; i++) fprintf(ast_file, " ");
     }
-    operand->print(0);
+    operand->print(indent+2);
     fprintf(ast_file, ")");
 }
 
@@ -193,7 +200,7 @@ void Binary_Expr_Ast::print(int indent) {
         fprintf(ast_file, "\n");
         for(int i = 0; i < indent + 3; i++) fprintf(ast_file, " ");
     }
-    left->print(0);
+    left->print(indent+2);
     fprintf(ast_file, ")\n");
     
     for(int i = 0; i < indent + 1; i++) fprintf(ast_file, " ");
@@ -207,7 +214,7 @@ void Binary_Expr_Ast::print(int indent) {
         fprintf(ast_file, "\n");
         for(int i = 0; i < indent + 3; i++) fprintf(ast_file, " ");
     }
-    right->print(0);
+    right->print(indent+2);
     fprintf(ast_file, ")");
 }
 
@@ -300,9 +307,9 @@ void Ternary_Expr_Ast::print(int indent) {
         Ternary_Expr_Ast* left_tern = dynamic_cast<Ternary_Expr_Ast*>(bin_cond->left);
         if(left_bin || left_tern) {
             fprintf(ast_file, "\n");
-            for(int i = 0; i < indent + 13; i++) fprintf(ast_file, " ");
+            for(int i = 0; i < indent + 3; i++) fprintf(ast_file, " ");
         }
-        bin_cond->left->print(0);
+        bin_cond->left->print(indent+2);
         fprintf(ast_file, ")\n");
         
         // Print the right operand of the condition
@@ -315,13 +322,13 @@ void Ternary_Expr_Ast::print(int indent) {
         Unary_Expr_Ast* right_unary = dynamic_cast<Unary_Expr_Ast*>(bin_cond->right);
         if(right_bin || right_tern || right_unary) {
             fprintf(ast_file, "\n");
-            for(int i = 0; i < indent + 13; i++) fprintf(ast_file, " ");
+            for(int i = 0; i < indent + 3; i++) fprintf(ast_file, " ");
         }
-        bin_cond->right->print(0);
+        bin_cond->right->print(indent+2);
         fprintf(ast_file, ")\n");
     } else {
         // For non-binary conditions, just print the condition (typically a Name_Expr_Ast)
-        condition->print(0);
+        condition->print(indent);
         fprintf(ast_file, "\n");
     }
     
@@ -345,7 +352,7 @@ void Ternary_Expr_Ast::print(int indent) {
         fprintf(ast_file, "\n");
         for(int i = 0; i < indent + 2; i++) fprintf(ast_file, " ");
     }
-    true_expr->print(0);
+    true_expr->print(indent);
     fprintf(ast_file, ")\n");
     
     // Print False part - check if it's complex
@@ -368,7 +375,7 @@ void Ternary_Expr_Ast::print(int indent) {
         fprintf(ast_file, "\n");
         for(int i = 0; i < indent + 2; i++) fprintf(ast_file, " ");
     }
-    false_expr->print(0);
+    false_expr->print(indent);
     fprintf(ast_file, ")");
 }
 
@@ -460,8 +467,8 @@ void Assignment_Stmt::pre_allocate_temps() {
 }
 
 void Assignment_Stmt::print(int indent) {
-    fprintf(ast_file, "Asgn:\n");
-    fprintf(ast_file, "%*sLHS (Name : %s <%s>)\n", indent+2, "", lhs_name.c_str(), data_type_to_string(rhs->get_data_type()));
+    fprintf(ast_file, "%*sAsgn:\n", indent, "");
+    fprintf(ast_file, "%*sLHS (Name : %s<%s>)\n", indent+2, "", lhs_name.c_str(), data_type_to_string(rhs->get_data_type()));
     fprintf(ast_file, "%*sRHS (", indent+2, "");
     
     // Check if RHS needs wrapping - skip for simple constants
@@ -494,7 +501,7 @@ void Assignment_Stmt::print_no_trailing_newline(int indent) {
     fprintf(ast_file, "Asgn:\n");
     
     for(int i = 0; i < indent + 1; i++) fprintf(ast_file, " ");
-    fprintf(ast_file, "LHS (Name : %s <%s>)\n", lhs_name.c_str(), data_type_to_string(rhs->get_data_type()));
+    fprintf(ast_file, "LHS (Name : %s<%s>)\n", lhs_name.c_str(), data_type_to_string(rhs->get_data_type()));
     
     for(int i = 0; i < indent + 1; i++) fprintf(ast_file, " ");
     fprintf(ast_file, "RHS (");
@@ -560,13 +567,13 @@ Print_Stmt::~Print_Stmt() {
 
 void Print_Stmt::print(int indent) {
     fprintf(ast_file, "Write: ");
-    expr->print(0);
+    expr->print(indent);
 }
 
 void Print_Stmt::print_inline(int indent) {
     for(int i = 0; i < indent; i++) fprintf(ast_file, " ");
     fprintf(ast_file, "Write: ");
-    expr->print(0);
+    expr->print(indent);
     // No newline for inline printing
 }
 
@@ -594,19 +601,20 @@ If_Stmt::~If_Stmt() {
 }
 
 void If_Stmt::print(int indent) {
-    fprintf(ast_file, "If:\n");
+    fprintf(ast_file, "%*sIf:\n", indent, "");
     fprintf(ast_file, "%*sCondition (\n", indent+2, "");
     fprintf(ast_file, "%*s", indent+4, "");
-    condition->print(0);
+    condition->print(indent+4);
     fprintf(ast_file, ")\n");
     fprintf(ast_file, "%*sThen (\n", indent+2, "");
     fprintf(ast_file, "%*s", indent+4, "");
-    then_stmt->print(0);
+    then_stmt->print(indent+4);
     if(else_stmt) {
-        fprintf(ast_file, ")\n");
+        fprintf(ast_file, ")");
+        fprintf(ast_file, "\n");
         fprintf(ast_file, "%*sElse (\n", indent+2, "");
         fprintf(ast_file, "%*s", indent+4, "");
-        else_stmt->print(0);
+        else_stmt->print(indent+4);
         fprintf(ast_file, ")");
     } else {
         fprintf(ast_file, ")");
@@ -684,14 +692,14 @@ While_Stmt::~While_Stmt() {
 }
 
 void While_Stmt::print(int indent) {
-    fprintf(ast_file, "While:\n");
+    fprintf(ast_file, "%*sWhile:\n", indent, "");
     fprintf(ast_file, "%*sCondition (\n", indent+2, "");
     fprintf(ast_file, "%*s", indent+4, "");
-    condition->print(0);
+    condition->print(indent+4);
     fprintf(ast_file, ")\n");
     fprintf(ast_file, "%*sBody (\n", indent+2, "");
     fprintf(ast_file, "%*s", indent+4, "");
-    body->print(0);
+    body->print(indent+4);
     fprintf(ast_file, ")");
 }
 
@@ -754,15 +762,28 @@ Do_While_Stmt::~Do_While_Stmt() {
 }
 
 void Do_While_Stmt::print(int indent) {
-    fprintf(ast_file, "Do:\n");
+    fprintf(ast_file, "%*sDo:\n", indent, "");
     fprintf(ast_file, "%*sBody (\n", indent+2, "");
     fprintf(ast_file, "%*s", indent+4, "");
-    body->print(0);
+    body->print(indent+4);
     fprintf(ast_file, ")\n");
-    fprintf(ast_file, "%*sWhile Condition (\n", indent+2, "");
-    fprintf(ast_file, "%*s", indent+4, "");
-    condition->print(0);
-    fprintf(ast_file, ")");
+    
+    // Check if condition is simple (Name or Const)
+    Name_Expr_Ast* name_cond = dynamic_cast<Name_Expr_Ast*>(condition);
+    Const_Expr_Ast* const_cond = dynamic_cast<Const_Expr_Ast*>(condition);
+    
+    if(name_cond || const_cond) {
+        // Simple condition - print on same line
+        fprintf(ast_file, "%*sWhile Condition (", indent+2, "");
+        condition->print(indent+2);
+        fprintf(ast_file, ")");
+    } else {
+        // Complex condition - print on new line with indentation
+        fprintf(ast_file, "%*sWhile Condition (\n", indent+2, "");
+        fprintf(ast_file, "%*s", indent+4, "");
+        condition->print(indent+4);
+        fprintf(ast_file, ")");
+    }
 }
 
 void Do_While_Stmt::pre_allocate_temps() {
@@ -811,13 +832,14 @@ void Compound_Stmt::add_stmt(Statement_Ast* stmt) {
 
 void Compound_Stmt::print(int indent) {
     for(auto it = statements.begin(); it != statements.end(); ++it) {
-        fprintf(ast_file, "%*s", indent, "");
         (*it)->print(indent);
-        // Add newline after each statement except possibly the last
+        // Add newline after each statement except the last
         auto next = it;
         ++next;
         if(next != statements.end()) {
             fprintf(ast_file, "\n");
+        } else {
+            // Last statement - no newline after it
         }
     }
 }
@@ -905,3 +927,4 @@ Print_Stmt* get_single_print_stmt(Statement_Ast* stmt) {
     // This is a limitation but we can work around it in the calling code
     return nullptr;
 }
+

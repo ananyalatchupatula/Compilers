@@ -5,6 +5,7 @@
 #include "ast_new.h"
 #include "tac_str.h"
 #include "tac_generator.h"
+#include "rtl_generator_new.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -26,8 +27,12 @@ void yyerror(const char *s)
 
 extern int show_ast;
 extern int show_tac;
+extern int show_rtl;
 extern FILE *ast_file;
 extern FILE *tac_file;
+extern FILE *rtl_file;
+
+list<Statement_Ast*> main_stmt_list;
 bool main_seen = false;
 bool main_defined = false;
 
@@ -314,7 +319,7 @@ func_def
         /* Generate TAC for the function body */
         if($7) {
             list<TAC_Stmt*> tac_stmts;
-            $7->pre_allocate_temps();  // Pre-allocate all temps before generating TAC
+            $7->pre_allocate_temps();
             $7->generate_tac(tac_stmts);
             
             if(show_tac && tac_file && !tac_stmts.empty()) {
@@ -324,6 +329,16 @@ func_def
                     stmt->print(tac_file);
                 }
                 fprintf(tac_file, "**END: Three Address Code Statements\n");
+            }
+            
+            if(show_rtl && rtl_file && !tac_stmts.empty()) {
+                list<RTL_Stmt*> rtl_stmts = RTL_Generator::get_instance()->generate_rtl(tac_stmts);
+                fprintf(rtl_file, "**PROCEDURE: %s\n", $2);
+                fprintf(rtl_file, "**BEGIN: RTL Statements\n");
+                for(auto stmt : rtl_stmts) {
+                    stmt->print(rtl_file);
+                }
+                fprintf(rtl_file, "**END: RTL Statements\n");
             }
         }
 
