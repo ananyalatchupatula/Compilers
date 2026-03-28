@@ -7,12 +7,11 @@
     iLoad:	t1 <- 5			;; Loading integer number 5
     sge:	t0 <- v0 , t1
     load:	v0 <- n_			;; Loading variable n_ into register
-    iLoad:	t1 <- 10			;; Loading integer number 10
-    sle:	t0 <- v0 , t1
-    load:	t1 <- temp1			;; Loading variable temp1 into register
-    and:	t0 <- t0 , t1
-    not:	v0 <- t0
-    bgtz:	v0 , Label3
+    iLoad:	t2 <- 10			;; Loading integer number 10
+    sle:	t1 <- v0 , t2
+    and:	v0 <- t0 , t1
+    not:	t0 <- v0
+    bgtz:	t0 , Label3
 Label0:
     load:	v0 <- n_			;; Loading variable n_ into register
     iLoad:	t1 <- 0			;; Loading integer number 0
@@ -36,15 +35,13 @@ Label3:
     load:	v0 <- n_			;; Loading variable n_ into register
     iLoad:	t1 <- 1024			;; Loading integer number 1024
     sle:	t0 <- v0 , t1
-    load:	v0 <- 1024			;; Loading variable 1024 into register
-    uminus:	v0 <- v0
+    iLoad:	v0 <- 1024			;; Loading integer number 1024
+    uminus:	t0 <- v0
     load:	v0 <- n_			;; Loading variable n_ into register
-    load:	t1 <- temp8			;; Loading variable temp8 into register
-    sge:	t0 <- v0 , t1
-    load:	t1 <- temp9			;; Loading variable temp9 into register
-    and:	t0 <- t0 , t1
-    not:	v0 <- t0
-    bgtz:	v0 , Label6
+    sge:	t1 <- v0 , t0
+    and:	v0 <- t0 , t1
+    not:	t0 <- v0
+    bgtz:	t0 , Label6
 Label4:
     iLoad:	v0 <- 1			;; Loading integer number 1
     load:	a0 <- n_			;; Loading variable n_ into register

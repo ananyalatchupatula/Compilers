@@ -15,7 +15,7 @@ Label0:
 stemp0 = c_
 Label1:
 a_ = stemp0
-goto Label0
+goto Label2
 Label2:
 write a_
 **END: Three Address Code Statements

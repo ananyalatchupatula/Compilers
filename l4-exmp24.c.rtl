@@ -10,22 +10,21 @@
     load:	t1 <- a_			;; Loading variable a_ into register
     sgt:	t0 <- v0 , t1
     not:	v0 <- t0
-    bgtz:	v0 , Label1
+    bgtz:	v0 , Label2
     load:	v0 <- b_			;; Loading variable b_ into register
     load:	t1 <- c_			;; Loading variable c_ into register
     sgt:	t0 <- v0 , t1
     not:	v0 <- t0
-    bgtz:	v0 , Label2
+    bgtz:	v0 , Label0
     load:	v0 <- b_			;; Loading variable b_ into register
-    goto:		Label3
-Label2:
+    goto:		Label1
+Label0:
     load:	v0 <- c_			;; Loading variable c_ into register
-Label3:
+Label1:
     load:	v0 <- stemp0			;; Loading variable stemp0 into register
     store:	a_ <- v0
-    goto:		Label0
-Label1:
-Label0:
+    goto:		Label2
+Label2:
     iLoad:	v0 <- 1			;; Loading integer number 1
     load:	a0 <- a_			;; Loading variable a_ into register
     write				;; This is where syscall will be made

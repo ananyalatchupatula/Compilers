@@ -1,43 +1,41 @@
 **PROCEDURE: main
 **BEGIN: RTL Statements
-    store:	max_ <- 0
-    store:	a_ <- 5
-    store:	b_ <- 1
+    iLoad:	v0 <- 0			;; Loading integer number 0
+    store:	max_ <- v0
+    iLoad:	v0 <- 5			;; Loading integer number 5
+    store:	a_ <- v0
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    store:	b_ <- v0
     load:	v0 <- a_			;; Loading variable a_ into register
-    sgt:	t0 <- v0 , max_
-    store:	temp0 <- t0
-    load:	v0 <- temp0			;; Loading variable temp0 into register
-    not:	t0 <- v0
-    store:	temp1 <- t0
-    load:	v0 <- temp1			;; Loading variable temp1 into register
+    load:	t1 <- max_			;; Loading variable max_ into register
+    sgt:	t0 <- v0 , t1
+    not:	v0 <- t0
     bgtz:	v0 , Label1
-    store:	max_ <- a_
+    load:	v0 <- a_			;; Loading variable a_ into register
+    store:	max_ <- v0
     goto:		Label0
 Label1:
     load:	v0 <- b_			;; Loading variable b_ into register
-    sgt:	t0 <- v0 , max_
-    store:	temp2 <- t0
-    load:	v0 <- temp2			;; Loading variable temp2 into register
-    not:	t0 <- v0
-    store:	temp3 <- t0
-    load:	v0 <- temp3			;; Loading variable temp3 into register
+    load:	t1 <- max_			;; Loading variable max_ into register
+    sgt:	t0 <- v0 , t1
+    not:	v0 <- t0
     bgtz:	v0 , Label3
-    store:	max_ <- b_
+    load:	v0 <- b_			;; Loading variable b_ into register
+    store:	max_ <- v0
     goto:		Label2
 Label3:
     load:	v0 <- c_			;; Loading variable c_ into register
-    sgt:	t0 <- v0 , max_
-    store:	temp4 <- t0
-    load:	v0 <- temp4			;; Loading variable temp4 into register
-    not:	t0 <- v0
-    store:	temp5 <- t0
-    load:	v0 <- temp5			;; Loading variable temp5 into register
+    load:	t1 <- max_			;; Loading variable max_ into register
+    sgt:	t0 <- v0 , t1
+    not:	v0 <- t0
     bgtz:	v0 , Label5
-    store:	max_ <- c_
+    load:	v0 <- c_			;; Loading variable c_ into register
+    store:	max_ <- v0
     goto:		Label4
 Label5:
 Label4:
 Label2:
 Label0:
-    store:	c_ <- 2
+    iLoad:	v0 <- 2			;; Loading integer number 2
+    store:	c_ <- v0
 **END: RTL Statements

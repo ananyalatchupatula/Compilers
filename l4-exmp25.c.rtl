@@ -27,11 +27,10 @@ Label1:
     iLoad:	t1 <- 3			;; Loading integer number 3
     slt:	t0 <- v0 , t1
     not:	v0 <- t0
-    bgtz:	v0 , Label3
+    bgtz:	v0 , Label2
     iLoad:	v0 <- 5			;; Loading integer number 5
     store:	number_ <- v0
     goto:		Label2
-Label3:
 Label2:
     load:	v0 <- sum_			;; Loading variable sum_ into register
     load:	t1 <- number_			;; Loading variable number_ into register

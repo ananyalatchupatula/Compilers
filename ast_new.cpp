@@ -396,15 +396,13 @@ void Ternary_Expr_Ast::pre_allocate_temps() {
     }
     
     // Allocate labels for this ternary AFTER temps
-    if (false_label_id == -1) {
-        Label_TAC_Opd* false_lbl = TAC_Generator::get_instance()->create_new_label();
-        false_label_id = false_lbl->get_label_id();
-        delete false_lbl;
-        
-        Label_TAC_Opd* end_lbl = TAC_Generator::get_instance()->create_new_label();
-        end_label_id = end_lbl->get_label_id();
-        delete end_lbl;
-    }
+    Label_TAC_Opd* false_lbl = TAC_Generator::get_instance()->create_new_label();
+    false_label_id = false_lbl->get_label_id();
+    delete false_lbl;
+    
+    Label_TAC_Opd* end_lbl = TAC_Generator::get_instance()->create_new_label();
+    end_label_id = end_lbl->get_label_id();
+    delete end_lbl;
 }
 
 TAC_Opd* Ternary_Expr_Ast::generate_tac(list<TAC_Stmt*>& statements) {
@@ -424,9 +422,9 @@ TAC_Opd* Ternary_Expr_Ast::generate_tac(list<TAC_Stmt*>& statements) {
         cond_not = new Temp_TAC_Opd(not_temp_id);
     }
     
-    // Generate labels
-    Label_TAC_Opd* false_label = TAC_Generator::get_instance()->create_new_label();
-    Label_TAC_Opd* end_label = TAC_Generator::get_instance()->create_new_label();
+    // Use pre-allocated labels
+    Label_TAC_Opd* false_label = new Label_TAC_Opd(false_label_id);
+    Label_TAC_Opd* end_label = new Label_TAC_Opd(end_label_id);
     
     // NOT condition
     statements.push_back(new Compute_TAC_Stmt(cond_not, cond_tac, Compute_TAC_Stmt::TAC_OP_NOT, NULL));
@@ -647,19 +645,27 @@ void If_Stmt::pre_allocate_temps() {
     delete dummy;
     
     // ALLOCATE LABELS FOR THIS IF STATEMENT BEFORE ELSE BRANCH
-    // Allocate end_label FIRST
-    Label_TAC_Opd* end_lbl = TAC_Generator::get_instance()->create_new_label();
-    end_label_id = end_lbl->get_label_id();
-    delete end_lbl;
-    
-    // Then allocate else_label
-    Label_TAC_Opd* else_lbl = TAC_Generator::get_instance()->create_new_label();
-    else_label_id = else_lbl->get_label_id();
-    delete else_lbl;
-    
-    // THEN process else branch AFTER allocating this if's labels
+    // If there's an else branch, allocate both else_label and end_label
+    // Otherwise, they should be the same
     if (else_stmt) {
+        // Allocate end_label FIRST
+        Label_TAC_Opd* end_lbl = TAC_Generator::get_instance()->create_new_label();
+        end_label_id = end_lbl->get_label_id();
+        delete end_lbl;
+        
+        // Then allocate else_label
+        Label_TAC_Opd* else_lbl = TAC_Generator::get_instance()->create_new_label();
+        else_label_id = else_lbl->get_label_id();
+        delete else_lbl;
+        
+        // THEN process else branch AFTER allocating labels
         else_stmt->pre_allocate_temps();
+    } else {
+        // No else branch: allocate only end_label, use it as else_label too
+        Label_TAC_Opd* end_lbl = TAC_Generator::get_instance()->create_new_label();
+        end_label_id = end_lbl->get_label_id();
+        else_label_id = end_label_id;  // Same label for both
+        delete end_lbl;
     }
 }
 
@@ -680,10 +686,17 @@ TAC_Opd* If_Stmt::generate_tac(list<TAC_Stmt*>& statements) {
     then_stmt->generate_tac(statements);
     statements.push_back(new Goto_TAC_Stmt(end_label));
     
-    // Else branch
-    statements.push_back(new Label_TAC_Stmt(else_label));
-    if(else_stmt) {
-        else_stmt->generate_tac(statements);
+    // Else branch - only print label if it's different from end_label
+    if (else_label_id != end_label_id) {
+        statements.push_back(new Label_TAC_Stmt(else_label));
+        if(else_stmt) {
+            else_stmt->generate_tac(statements);
+        }
+    } else {
+        // else_label is the same as end_label, so condition jumps directly to end
+        if(else_stmt) {
+            else_stmt->generate_tac(statements);
+        }
     }
     
     // End label

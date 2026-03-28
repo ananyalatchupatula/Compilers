@@ -1,43 +1,45 @@
 **PROCEDURE: main
 **BEGIN: RTL Statements
-    store:	a_ <- 2
-    store:	b_ <- 4
-    store:	c_ <- 10
-    store:	d_ <- 3
-    store:	e_ <- 8
-    store:	f_ <- 7
+    iLoad:	v0 <- 2			;; Loading integer number 2
+    store:	a_ <- v0
+    iLoad:	v0 <- 4			;; Loading integer number 4
+    store:	b_ <- v0
+    iLoad:	v0 <- 10			;; Loading integer number 10
+    store:	c_ <- v0
+    iLoad:	v0 <- 3			;; Loading integer number 3
+    store:	d_ <- v0
+    iLoad:	v0 <- 8			;; Loading integer number 8
+    store:	e_ <- v0
+    iLoad:	v0 <- 7			;; Loading integer number 7
+    store:	f_ <- v0
     load:	v0 <- b_			;; Loading variable b_ into register
-    add:	t0 <- v0 , c_
-    store:	temp0 <- t0
+    load:	t1 <- c_			;; Loading variable c_ into register
+    add:	t0 <- v0 , t1
     load:	v0 <- a_			;; Loading variable a_ into register
-    sge:	t0 <- v0 , temp0
-    store:	temp1 <- t0
+    sge:	t0 <- v0 , t0
     load:	v0 <- e_			;; Loading variable e_ into register
-    sub:	t0 <- v0 , a_
-    store:	temp2 <- t0
+    load:	t1 <- a_			;; Loading variable a_ into register
+    sub:	t0 <- v0 , t1
     load:	v0 <- d_			;; Loading variable d_ into register
-    slt:	t0 <- v0 , temp2
-    store:	temp3 <- t0
+    slt:	t1 <- v0 , t0
+    and:	v0 <- t0 , t1
     load:	v0 <- f_			;; Loading variable f_ into register
-    sne:	t0 <- v0 , d_
-    store:	temp5 <- t0
-    load:	v0 <- temp6			;; Loading variable temp6 into register
-    not:	t0 <- v0
-    store:	temp10 <- t0
-    load:	v0 <- temp10			;; Loading variable temp10 into register
+    load:	t2 <- d_			;; Loading variable d_ into register
+    sne:	t1 <- v0 , t2
+    or:	t0 <- v0 , t1
+    not:	v0 <- t0
     bgtz:	v0 , Label1
     load:	v0 <- d_			;; Loading variable d_ into register
-    mul:	t0 <- v0 , e_
-    store:	temp7 <- t0
-    load:	v0 <- temp7			;; Loading variable temp7 into register
-    div:	t0 <- v0 , f_
-    store:	temp8 <- t0
+    load:	t1 <- e_			;; Loading variable e_ into register
+    mul:	t0 <- v0 , t1
+    load:	t1 <- f_			;; Loading variable f_ into register
+    div:	v0 <- t0 , t1
     load:	v0 <- a_			;; Loading variable a_ into register
-    add:	t0 <- v0 , temp8
-    store:	temp9 <- t0
-    store:	a_ <- temp9
+    add:	t0 <- v0 , v0
+    store:	a_ <- t0
     goto:		Label0
 Label1:
-    store:	b_ <- 1
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    store:	b_ <- v0
 Label0:
 **END: RTL Statements

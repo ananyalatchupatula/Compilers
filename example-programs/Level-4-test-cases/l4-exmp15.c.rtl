@@ -1,58 +1,48 @@
 **PROCEDURE: main
 **BEGIN: RTL Statements
-    store:	year_ <- 1990
+    iLoad:	v0 <- 1990			;; Loading integer number 1990
+    store:	year_ <- v0
     load:	v0 <- year_			;; Loading variable year_ into register
-    div:	t0 <- v0 , 400
-    store:	temp0 <- t0
-    load:	v0 <- temp0			;; Loading variable temp0 into register
-    mul:	t0 <- v0 , 400
-    store:	temp1 <- t0
-    load:	v0 <- temp1			;; Loading variable temp1 into register
-    seq:	t0 <- v0 , year_
-    store:	temp2 <- t0
-    load:	v0 <- temp2			;; Loading variable temp2 into register
-    not:	t0 <- v0
-    store:	temp3 <- t0
-    load:	v0 <- temp3			;; Loading variable temp3 into register
+    iLoad:	t1 <- 400			;; Loading integer number 400
+    div:	t0 <- v0 , t1
+    iLoad:	t1 <- 400			;; Loading integer number 400
+    mul:	v0 <- t0 , t1
+    load:	t1 <- year_			;; Loading variable year_ into register
+    seq:	t0 <- v0 , t1
+    not:	v0 <- t0
     bgtz:	v0 , Label1
-    store:	cntr_ <- 1
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    store:	cntr_ <- v0
     goto:		Label0
 Label1:
     load:	v0 <- year_			;; Loading variable year_ into register
-    div:	t0 <- v0 , 100
-    store:	temp4 <- t0
-    load:	v0 <- temp4			;; Loading variable temp4 into register
-    mul:	t0 <- v0 , 100
-    store:	temp5 <- t0
-    load:	v0 <- temp5			;; Loading variable temp5 into register
-    seq:	t0 <- v0 , year_
-    store:	temp6 <- t0
-    load:	v0 <- temp6			;; Loading variable temp6 into register
-    not:	t0 <- v0
-    store:	temp7 <- t0
-    load:	v0 <- temp7			;; Loading variable temp7 into register
+    iLoad:	t1 <- 100			;; Loading integer number 100
+    div:	t0 <- v0 , t1
+    iLoad:	t1 <- 100			;; Loading integer number 100
+    mul:	v0 <- t0 , t1
+    load:	t1 <- year_			;; Loading variable year_ into register
+    seq:	t0 <- v0 , t1
+    not:	v0 <- t0
     bgtz:	v0 , Label3
-    store:	cntr_ <- 0
+    iLoad:	v0 <- 0			;; Loading integer number 0
+    store:	cntr_ <- v0
     goto:		Label2
 Label3:
     load:	v0 <- year_			;; Loading variable year_ into register
-    div:	t0 <- v0 , 4
-    store:	temp8 <- t0
-    load:	v0 <- temp8			;; Loading variable temp8 into register
-    mul:	t0 <- v0 , 4
-    store:	temp9 <- t0
-    load:	v0 <- temp9			;; Loading variable temp9 into register
-    seq:	t0 <- v0 , year_
-    store:	temp10 <- t0
-    load:	v0 <- temp10			;; Loading variable temp10 into register
-    not:	t0 <- v0
-    store:	temp11 <- t0
-    load:	v0 <- temp11			;; Loading variable temp11 into register
+    iLoad:	t1 <- 4			;; Loading integer number 4
+    div:	t0 <- v0 , t1
+    iLoad:	t1 <- 4			;; Loading integer number 4
+    mul:	v0 <- t0 , t1
+    load:	t1 <- year_			;; Loading variable year_ into register
+    seq:	t0 <- v0 , t1
+    not:	v0 <- t0
     bgtz:	v0 , Label5
-    store:	cntr_ <- 1
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    store:	cntr_ <- v0
     goto:		Label4
 Label5:
-    store:	cntr_ <- 0
+    iLoad:	v0 <- 0			;; Loading integer number 0
+    store:	cntr_ <- v0
 Label4:
 Label2:
 Label0:

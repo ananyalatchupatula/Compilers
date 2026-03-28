@@ -16,12 +16,11 @@
     fLoad:	t1 <- 0.00
     sgt:	v0 <- t1 , t1
     not:	t0 <- v0
-    bgtz:	t0 , Label1
+    bgtz:	t0 , Label0
     load:	v0 <- a_			;; Loading variable a_ into register
     fLoad:	t1 <- 1.00
     sub:	t0 <- v0 , t1
     store:	a_ <- t0
     goto:		Label0
-Label1:
 Label0:
 **END: RTL Statements

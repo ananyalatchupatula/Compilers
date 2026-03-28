@@ -28,11 +28,10 @@ Label3:
     load:	t1 <- max_			;; Loading variable max_ into register
     sgt:	t0 <- v0 , t1
     not:	v0 <- t0
-    bgtz:	v0 , Label5
+    bgtz:	v0 , Label4
     load:	v0 <- c_			;; Loading variable c_ into register
     store:	max_ <- v0
     goto:		Label4
-Label5:
 Label4:
 Label2:
 Label0:

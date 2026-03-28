@@ -9,7 +9,7 @@ stemp0 = a_
 goto Label1
 Label0:
 stemp0 = 4
-Label5:
+Label1:
 temp2 = stemp0 > 5
 temp3 = ! temp2
 if(temp3) goto Label3
