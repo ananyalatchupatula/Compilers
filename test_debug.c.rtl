@@ -33,13 +33,13 @@ Label1:
     goto:		Label2
 Label3:
     load:	v0 <- n_			;; Loading variable n_ into register
-    iLoad:	t1 <- 1024			;; Loading integer number 1024
-    sle:	t0 <- v0 , t1
+    iLoad:	t2 <- 1024			;; Loading integer number 1024
+    sle:	t1 <- v0 , t2
     load:	v0 <- 1024			;; Loading variable 1024 into register
     uminus:	t0 <- v0
     load:	v0 <- n_			;; Loading variable n_ into register
     sge:	t1 <- v0 , t0
-    and:	v0 <- t0 , t1
+    and:	v0 <- t1 , t1
     not:	t0 <- v0
     bgtz:	t0 , Label6
 Label4:

@@ -14,26 +14,23 @@
     load:	t1 <- c_			;; Loading variable c_ into register
     add:	t0 <- v0 , t1
     load:	v0 <- a_			;; Loading variable a_ into register
-    load:	t1 <- temp0			;; Loading variable temp0 into register
-    sge:	t0 <- v0 , t1
+    sge:	t0 <- v0 , t0
     load:	v0 <- e_			;; Loading variable e_ into register
     load:	t1 <- d_			;; Loading variable d_ into register
     mul:	t0 <- v0 , t1
     load:	t1 <- c_			;; Loading variable c_ into register
-    div:	t1 <- t0 , t1
+    div:	t0 <- t0 , t1
     load:	v0 <- d_			;; Loading variable d_ into register
-    load:	t1 <- temp3			;; Loading variable temp3 into register
-    sgt:	t0 <- v0 , t1
-    load:	t1 <- temp4			;; Loading variable temp4 into register
-    and:	t1 <- t0 , t1
-    not:	v0 <- t1
-    bgtz:	v0 , Label1
+    sgt:	t1 <- v0 , t0
+    and:	v0 <- t0 , t1
+    not:	t0 <- v0
+    bgtz:	t0 , Label1
     load:	v0 <- a_			;; Loading variable a_ into register
     load:	t1 <- d_			;; Loading variable d_ into register
     mul:	t0 <- v0 , t1
     load:	t1 <- e_			;; Loading variable e_ into register
-    div:	t1 <- t0 , t1
-    store:	a_ <- t1
+    div:	t0 <- t0 , t1
+    store:	a_ <- t0
     goto:		Label0
 Label1:
     load:	v0 <- e_			;; Loading variable e_ into register

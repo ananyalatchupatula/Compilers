@@ -48,34 +48,6 @@ RTL_Opd* RTL_Generator::get_rtl_opd(TAC_Opd *tac_opd) {
 list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
     list<RTL_Stmt*> rtl_stmts;
     map<string, string> temp_to_register;  // Track which register holds which temp value
-    map<string, string> and_op_opd_regs;  // For AND/OR operations, track which register each operand should use
-
-    // First pass: identify AND/OR operations and allocate registers for their operands
-    for (auto tac_stmt : tac_stmts) {
-        Compute_TAC_Stmt *compute = dynamic_cast<Compute_TAC_Stmt*>(tac_stmt);
-        if (compute && (compute->get_op() == Compute_TAC_Stmt::TAC_OP_AND || 
-                       compute->get_op() == Compute_TAC_Stmt::TAC_OP_OR)) {
-            TAC_Opd *opd1 = compute->get_opd1();
-            TAC_Opd *opd2 = compute->get_opd2();
-            string opd1_str = opd1 ? opd1->to_string() : "";
-            string opd2_str = opd2 ? opd2->to_string() : "";
-            
-            // Allocate first operand to t0 if not already assigned
-            if (!opd1_str.empty() && and_op_opd_regs.count(opd1_str) == 0) {
-                and_op_opd_regs[opd1_str] = "t0";
-            }
-            
-            // Allocate second operand to t1 (or t2 if t1 is same as first)
-            if (!opd2_str.empty() && and_op_opd_regs.count(opd2_str) == 0) {
-                if (opd1_str == opd2_str) {
-                    // Same operand used twice (unlikely but possible)
-                    and_op_opd_regs[opd2_str] = "t0";
-                } else {
-                    and_op_opd_regs[opd2_str] = "t1";
-                }
-            }
-        }
-    }
 
     for (auto tac_stmt : tac_stmts) {
         Assign_TAC_Stmt *assign_stmt = dynamic_cast<Assign_TAC_Stmt*>(tac_stmt);
@@ -231,79 +203,37 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                     rtl_op = Compute_RTL_Stmt::RTL_OP_ADD;
             }
 
-            // First, determine destination register (needed for opd2 allocation)
-            string dest_reg = "t0";  // Default for binary ops
-            if (!opd2) {
-                // Unary operation: write to opposite register from input
-                // If input is v0, write to t0; if t0, write to v0; if t1, write to t2; etc.
-                if (src_register == "v0") {
-                    dest_reg = "t0";
-                } else if (src_register == "t0") {
-                    dest_reg = "v0";
-                } else if (src_register == "t1") {
-                    dest_reg = "t2";
-                } else if (src_register == "t2") {
-                    dest_reg = "t1";
-                } else {
-                    dest_reg = "v0";  // fallback
-                }
-            } else if (op == Compute_TAC_Stmt::TAC_OP_AND || op == Compute_TAC_Stmt::TAC_OP_OR) {
-                // AND/OR always write to v0
-                dest_reg = "v0";
-            } else if (and_op_opd_regs.count(result_str)) {
-                // This result is an AND/OR operand - use the allocated register
-                dest_reg = and_op_opd_regs[result_str];
-            }
-            // else: binary operation that's not an AND/OR operand, use default t0
-
-            // Now load operand 2 (knowing what register result will use)
-            string opd2_reg = "t1";  // Default register for opd2
+            // Load operand 2 if it's a binary operation
             if (opd2) {
-                // For AND/OR operands, make sure opd2 doesn't use same register as result
-                if (and_op_opd_regs.count(result_str)) {
-                    // Result is an AND/OR operand, so pick opd2_reg carefully
-                    if (dest_reg == "t0") {
-                        opd2_reg = "t1";  // result in t0, load opd2 to t1
-                    } else if (dest_reg == "t1") {
-                        opd2_reg = "t2";  // result in t1, load opd2 to t2
-                    } else if (dest_reg == "t2") {
-                        opd2_reg = "t1";  // result in t2, load opd2 to t1
-                    }
-                }
-                
                 Const_TAC_Opd *const_opd2 = dynamic_cast<Const_TAC_Opd*>(opd2);
                 if (const_opd2) {
                     string const_str = const_opd2->to_string();
                     if (const_str.find('.') != string::npos) {
                         rtl_stmts.push_back(new Compute_RTL_Stmt(
-                            new Register_RTL_Opd(opd2_reg),
+                            new Register_RTL_Opd("t1"),
                             NULL,
                             Compute_RTL_Stmt::RTL_OP_FLOAD,
                             new Const_RTL_Opd(atof(const_str.c_str()))
                         ));
                     } else {
                         rtl_stmts.push_back(new Compute_RTL_Stmt(
-                            new Register_RTL_Opd(opd2_reg),
+                            new Register_RTL_Opd("t1"),
                             NULL,
                             Compute_RTL_Stmt::RTL_OP_ILOAD,
                             new Const_RTL_Opd(atoi(const_str.c_str()))
                         ));
                     }
                 } else {
-                    // opd2 is not a constant - check if it's a temp in a register first
-                    string opd2_str = opd2->to_string();
-                    if (temp_to_register.count(opd2_str) && !temp_to_register[opd2_str].empty()) {
-                        // opd2 is a temp already in a register, use that register
-                        opd2_reg = temp_to_register[opd2_str];
-                    } else {
-                        // opd2 is a variable or temp not in a register - load it to opd2_reg
-                        rtl_stmts.push_back(new Load_RTL_Stmt(
-                            new Register_RTL_Opd(opd2_reg),
-                            new Memory_RTL_Opd(opd2->to_string())
-                        ));
-                    }
+                    rtl_stmts.push_back(new Load_RTL_Stmt(
+                        new Register_RTL_Opd("t1"),
+                        new Memory_RTL_Opd(opd2->to_string())
+                    ));
                 }
             }
+
+            // For unary operations (NOT, NEG), use v0 as destination (for branching)
+            // For binary operations, use t0
+            string dest_reg = (opd2) ? "t0" : "v0";
 
             // Perform the computation using the right source register
             if (opd2) {
@@ -311,7 +241,7 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                     new Register_RTL_Opd(dest_reg),
                     new Register_RTL_Opd(src_register),
                     rtl_op,
-                    new Register_RTL_Opd(opd2_reg)
+                    new Register_RTL_Opd("t1")
                 ));
             } else {
                 rtl_stmts.push_back(new Compute_RTL_Stmt(

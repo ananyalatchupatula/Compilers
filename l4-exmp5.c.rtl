@@ -14,11 +14,10 @@
     iLoad:	t1 <- 2			;; Loading integer number 2
     sub:	t0 <- v0 , t1
     iLoad:	t2 <- 0			;; Loading integer number 0
-    sne:	t1 <- t0 , t1
-    load:	t1 <- temp2			;; Loading variable temp2 into register
-    and:	t1 <- t0 , t1
-    not:	v0 <- t1
-    bgtz:	v0 , Label5
+    sne:	t1 <- t0 , t2
+    and:	v0 <- t0 , t1
+    not:	t0 <- v0
+    bgtz:	t0 , Label5
     iLoad:	v0 <- 1			;; Loading integer number 1
     goto:		Label6
 Label5:

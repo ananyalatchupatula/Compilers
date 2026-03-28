@@ -15,7 +15,7 @@ Label4:
     iLoad:	v0 <- 4			;; Loading integer number 4
 Label5:
     load:	v0 <- stemp0			;; Loading variable stemp0 into register
-    iLoad:	t2 <- 5			;; Loading integer number 5
+    iLoad:	t1 <- 5			;; Loading integer number 5
     sgt:	t0 <- v0 , t1
     not:	v0 <- t0
     bgtz:	v0 , Label1
