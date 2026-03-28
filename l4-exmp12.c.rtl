@@ -20,7 +20,7 @@
     load:	v0 <- a_			;; Loading variable a_ into register
     iLoad.d:	t1 <- 1.00			;; Loading float number 1.00
     sub:	t0 <- v0 , t1
-    store:	a_ <- t0
+    store.d:	a_ <- t0
     goto:		Label0
 Label0:
 **END: RTL Statements

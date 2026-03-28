@@ -188,40 +188,48 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
             } else if (temp_source && temp_to_register.count(source_str)) {
                 // Source is a temp that's in a register - use that register directly
                 string src_reg = temp_to_register[source_str];
+                bool is_float = float_vars.count(source_str) && float_vars[source_str];
                 if (temp_dest) {
                     // Both are temps - always store to memory (needed for ternary branches)
                     rtl_stmts.push_back(new Store_RTL_Stmt(
                         new Memory_RTL_Opd(dest_str),
-                        new Register_RTL_Opd(src_reg)
+                        new Register_RTL_Opd(src_reg),
+                        is_float
                     ));
                     temp_to_register.erase(dest_str);
                 } else {
                     // Dest is a variable - store to memory
                     rtl_stmts.push_back(new Store_RTL_Stmt(
                         new Memory_RTL_Opd(dest_str),
-                        new Register_RTL_Opd(src_reg)
+                        new Register_RTL_Opd(src_reg),
+                        is_float
                     ));
                     temp_to_register.erase(dest_str);
                 }
                 temp_to_register.erase(source_str);  // source is no longer "hot"
             } else {
                 // Assigning a variable/temp - standard load/store
+                bool src_is_float = float_vars.count(source_str) && float_vars[source_str];
                 rtl_stmts.push_back(new Load_RTL_Stmt(
                     new Register_RTL_Opd("v0"),
-                    new Memory_RTL_Opd(source_str)
+                    new Memory_RTL_Opd(source_str),
+                    src_is_float
                 ));
+                bool dest_is_float = float_vars.count(dest_str) && float_vars[dest_str];
                 if (temp_dest) {
                     // Destination is a temp - always store to memory (needed for ternary branches)
                     rtl_stmts.push_back(new Store_RTL_Stmt(
                         new Memory_RTL_Opd(dest_str),
-                        new Register_RTL_Opd("v0")
+                        new Register_RTL_Opd("v0"),
+                        dest_is_float
                     ));
                     temp_to_register.erase(dest_str);
                 } else {
                     // Destination is a variable - store to memory
                     rtl_stmts.push_back(new Store_RTL_Stmt(
                         new Memory_RTL_Opd(dest_str),
-                        new Register_RTL_Opd("v0")
+                        new Register_RTL_Opd("v0"),
+                        dest_is_float
                     ));
                     temp_to_register.erase(dest_str);
                 }
