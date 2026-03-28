@@ -12,6 +12,7 @@ using namespace std;
 class RTL_Generator {
 private:
     static RTL_Generator *instance;
+    static map<string, bool> float_vars;  // Track which variables are floats
     int label_counter;
     map<string, int> reg_allocation;
     int next_register;
@@ -20,6 +21,12 @@ private:
 
 public:
     static RTL_Generator* get_instance();
+    static bool is_float_var(const string& var_name) {
+        return float_vars.count(var_name) && float_vars[var_name];
+    }
+    static void set_float_var(const string& var_name, bool is_float) {
+        float_vars[var_name] = is_float;
+    }
     void reset();
     int get_next_label();
     string create_label();

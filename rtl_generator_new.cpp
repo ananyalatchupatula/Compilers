@@ -4,6 +4,7 @@
 #include <sstream>
 
 RTL_Generator* RTL_Generator::instance = NULL;
+map<string, bool> RTL_Generator::float_vars;
 
 RTL_Generator::RTL_Generator() : label_counter(0) {}
 
@@ -53,6 +54,56 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
     list<RTL_Stmt*> rtl_stmts;
     map<string, string> temp_to_register;  // Track which register holds which temp value
     map<string, string> and_op_opd_regs;  // For AND/OR operations, track which register each operand should use
+    
+    // Clear and repopulate float_vars for this function
+    float_vars.clear();
+
+    // Pre-pass: identify all float variables and temporaries
+    for (auto tac_stmt : tac_stmts) {
+        Assign_TAC_Stmt *assign = dynamic_cast<Assign_TAC_Stmt*>(tac_stmt);
+        Compute_TAC_Stmt *compute = dynamic_cast<Compute_TAC_Stmt*>(tac_stmt);
+        Print_TAC_Stmt *print = dynamic_cast<Print_TAC_Stmt*>(tac_stmt);
+        Read_TAC_Stmt *read = dynamic_cast<Read_TAC_Stmt*>(tac_stmt);
+        
+        if (assign) {
+            TAC_Opd *result = assign->get_result();
+            TAC_Opd *source = assign->get_opd1();
+            Temp_TAC_Opd *temp = dynamic_cast<Temp_TAC_Opd*>(result);
+            if (temp && temp->get_is_float()) {
+                float_vars[result->to_string()] = true;
+            }
+            // If source is a float constant, mark result as float
+            Const_TAC_Opd *const_src = dynamic_cast<Const_TAC_Opd*>(source);
+            if (const_src && const_src->get_is_float()) {
+                float_vars[result->to_string()] = true;
+            }
+        }
+        if (compute) {
+            TAC_Opd *result = compute->get_result();
+            Temp_TAC_Opd *temp = dynamic_cast<Temp_TAC_Opd*>(result);
+            if (temp && temp->get_is_float()) {
+                float_vars[result->to_string()] = true;
+            }
+            // Check operands for float types to determine if result is float
+            TAC_Opd *opd1 = compute->get_opd1();
+            TAC_Opd *opd2 = compute->get_opd2();
+            bool opd1_float = false, opd2_float = false;
+            
+            Const_TAC_Opd *const_opd1 = dynamic_cast<Const_TAC_Opd*>(opd1);
+            if (const_opd1 && const_opd1->get_is_float()) opd1_float = true;
+            Temp_TAC_Opd *temp_opd1 = dynamic_cast<Temp_TAC_Opd*>(opd1);
+            if (temp_opd1 && temp_opd1->get_is_float()) opd1_float = true;
+            
+            Const_TAC_Opd *const_opd2 = dynamic_cast<Const_TAC_Opd*>(opd2);
+            if (const_opd2 && const_opd2->get_is_float()) opd2_float = true;
+            Temp_TAC_Opd *temp_opd2 = dynamic_cast<Temp_TAC_Opd*>(opd2);
+            if (temp_opd2 && temp_opd2->get_is_float()) opd2_float = true;
+            
+            if (opd1_float || opd2_float) {
+                float_vars[result->to_string()] = true;
+            }
+        }
+    }
 
     // First pass: identify AND/OR operations and allocate registers for their operands
     for (auto tac_stmt : tac_stmts) {

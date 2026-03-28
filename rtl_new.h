@@ -70,6 +70,7 @@ public:
     ~Const_RTL_Opd();
     void print(FILE *file);
     string to_string();
+    bool get_is_float() { return is_float; }
 };
 
 class RTL_Stmt {
@@ -114,9 +115,10 @@ public:
 class Load_RTL_Stmt : public RTL_Stmt {
 private:
     RTL_Opd *dest, *source;
+    bool is_float;
 
 public:
-    Load_RTL_Stmt(RTL_Opd *d, RTL_Opd *s);
+    Load_RTL_Stmt(RTL_Opd *d, RTL_Opd *s, bool float_op = false);
     ~Load_RTL_Stmt();
     void print(FILE *file);
 };
@@ -134,9 +136,10 @@ public:
 class Store_RTL_Stmt : public RTL_Stmt {
 private:
     RTL_Opd *dest, *source;
+    bool is_float;
 
 public:
-    Store_RTL_Stmt(RTL_Opd *d, RTL_Opd *s);
+    Store_RTL_Stmt(RTL_Opd *d, RTL_Opd *s, bool float_op = false);
     ~Store_RTL_Stmt();
     void print(FILE *file);
 };

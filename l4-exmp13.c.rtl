@@ -1,14 +1,14 @@
 **PROCEDURE: main
 **BEGIN: RTL Statements
-    fLoad:	v0 <- 2.30
+    iLoad.d:	v0 <- 2.30			;; Loading float number 2.30
     store:	a_ <- v0
-    fLoad:	v0 <- 3.40
+    iLoad.d:	v0 <- 3.40			;; Loading float number 3.40
     store:	b_ <- v0
-    fLoad:	v0 <- 4.50
+    iLoad.d:	v0 <- 4.50			;; Loading float number 4.50
     store:	c_ <- v0
-    fLoad:	v0 <- 5.60
+    iLoad.d:	v0 <- 5.60			;; Loading float number 5.60
     store:	d_ <- v0
-    fLoad:	v0 <- 6.70
+    iLoad.d:	v0 <- 6.70			;; Loading float number 6.70
     store:	e_ <- v0
     load:	v0 <- b_			;; Loading variable b_ into register
     load:	t1 <- c_			;; Loading variable c_ into register

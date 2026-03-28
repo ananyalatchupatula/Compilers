@@ -79,23 +79,40 @@ Compute_RTL_Stmt::~Compute_RTL_Stmt() {
 }
 
 void Compute_RTL_Stmt::print(FILE *file) {
+    // Check if this is a float operation
+    bool is_float_op = (op == RTL_OP_FLOAD);
+    
+    // Check if any operand is a float constant
+    if (!is_float_op && opd2) {
+        Const_RTL_Opd *const_opd2 = dynamic_cast<Const_RTL_Opd*>(opd2);
+        if (const_opd2 && const_opd2->get_is_float()) {
+            is_float_op = true;
+        }
+    }
+    if (!is_float_op && opd1) {
+        Const_RTL_Opd *const_opd1 = dynamic_cast<Const_RTL_Opd*>(opd1);
+        if (const_opd1 && const_opd1->get_is_float()) {
+            is_float_op = true;
+        }
+    }
+    
     const char *op_str = "";
     switch (op) {
-        case RTL_OP_ILOAD: op_str = "iLoad"; break;
-        case RTL_OP_FLOAD: op_str = "fLoad"; break;
-        case RTL_OP_ADD: op_str = "add"; break;
-        case RTL_OP_SUB: op_str = "sub"; break;
-        case RTL_OP_MUL: op_str = "mul"; break;
-        case RTL_OP_DIV: op_str = "div"; break;
-        case RTL_OP_SLT: op_str = "slt"; break;
-        case RTL_OP_SGT: op_str = "sgt"; break;
-        case RTL_OP_SLE: op_str = "sle"; break;
-        case RTL_OP_SGE: op_str = "sge"; break;
-        case RTL_OP_SEQ: op_str = "seq"; break;
-        case RTL_OP_SNE: op_str = "sne"; break;
+        case RTL_OP_ILOAD: op_str = is_float_op ? "iLoad.d" : "iLoad"; break;
+        case RTL_OP_FLOAD: op_str = "iLoad.d"; break;
+        case RTL_OP_ADD: op_str = is_float_op ? "add.d" : "add"; break;
+        case RTL_OP_SUB: op_str = is_float_op ? "sub.d" : "sub"; break;
+        case RTL_OP_MUL: op_str = is_float_op ? "mul.d" : "mul"; break;
+        case RTL_OP_DIV: op_str = is_float_op ? "div.d" : "div"; break;
+        case RTL_OP_SLT: op_str = is_float_op ? "slt.d" : "slt"; break;
+        case RTL_OP_SGT: op_str = is_float_op ? "sgt.d" : "sgt"; break;
+        case RTL_OP_SLE: op_str = is_float_op ? "sle.d" : "sle"; break;
+        case RTL_OP_SGE: op_str = is_float_op ? "sge.d" : "sge"; break;
+        case RTL_OP_SEQ: op_str = is_float_op ? "seq.d" : "seq"; break;
+        case RTL_OP_SNE: op_str = is_float_op ? "sne.d" : "sne"; break;
         case RTL_OP_NOT: op_str = "not"; break;
         case RTL_OP_NEG: op_str = "neg"; break;
-        case RTL_OP_UMINUS: op_str = "uminus"; break;
+        case RTL_OP_UMINUS: op_str = is_float_op ? "uminus.d" : "uminus"; break;
         case RTL_OP_AND: op_str = "and"; break;
         case RTL_OP_OR: op_str = "or"; break;
     }
@@ -109,8 +126,11 @@ void Compute_RTL_Stmt::print(FILE *file) {
         if (opd2) {
             opd2->print(file);
         }
-        if (op == RTL_OP_ILOAD) {
+        if (op == RTL_OP_ILOAD && !is_float_op) {
             fprintf(file, "\t\t\t;; Loading integer number ");
+            if (opd2) opd2->print(file);
+        } else if (op == RTL_OP_FLOAD || is_float_op) {
+            fprintf(file, "\t\t\t;; Loading float number ");
             if (opd2) opd2->print(file);
         }
     } else {
@@ -123,14 +143,14 @@ void Compute_RTL_Stmt::print(FILE *file) {
     fprintf(file, "\n");
 }
 
-Load_RTL_Stmt::Load_RTL_Stmt(RTL_Opd *d, RTL_Opd *s) : dest(d), source(s) {}
+Load_RTL_Stmt::Load_RTL_Stmt(RTL_Opd *d, RTL_Opd *s, bool float_op) : dest(d), source(s), is_float(float_op) {}
 Load_RTL_Stmt::~Load_RTL_Stmt() {
     delete dest;
     delete source;
 }
 
 void Load_RTL_Stmt::print(FILE *file) {
-    fprintf(file, "    load:\t");
+    fprintf(file, "    load%s:\t", is_float ? ".d" : "");
     dest->print(file);
     fprintf(file, " <- ");
     source->print(file);
@@ -153,14 +173,14 @@ void Loadaddr_RTL_Stmt::print(FILE *file) {
     fprintf(file, "\n");
 }
 
-Store_RTL_Stmt::Store_RTL_Stmt(RTL_Opd *d, RTL_Opd *s) : dest(d), source(s) {}
+Store_RTL_Stmt::Store_RTL_Stmt(RTL_Opd *d, RTL_Opd *s, bool float_op) : dest(d), source(s), is_float(float_op) {}
 Store_RTL_Stmt::~Store_RTL_Stmt() {
     delete dest;
     delete source;
 }
 
 void Store_RTL_Stmt::print(FILE *file) {
-    fprintf(file, "    store:\t");
+    fprintf(file, "    store%s:\t", is_float ? ".d" : "");
     dest->print(file);
     fprintf(file, " <- ");
     source->print(file);
