@@ -120,8 +120,12 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                     ));
                 }
                 if (temp_dest) {
-                    // Destination is a temp - just track the register
-                    temp_to_register[dest_str] = "v0";
+                    // Destination is a temp - always store to memory (needed for ternary branches)
+                    rtl_stmts.push_back(new Store_RTL_Stmt(
+                        new Memory_RTL_Opd(dest_str),
+                        new Register_RTL_Opd("v0")
+                    ));
+                    temp_to_register.erase(dest_str);
                 } else {
                     // Destination is a variable - store to memory
                     rtl_stmts.push_back(new Store_RTL_Stmt(
@@ -134,8 +138,12 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                 // Source is a temp that's in a register - use that register directly
                 string src_reg = temp_to_register[source_str];
                 if (temp_dest) {
-                    // Both are temps - just track the register for destination
-                    temp_to_register[dest_str] = src_reg;
+                    // Both are temps - always store to memory (needed for ternary branches)
+                    rtl_stmts.push_back(new Store_RTL_Stmt(
+                        new Memory_RTL_Opd(dest_str),
+                        new Register_RTL_Opd(src_reg)
+                    ));
+                    temp_to_register.erase(dest_str);
                 } else {
                     // Dest is a variable - store to memory
                     rtl_stmts.push_back(new Store_RTL_Stmt(
@@ -152,8 +160,12 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                     new Memory_RTL_Opd(source_str)
                 ));
                 if (temp_dest) {
-                    // Destination is a temp - just track the register
-                    temp_to_register[dest_str] = "v0";
+                    // Destination is a temp - always store to memory (needed for ternary branches)
+                    rtl_stmts.push_back(new Store_RTL_Stmt(
+                        new Memory_RTL_Opd(dest_str),
+                        new Register_RTL_Opd("v0")
+                    ));
+                    temp_to_register.erase(dest_str);
                 } else {
                     // Destination is a variable - store to memory
                     rtl_stmts.push_back(new Store_RTL_Stmt(

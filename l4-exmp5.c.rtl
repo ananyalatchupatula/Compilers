@@ -19,9 +19,11 @@
     not:	t0 <- v0
     bgtz:	t0 , Label0
     iLoad:	v0 <- 1			;; Loading integer number 1
+    store:	stemp0 <- v0
     goto:		Label1
 Label0:
     iLoad:	v0 <- 0			;; Loading integer number 0
+    store:	stemp0 <- v0
 Label1:
     load:	v0 <- stemp0			;; Loading variable stemp0 into register
     store:	ans_ <- v0
