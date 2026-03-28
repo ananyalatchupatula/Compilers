@@ -14,6 +14,10 @@ RTL_Generator* RTL_Generator::get_instance() {
     return instance;
 }
 
+void RTL_Generator::reset() {
+    label_counter = 0;
+}
+
 int RTL_Generator::get_next_label() {
     return label_counter++;
 }
@@ -175,10 +179,32 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                 src_register = temp_to_register[opd1_str];
             } else {
                 // Load operand 1 into v0
-                rtl_stmts.push_back(new Load_RTL_Stmt(
-                    new Register_RTL_Opd("v0"),
-                    new Memory_RTL_Opd(opd1_str)
-                ));
+                Const_TAC_Opd *const_opd1 = dynamic_cast<Const_TAC_Opd*>(opd1);
+                if (const_opd1) {
+                    // Operand 1 is a constant - use iLoad/fLoad
+                    string const_str = const_opd1->to_string();
+                    if (const_str.find('.') != string::npos) {
+                        rtl_stmts.push_back(new Compute_RTL_Stmt(
+                            new Register_RTL_Opd("v0"),
+                            NULL,
+                            Compute_RTL_Stmt::RTL_OP_FLOAD,
+                            new Const_RTL_Opd(atof(const_str.c_str()))
+                        ));
+                    } else {
+                        rtl_stmts.push_back(new Compute_RTL_Stmt(
+                            new Register_RTL_Opd("v0"),
+                            NULL,
+                            Compute_RTL_Stmt::RTL_OP_ILOAD,
+                            new Const_RTL_Opd(atoi(const_str.c_str()))
+                        ));
+                    }
+                } else {
+                    // Operand 1 is a variable - use load
+                    rtl_stmts.push_back(new Load_RTL_Stmt(
+                        new Register_RTL_Opd("v0"),
+                        new Memory_RTL_Opd(opd1_str)
+                    ));
+                }
             }
 
             // Map TAC operations to RTL operations
@@ -231,8 +257,10 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                     rtl_op = Compute_RTL_Stmt::RTL_OP_ADD;
             }
 
-            // First, determine destination register (needed for opd2 allocation)
+            // For unary operations, determine destination register based on source
             string dest_reg = "t0";  // Default for binary ops
+            string opd2_reg = "t1";  // Default register for opd2
+            
             if (!opd2) {
                 // Unary operation: write to opposite register from input
                 // If input is v0, write to t0; if t0, write to v0; if t1, write to t2; etc.
@@ -254,24 +282,51 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                 // This result is an AND/OR operand - use the allocated register
                 dest_reg = and_op_opd_regs[result_str];
             }
-            // else: binary operation that's not an AND/OR operand, use default t0
-
-            // Now load operand 2 (knowing what register result will use)
-            string opd2_reg = "t1";  // Default register for opd2
+            
+            // Now load operand 2
             if (opd2) {
-                // For AND/OR operands, make sure opd2 doesn't use same register as result
+                // First pass: determine what register opd2 will be in
+                Const_TAC_Opd *const_opd2 = dynamic_cast<Const_TAC_Opd*>(opd2);
+                string opd2_str = opd2->to_string();
+                
                 if (and_op_opd_regs.count(result_str)) {
                     // Result is an AND/OR operand, so pick opd2_reg carefully
                     if (dest_reg == "t0") {
-                        opd2_reg = "t1";  // result in t0, load opd2 to t1
+                        opd2_reg = "t1";
                     } else if (dest_reg == "t1") {
-                        opd2_reg = "t2";  // result in t1, load opd2 to t2
+                        opd2_reg = "t2";
                     } else if (dest_reg == "t2") {
-                        opd2_reg = "t1";  // result in t2, load opd2 to t1
+                        opd2_reg = "t1";
+                    }
+                } else if (!const_opd2) {
+                    // For non-constant opd2, check if it's already in a register
+                    if (temp_to_register.count(opd2_str) && !temp_to_register[opd2_str].empty()) {
+                        opd2_reg = temp_to_register[opd2_str];
+                    } else {
+                        // Will be loaded to opd2_reg - default is t1
+                        opd2_reg = "t1";
                     }
                 }
                 
-                Const_TAC_Opd *const_opd2 = dynamic_cast<Const_TAC_Opd*>(opd2);
+                // Now choose dest_reg for binary operations to avoid conflicts
+                if (!and_op_opd_regs.count(result_str)) {
+                    // Binary operation that's not an AND/OR operand
+                    // Choose dest_reg to avoid src_register and opd2_reg
+                    if (src_register != "v0" && opd2_reg != "v0") {
+                        dest_reg = "v0";
+                    } else if (src_register != "t0" && opd2_reg != "t0") {
+                        dest_reg = "t0";
+                    } else if (src_register != "t1" && opd2_reg != "t1") {
+                        dest_reg = "t1";
+                    } else if (src_register != "t2" && opd2_reg != "t2") {
+                        dest_reg = "t2";
+                    } else {
+                        // Fallback - shouldn't happen normally
+                        dest_reg = "v0";
+                    }
+                }
+                
+                // Now load operand 2
                 if (const_opd2) {
                     string const_str = const_opd2->to_string();
                     if (const_str.find('.') != string::npos) {
@@ -291,7 +346,6 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                     }
                 } else {
                     // opd2 is not a constant - check if it's a temp in a register first
-                    string opd2_str = opd2->to_string();
                     if (temp_to_register.count(opd2_str) && !temp_to_register[opd2_str].empty()) {
                         // opd2 is a temp already in a register, use that register
                         opd2_reg = temp_to_register[opd2_str];

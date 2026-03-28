@@ -10,9 +10,9 @@
     load:	v0 <- a_			;; Loading variable a_ into register
     load:	t1 <- b_			;; Loading variable b_ into register
     sub:	t0 <- v0 , t1
-    slt:	t0 <- t0 , t0
-    not:	v0 <- t0
-    bgtz:	v0 , Label0
+    slt:	v0 <- t0 , t0
+    not:	t0 <- v0
+    bgtz:	t0 , Label0
     load:	v0 <- a_			;; Loading variable a_ into register
     load:	t1 <- b_			;; Loading variable b_ into register
     mul:	t0 <- v0 , t1

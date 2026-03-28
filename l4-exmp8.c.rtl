@@ -22,7 +22,7 @@ Label13:
     iLoad:	t1 <- 1			;; Loading integer number 1
     add:	t0 <- v0 , t1
     store:	a_ <- t0
-    load:	v0 <- 2			;; Loading variable 2 into register
+    iLoad:	v0 <- 2			;; Loading integer number 2
     iLoad:	t1 <- 3			;; Loading integer number 3
     sge:	t0 <- v0 , t1
     not:	v0 <- t0
@@ -34,7 +34,7 @@ Label13:
     goto:		Label0
 Label1:
 Label0:
-    load:	v0 <- 3			;; Loading variable 3 into register
+    iLoad:	v0 <- 3			;; Loading integer number 3
     iLoad:	t1 <- 2			;; Loading integer number 2
     sge:	t0 <- v0 , t1
     not:	v0 <- t0
@@ -46,7 +46,7 @@ Label0:
     goto:		Label2
 Label3:
 Label2:
-    load:	v0 <- 2			;; Loading variable 2 into register
+    iLoad:	v0 <- 2			;; Loading integer number 2
     iLoad:	t1 <- 3			;; Loading integer number 3
     sle:	t0 <- v0 , t1
     not:	v0 <- t0
@@ -58,7 +58,7 @@ Label2:
     goto:		Label4
 Label5:
 Label4:
-    load:	v0 <- 2			;; Loading variable 2 into register
+    iLoad:	v0 <- 2			;; Loading integer number 2
     iLoad:	t1 <- 3			;; Loading integer number 3
     sne:	t0 <- v0 , t1
     not:	v0 <- t0
@@ -70,7 +70,7 @@ Label4:
     goto:		Label6
 Label7:
 Label6:
-    load:	v0 <- 2			;; Loading variable 2 into register
+    iLoad:	v0 <- 2			;; Loading integer number 2
     iLoad:	t1 <- 3			;; Loading integer number 3
     seq:	t0 <- v0 , t1
     not:	v0 <- t0
@@ -82,7 +82,7 @@ Label6:
     goto:		Label8
 Label9:
 Label8:
-    load:	v0 <- 4			;; Loading variable 4 into register
+    iLoad:	v0 <- 4			;; Loading integer number 4
     iLoad:	t1 <- 3			;; Loading integer number 3
     sge:	t0 <- v0 , t1
     not:	v0 <- t0

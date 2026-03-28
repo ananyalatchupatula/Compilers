@@ -332,6 +332,7 @@ func_def
             }
             
             if(show_rtl && rtl_file && !tac_stmts.empty()) {
+                RTL_Generator::get_instance()->reset();
                 list<RTL_Stmt*> rtl_stmts = RTL_Generator::get_instance()->generate_rtl(tac_stmts);
                 fprintf(rtl_file, "**PROCEDURE: %s\n", $2);
                 fprintf(rtl_file, "**BEGIN: RTL Statements\n");

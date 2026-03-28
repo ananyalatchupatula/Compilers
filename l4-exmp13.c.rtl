@@ -19,9 +19,9 @@
     load:	t1 <- d_			;; Loading variable d_ into register
     mul:	t0 <- v0 , t1
     load:	t1 <- c_			;; Loading variable c_ into register
-    div:	t0 <- t0 , t1
+    div:	v0 <- t0 , t1
     load:	v0 <- d_			;; Loading variable d_ into register
-    sgt:	t1 <- v0 , t0
+    sgt:	t1 <- v0 , v0
     and:	v0 <- t0 , t1
     not:	t0 <- v0
     bgtz:	t0 , Label1
@@ -29,8 +29,8 @@
     load:	t1 <- d_			;; Loading variable d_ into register
     mul:	t0 <- v0 , t1
     load:	t1 <- e_			;; Loading variable e_ into register
-    div:	t0 <- t0 , t1
-    store:	a_ <- t0
+    div:	v0 <- t0 , t1
+    store:	a_ <- v0
     goto:		Label0
 Label1:
     load:	v0 <- e_			;; Loading variable e_ into register

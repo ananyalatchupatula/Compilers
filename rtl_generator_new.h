@@ -20,6 +20,7 @@ private:
 
 public:
     static RTL_Generator* get_instance();
+    void reset();
     int get_next_label();
     string create_label();
     list<RTL_Stmt*> generate_rtl(list<TAC_Stmt*> &tac_stmts);

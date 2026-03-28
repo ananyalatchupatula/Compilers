@@ -35,7 +35,7 @@ Label3:
     load:	v0 <- n_			;; Loading variable n_ into register
     iLoad:	t1 <- 1024			;; Loading integer number 1024
     sle:	t0 <- v0 , t1
-    load:	v0 <- 1024			;; Loading variable 1024 into register
+    iLoad:	v0 <- 1024			;; Loading integer number 1024
     uminus:	t0 <- v0
     load:	v0 <- n_			;; Loading variable n_ into register
     sge:	t1 <- v0 , t0

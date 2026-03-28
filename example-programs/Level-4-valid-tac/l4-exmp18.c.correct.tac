@@ -17,10 +17,9 @@ goto Label2
 Label3:
 temp4 = c_ > max_
 temp5 = ! temp4
-if(temp5) goto Label5
+if(temp5) goto Label4
 max_ = c_
 goto Label4
-Label5:
 Label4:
 Label2:
 Label0:

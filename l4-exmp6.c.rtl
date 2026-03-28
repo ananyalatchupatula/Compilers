@@ -4,7 +4,7 @@
     store:	a_ <- v0
     iLoad:	v0 <- 1			;; Loading integer number 1
     store:	b_ <- v0
-    load:	v0 <- 3			;; Loading variable 3 into register
+    iLoad:	v0 <- 3			;; Loading integer number 3
     iLoad:	t1 <- 2			;; Loading integer number 2
     sgt:	t0 <- v0 , t1
     not:	v0 <- t0

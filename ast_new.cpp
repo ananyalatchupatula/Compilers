@@ -394,6 +394,17 @@ void Ternary_Expr_Ast::pre_allocate_temps() {
         not_temp_id = TAC_Generator::get_instance()->get_temp_counter();
         TAC_Generator::get_instance()->create_new_temp();
     }
+    
+    // Allocate labels for this ternary AFTER temps
+    if (false_label_id == -1) {
+        Label_TAC_Opd* false_lbl = TAC_Generator::get_instance()->create_new_label();
+        false_label_id = false_lbl->get_label_id();
+        delete false_lbl;
+        
+        Label_TAC_Opd* end_lbl = TAC_Generator::get_instance()->create_new_label();
+        end_label_id = end_lbl->get_label_id();
+        delete end_lbl;
+    }
 }
 
 TAC_Opd* Ternary_Expr_Ast::generate_tac(list<TAC_Stmt*>& statements) {

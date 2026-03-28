@@ -164,6 +164,8 @@ private:
     Expression_Ast* true_expr;
     Expression_Ast* false_expr;
     int not_temp_id = -1;  // Pre-allocated NOT temp ID
+    int false_label_id = -1;  // Pre-allocated false label ID
+    int end_label_id = -1;    // Pre-allocated end label ID
     
 public:
     Ternary_Expr_Ast(Expression_Ast* cond, Expression_Ast* true_e, Expression_Ast* false_e);

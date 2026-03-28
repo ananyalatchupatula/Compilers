@@ -8,15 +8,15 @@
     load:	t1 <- c_			;; Loading variable c_ into register
     div:	t0 <- v0 , t1
     load:	t1 <- a_			;; Loading variable a_ into register
-    div:	t0 <- t0 , t1
+    div:	v0 <- t0 , t1
     load:	t1 <- b_			;; Loading variable b_ into register
-    mul:	t0 <- t0 , t1
+    mul:	t0 <- v0 , t1
     load:	v0 <- a_			;; Loading variable a_ into register
-    add:	t0 <- v0 , t0
+    add:	t1 <- v0 , t0
     fLoad:	t1 <- 0.00
-    sgt:	t0 <- t0 , t1
-    not:	v0 <- t0
-    bgtz:	v0 , Label1
+    sgt:	v0 <- t1 , t1
+    not:	t0 <- v0
+    bgtz:	t0 , Label1
     load:	v0 <- a_			;; Loading variable a_ into register
     fLoad:	t1 <- 1.00
     sub:	t0 <- v0 , t1

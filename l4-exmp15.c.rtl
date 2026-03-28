@@ -6,9 +6,9 @@
     iLoad:	t1 <- 400			;; Loading integer number 400
     div:	t0 <- v0 , t1
     iLoad:	t1 <- 400			;; Loading integer number 400
-    mul:	t0 <- t0 , t1
+    mul:	v0 <- t0 , t1
     load:	t1 <- year_			;; Loading variable year_ into register
-    seq:	t0 <- t0 , t1
+    seq:	t0 <- v0 , t1
     not:	v0 <- t0
     bgtz:	v0 , Label1
     iLoad:	v0 <- 1			;; Loading integer number 1
@@ -19,9 +19,9 @@ Label1:
     iLoad:	t1 <- 100			;; Loading integer number 100
     div:	t0 <- v0 , t1
     iLoad:	t1 <- 100			;; Loading integer number 100
-    mul:	t0 <- t0 , t1
+    mul:	v0 <- t0 , t1
     load:	t1 <- year_			;; Loading variable year_ into register
-    seq:	t0 <- t0 , t1
+    seq:	t0 <- v0 , t1
     not:	v0 <- t0
     bgtz:	v0 , Label3
     iLoad:	v0 <- 0			;; Loading integer number 0
@@ -32,9 +32,9 @@ Label3:
     iLoad:	t1 <- 4			;; Loading integer number 4
     div:	t0 <- v0 , t1
     iLoad:	t1 <- 4			;; Loading integer number 4
-    mul:	t0 <- t0 , t1
+    mul:	v0 <- t0 , t1
     load:	t1 <- year_			;; Loading variable year_ into register
-    seq:	t0 <- t0 , t1
+    seq:	t0 <- v0 , t1
     not:	v0 <- t0
     bgtz:	v0 , Label5
     iLoad:	v0 <- 1			;; Loading integer number 1

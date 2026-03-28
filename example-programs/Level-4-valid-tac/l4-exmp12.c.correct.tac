@@ -8,10 +8,9 @@ temp2 = temp1 * b_
 temp3 = a_ + temp2
 temp4 = temp3 > 0.00
 temp6 = ! temp4
-if(temp6) goto Label1
+if(temp6) goto Label0
 temp5 = a_ - 1.00
 a_ = temp5
 goto Label0
-Label1:
 Label0:
 **END: Three Address Code Statements

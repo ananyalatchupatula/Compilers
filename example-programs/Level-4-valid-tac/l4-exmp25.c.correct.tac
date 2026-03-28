@@ -15,10 +15,9 @@ goto Label0
 Label1:
 temp3 = number_ < 3
 temp4 = ! temp3
-if(temp4) goto Label3
+if(temp4) goto Label2
 number_ = 5
 goto Label2
-Label3:
 Label2:
 temp5 = sum_ + number_
 sum_ = temp5

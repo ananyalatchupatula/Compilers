@@ -21,9 +21,8 @@ a_ = temp5
 temp6 = - a_
 temp7 = temp6 > 30
 temp8 = ! temp7
-if(temp8) goto Label5
+if(temp8) goto Label4
 a_ = 50
 goto Label4
-Label5:
 Label4:
 **END: Three Address Code Statements

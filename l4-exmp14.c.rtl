@@ -26,16 +26,16 @@
     load:	v0 <- f_			;; Loading variable f_ into register
     load:	t2 <- d_			;; Loading variable d_ into register
     sne:	t1 <- v0 , t2
-    or:	v0 <- v0 , t1
-    not:	t0 <- v0
-    bgtz:	t0 , Label1
+    or:	t0 <- v0 , t1
+    not:	v0 <- t0
+    bgtz:	v0 , Label1
     load:	v0 <- d_			;; Loading variable d_ into register
     load:	t1 <- e_			;; Loading variable e_ into register
     mul:	t0 <- v0 , t1
     load:	t1 <- f_			;; Loading variable f_ into register
-    div:	t0 <- t0 , t1
+    div:	v0 <- t0 , t1
     load:	v0 <- a_			;; Loading variable a_ into register
-    add:	t0 <- v0 , t0
+    add:	t0 <- v0 , v0
     store:	a_ <- t0
     goto:		Label0
 Label1:
