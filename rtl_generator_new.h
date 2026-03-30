@@ -13,6 +13,7 @@ class RTL_Generator {
 private:
     static RTL_Generator *instance;
     static map<string, bool> float_vars;  // Track which variables are floats
+    static map<string, int> string_indices;  // Track string literals to indices
     int label_counter;
     map<string, int> reg_allocation;
     int next_register;
@@ -26,6 +27,15 @@ public:
     }
     static void set_float_var(const string& var_name, bool is_float) {
         float_vars[var_name] = is_float;
+    }
+    static int get_string_index(const string& str_value) {
+        if (string_indices.count(str_value) == 0) {
+            string_indices[str_value] = string_indices.size();
+        }
+        return string_indices[str_value];
+    }
+    static map<string, int> get_string_indices() {
+        return string_indices;
     }
     void reset();
     int get_next_label();

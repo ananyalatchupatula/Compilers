@@ -5,6 +5,7 @@
 
 RTL_Generator* RTL_Generator::instance = NULL;
 map<string, bool> RTL_Generator::float_vars;
+map<string, int> RTL_Generator::string_indices;
 
 // Helper function to get register name based on float type
 // Integer regs: v0, t0, t1, t2
@@ -30,6 +31,7 @@ RTL_Generator* RTL_Generator::get_instance() {
 
 void RTL_Generator::reset() {
     label_counter = 0;
+    string_indices.clear();
 }
 
 int RTL_Generator::get_next_label() {
@@ -612,10 +614,18 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                 
                 // Load value to print into a0 (argument register)
                 if (is_string) {
-                    // For strings, use load_addr with the string constant
+                    // For strings, use load_addr with a string label
+                    string str_value = const_opd->get_string_value();
+                    // Remove surrounding quotes from string value
+                    if (!str_value.empty() && str_value[0] == '"' && str_value[str_value.length()-1] == '"') {
+                        str_value = str_value.substr(1, str_value.length() - 2);
+                    }
+                    int str_index = get_string_index(str_value);
+                    string str_label = "_str_" + to_string(str_index);
                     rtl_stmts.push_back(new Loadaddr_RTL_Stmt(
                         new Register_RTL_Opd("a0"),
-                        new Memory_RTL_Opd(const_opd->get_string_value())
+                        new Memory_RTL_Opd(str_label),
+                        str_value  // Pass unquoted string value for comment
                     ));
                 } else {
                     // For variables/integers, use load

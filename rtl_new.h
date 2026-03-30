@@ -127,9 +127,10 @@ public:
 class Loadaddr_RTL_Stmt : public RTL_Stmt {
 private:
     RTL_Opd *dest, *source;
+    string string_value;  // For comment tracking
 
 public:
-    Loadaddr_RTL_Stmt(RTL_Opd *d, RTL_Opd *s);
+    Loadaddr_RTL_Stmt(RTL_Opd *d, RTL_Opd *s, string str_val = "");
     ~Loadaddr_RTL_Stmt();
     void print(FILE *file);
 };

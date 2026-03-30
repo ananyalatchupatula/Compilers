@@ -186,7 +186,7 @@ void Load_RTL_Stmt::print(FILE *file) {
     fprintf(file, " into register\n");
 }
 
-Loadaddr_RTL_Stmt::Loadaddr_RTL_Stmt(RTL_Opd *d, RTL_Opd *s) : dest(d), source(s) {}
+Loadaddr_RTL_Stmt::Loadaddr_RTL_Stmt(RTL_Opd *d, RTL_Opd *s, string str_val) : dest(d), source(s), string_value(str_val) {}
 Loadaddr_RTL_Stmt::~Loadaddr_RTL_Stmt() {
     delete dest;
     delete source;
@@ -197,6 +197,9 @@ void Loadaddr_RTL_Stmt::print(FILE *file) {
     dest->print(file);
     fprintf(file, " <- ");
     source->print(file);
+    if (!string_value.empty()) {
+        fprintf(file, "\t\t\t;; String = \"%s\"", string_value.c_str());
+    }
     fprintf(file, "\n");
 }
 
