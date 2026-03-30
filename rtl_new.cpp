@@ -17,6 +17,10 @@ string Register_RTL_Opd::get_name() {
     return reg_name;
 }
 
+bool Register_RTL_Opd::is_float_register() {
+    return (reg_name == "f2" || reg_name == "f4" || reg_name == "f6");
+}
+
 Memory_RTL_Opd::Memory_RTL_Opd(string name) : var_name(name) {}
 Memory_RTL_Opd::~Memory_RTL_Opd() {}
 
@@ -53,6 +57,7 @@ Const_RTL_Opd::~Const_RTL_Opd() {}
 
 void Const_RTL_Opd::print(FILE *file) {
     if (is_float) {
+        // Print with 2 decimal places (removes trailing zeros automatically)
         fprintf(file, "%.2f", float_value);
     } else {
         fprintf(file, "%d", int_value);
@@ -62,7 +67,7 @@ void Const_RTL_Opd::print(FILE *file) {
 string Const_RTL_Opd::to_string() {
     char buf[32];
     if (is_float) {
-        snprintf(buf, sizeof(buf), "%.2f", float_value);
+        snprintf(buf, sizeof(buf), "%.6f", float_value);
     } else {
         snprintf(buf, sizeof(buf), "%d", int_value);
     }
@@ -82,6 +87,14 @@ void Compute_RTL_Stmt::print(FILE *file) {
     // Check if this is a float operation
     bool is_float_op = (op == RTL_OP_FLOAD);
     
+    // Check if destination is a float register
+    if (!is_float_op && dest) {
+        Register_RTL_Opd *reg_dest = dynamic_cast<Register_RTL_Opd*>(dest);
+        if (reg_dest && reg_dest->is_float_register()) {
+            is_float_op = true;
+        }
+    }
+    
     // Check if any operand is a float constant
     if (!is_float_op && opd2) {
         Const_RTL_Opd *const_opd2 = dynamic_cast<Const_RTL_Opd*>(opd2);
@@ -92,6 +105,20 @@ void Compute_RTL_Stmt::print(FILE *file) {
     if (!is_float_op && opd1) {
         Const_RTL_Opd *const_opd1 = dynamic_cast<Const_RTL_Opd*>(opd1);
         if (const_opd1 && const_opd1->get_is_float()) {
+            is_float_op = true;
+        }
+    }
+    
+    // Check if any operand register is a float register
+    if (!is_float_op && opd1) {
+        Register_RTL_Opd *reg_opd1 = dynamic_cast<Register_RTL_Opd*>(opd1);
+        if (reg_opd1 && reg_opd1->is_float_register()) {
+            is_float_op = true;
+        }
+    }
+    if (!is_float_op && opd2) {
+        Register_RTL_Opd *reg_opd2 = dynamic_cast<Register_RTL_Opd*>(opd2);
+        if (reg_opd2 && reg_opd2->is_float_register()) {
             is_float_op = true;
         }
     }

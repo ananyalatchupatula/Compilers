@@ -32,6 +32,7 @@ public:
     void print(FILE *file);
     string to_string();
     string get_name();
+    bool is_float_register();
 };
 
 class Memory_RTL_Opd : public RTL_Opd {

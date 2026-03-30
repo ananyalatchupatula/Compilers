@@ -6,6 +6,19 @@
 RTL_Generator* RTL_Generator::instance = NULL;
 map<string, bool> RTL_Generator::float_vars;
 
+// Helper function to get register name based on float type
+// Integer regs: v0, t0, t1, t2
+// Float regs: f2, f4, f6
+static string get_register(const string& int_reg, bool is_float) {
+    if (!is_float) return int_reg;
+    
+    if (int_reg == "v0") return "f2";
+    if (int_reg == "t0") return "f4";
+    if (int_reg == "t1") return "f6";
+    if (int_reg == "t2") return "f2";  // reuse f2 for t2 equivalents
+    return int_reg;  // fallback
+}
+
 RTL_Generator::RTL_Generator() : label_counter(0) {}
 
 RTL_Generator* RTL_Generator::get_instance() {
@@ -93,14 +106,27 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
             if (const_opd1 && const_opd1->get_is_float()) opd1_float = true;
             Temp_TAC_Opd *temp_opd1 = dynamic_cast<Temp_TAC_Opd*>(opd1);
             if (temp_opd1 && temp_opd1->get_is_float()) opd1_float = true;
+            // Check if operand is a float variable
+            if (opd1->get_data_type() == FLOAT_DATA_TYPE) opd1_float = true;
             
-            Const_TAC_Opd *const_opd2 = dynamic_cast<Const_TAC_Opd*>(opd2);
-            if (const_opd2 && const_opd2->get_is_float()) opd2_float = true;
-            Temp_TAC_Opd *temp_opd2 = dynamic_cast<Temp_TAC_Opd*>(opd2);
-            if (temp_opd2 && temp_opd2->get_is_float()) opd2_float = true;
+            if (opd2) {
+                Const_TAC_Opd *const_opd2 = dynamic_cast<Const_TAC_Opd*>(opd2);
+                if (const_opd2 && const_opd2->get_is_float()) opd2_float = true;
+                Temp_TAC_Opd *temp_opd2 = dynamic_cast<Temp_TAC_Opd*>(opd2);
+                if (temp_opd2 && temp_opd2->get_is_float()) opd2_float = true;
+                // Check if operand is a float variable
+                if (opd2->get_data_type() == FLOAT_DATA_TYPE) opd2_float = true;
+            }
             
             if (opd1_float || opd2_float) {
                 float_vars[result->to_string()] = true;
+                // Also mark operands as float if they're variables
+                if (opd1_float) {
+                    float_vars[opd1->to_string()] = true;
+                }
+                if (opd2_float) {
+                    float_vars[opd2->to_string()] = true;
+                }
             }
         }
     }
@@ -152,19 +178,27 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
             Temp_TAC_Opd *temp_source = dynamic_cast<Temp_TAC_Opd*>(source);
             Temp_TAC_Opd *temp_dest = dynamic_cast<Temp_TAC_Opd*>(dest);
             
+            // Determine if this is a float assignment
+            bool is_float_assign = false;
+            if (const_source && const_source->get_is_float()) is_float_assign = true;
+            if (float_vars.count(dest_str) && float_vars[dest_str]) is_float_assign = true;
+            if (float_vars.count(source_str) && float_vars[source_str]) is_float_assign = true;
+            
+            string assign_reg = is_float_assign ? "f2" : "v0";
+            
             if (const_source) {
                 // Assigning a constant: use iLoad
                 string const_str = const_source->to_string();
                 if (const_str.find('.') != string::npos) {
                     rtl_stmts.push_back(new Compute_RTL_Stmt(
-                        new Register_RTL_Opd("v0"), 
+                        new Register_RTL_Opd(assign_reg), 
                         NULL, 
                         Compute_RTL_Stmt::RTL_OP_FLOAD, 
                         new Const_RTL_Opd(atof(const_str.c_str()))
                     ));
                 } else {
                     rtl_stmts.push_back(new Compute_RTL_Stmt(
-                        new Register_RTL_Opd("v0"), 
+                        new Register_RTL_Opd(assign_reg),
                         NULL, 
                         Compute_RTL_Stmt::RTL_OP_ILOAD, 
                         new Const_RTL_Opd(atoi(const_str.c_str()))
@@ -174,14 +208,16 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                     // Destination is a temp - always store to memory (needed for ternary branches)
                     rtl_stmts.push_back(new Store_RTL_Stmt(
                         new Memory_RTL_Opd(dest_str),
-                        new Register_RTL_Opd("v0")
+                        new Register_RTL_Opd(assign_reg),
+                        is_float_assign
                     ));
                     temp_to_register.erase(dest_str);
                 } else {
                     // Destination is a variable - store to memory
                     rtl_stmts.push_back(new Store_RTL_Stmt(
                         new Memory_RTL_Opd(dest_str),
-                        new Register_RTL_Opd("v0")
+                        new Register_RTL_Opd(assign_reg),
+                        is_float_assign
                     ));
                     temp_to_register.erase(dest_str);
                 }
@@ -243,27 +279,49 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
             string result_str = result->to_string();
             string opd1_str = opd1->to_string();
 
-            // Check if opd1 is already in a register from a previous computation
-            string src_register = "v0";
+            // Determine if this is a float operation
+            bool is_float_op = false;
+            Const_TAC_Opd *const_opd1 = dynamic_cast<Const_TAC_Opd*>(opd1);
+            if (const_opd1 && const_opd1->get_is_float()) is_float_op = true;
             Temp_TAC_Opd *temp_opd1 = dynamic_cast<Temp_TAC_Opd*>(opd1);
-            if (temp_opd1 && temp_to_register.count(opd1_str)) {
+            if (temp_opd1 && temp_opd1->get_is_float()) is_float_op = true;
+            if (float_vars.count(opd1_str) && float_vars[opd1_str]) is_float_op = true;
+            
+            if (opd2) {
+                Const_TAC_Opd *const_opd2 = dynamic_cast<Const_TAC_Opd*>(opd2);
+                if (const_opd2 && const_opd2->get_is_float()) is_float_op = true;
+                Temp_TAC_Opd *temp_opd2 = dynamic_cast<Temp_TAC_Opd*>(opd2);
+                if (temp_opd2 && temp_opd2->get_is_float()) is_float_op = true;
+                string opd2_str = opd2->to_string();
+                if (float_vars.count(opd2_str) && float_vars[opd2_str]) is_float_op = true;
+            }
+
+            // Check if opd1 is already in a register from a previous computation
+            string src_register = is_float_op ? "f2" : "v0";
+            Temp_TAC_Opd *temp_opd1_cast = dynamic_cast<Temp_TAC_Opd*>(opd1);
+            if (temp_opd1_cast && temp_to_register.count(opd1_str)) {
                 src_register = temp_to_register[opd1_str];
+                // If the register is a float register, mark as float operation
+                if (src_register == "f2" || src_register == "f4" || src_register == "f6") {
+                    is_float_op = true;
+                }
             } else {
-                // Load operand 1 into v0
+                // Load operand 1 into appropriate register
+
                 Const_TAC_Opd *const_opd1 = dynamic_cast<Const_TAC_Opd*>(opd1);
                 if (const_opd1) {
                     // Operand 1 is a constant - use iLoad/fLoad
                     string const_str = const_opd1->to_string();
                     if (const_str.find('.') != string::npos) {
                         rtl_stmts.push_back(new Compute_RTL_Stmt(
-                            new Register_RTL_Opd("v0"),
+                            new Register_RTL_Opd(src_register),
                             NULL,
                             Compute_RTL_Stmt::RTL_OP_FLOAD,
                             new Const_RTL_Opd(atof(const_str.c_str()))
                         ));
                     } else {
                         rtl_stmts.push_back(new Compute_RTL_Stmt(
-                            new Register_RTL_Opd("v0"),
+                            new Register_RTL_Opd(src_register),
                             NULL,
                             Compute_RTL_Stmt::RTL_OP_ILOAD,
                             new Const_RTL_Opd(atoi(const_str.c_str()))
@@ -271,9 +329,11 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                     }
                 } else {
                     // Operand 1 is a variable - use load
+                    bool is_float = float_vars.count(opd1_str) && float_vars[opd1_str];
                     rtl_stmts.push_back(new Load_RTL_Stmt(
-                        new Register_RTL_Opd("v0"),
-                        new Memory_RTL_Opd(opd1_str)
+                        new Register_RTL_Opd(src_register),
+                        new Memory_RTL_Opd(opd1_str),
+                        is_float
                     ));
                 }
             }
@@ -329,25 +389,38 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
             }
 
             // For unary operations, determine destination register based on source
-            string dest_reg = "t0";  // Default for binary ops
-            string opd2_reg = "t1";  // Default register for opd2
+            string dest_reg = is_float_op ? "f4" : "t0";  // Default for binary ops
+            string opd2_reg = is_float_op ? "f6" : "t1";  // Default register for opd2
             
             if (!opd2) {
                 // Unary operation: write to opposite register from input
-                // If input is v0, write to t0; if t0, write to v0; if t1, write to t2; etc.
-                if (src_register == "v0") {
-                    dest_reg = "t0";
-                } else if (src_register == "t0") {
-                    dest_reg = "v0";
-                } else if (src_register == "t1") {
-                    dest_reg = "t2";
-                } else if (src_register == "t2") {
-                    dest_reg = "t1";
+                // For int: If input is v0, write to t0; if t0, write to v0; if t1, write to t2; etc.
+                // For float: If input is f2, write to f4; if f4, write to f2; if f6, write to f2; etc.
+                if (is_float_op) {
+                    if (src_register == "f2") {
+                        dest_reg = "f4";
+                    } else if (src_register == "f4") {
+                        dest_reg = "f2";
+                    } else if (src_register == "f6") {
+                        dest_reg = "f4";
+                    } else {
+                        dest_reg = "f2";  // fallback
+                    }
                 } else {
-                    dest_reg = "v0";  // fallback
+                    if (src_register == "v0") {
+                        dest_reg = "t0";
+                    } else if (src_register == "t0") {
+                        dest_reg = "v0";
+                    } else if (src_register == "t1") {
+                        dest_reg = "t2";
+                    } else if (src_register == "t2") {
+                        dest_reg = "t1";
+                    } else {
+                        dest_reg = "v0";  // fallback
+                    }
                 }
             } else if (op == Compute_TAC_Stmt::TAC_OP_AND || op == Compute_TAC_Stmt::TAC_OP_OR) {
-                // AND/OR always write to v0
+                // AND/OR always write to v0 (integer-only operations)
                 dest_reg = "v0";
             } else if (and_op_opd_regs.count(result_str)) {
                 // This result is an AND/OR operand - use the allocated register
@@ -374,8 +447,8 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                     if (temp_to_register.count(opd2_str) && !temp_to_register[opd2_str].empty()) {
                         opd2_reg = temp_to_register[opd2_str];
                     } else {
-                        // Will be loaded to opd2_reg - default is t1
-                        opd2_reg = "t1";
+                        // Will be loaded to opd2_reg - default depends on float type
+                        opd2_reg = is_float_op ? "f6" : "t1";
                     }
                 }
                 
@@ -383,17 +456,32 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                 if (!and_op_opd_regs.count(result_str)) {
                     // Binary operation that's not an AND/OR operand
                     // Choose dest_reg to avoid src_register and opd2_reg
-                    if (src_register != "v0" && opd2_reg != "v0") {
-                        dest_reg = "v0";
-                    } else if (src_register != "t0" && opd2_reg != "t0") {
-                        dest_reg = "t0";
-                    } else if (src_register != "t1" && opd2_reg != "t1") {
-                        dest_reg = "t1";
-                    } else if (src_register != "t2" && opd2_reg != "t2") {
-                        dest_reg = "t2";
+                    if (is_float_op) {
+                        // Use float registers
+                        if (src_register != "f2" && opd2_reg != "f2") {
+                            dest_reg = "f2";
+                        } else if (src_register != "f4" && opd2_reg != "f4") {
+                            dest_reg = "f4";
+                        } else if (src_register != "f6" && opd2_reg != "f6") {
+                            dest_reg = "f6";
+                        } else {
+                            // Fallback
+                            dest_reg = "f2";
+                        }
                     } else {
-                        // Fallback - shouldn't happen normally
-                        dest_reg = "v0";
+                        // Use integer registers
+                        if (src_register != "v0" && opd2_reg != "v0") {
+                            dest_reg = "v0";
+                        } else if (src_register != "t0" && opd2_reg != "t0") {
+                            dest_reg = "t0";
+                        } else if (src_register != "t1" && opd2_reg != "t1") {
+                            dest_reg = "t1";
+                        } else if (src_register != "t2" && opd2_reg != "t2") {
+                            dest_reg = "t2";
+                        } else {
+                            // Fallback - shouldn't happen normally
+                            dest_reg = "v0";
+                        }
                     }
                 }
                 
@@ -422,9 +510,11 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                         opd2_reg = temp_to_register[opd2_str];
                     } else {
                         // opd2 is a variable or temp not in a register - load it to opd2_reg
+                        bool is_float = float_vars.count(opd2_str) && float_vars[opd2_str];
                         rtl_stmts.push_back(new Load_RTL_Stmt(
                             new Register_RTL_Opd(opd2_reg),
-                            new Memory_RTL_Opd(opd2->to_string())
+                            new Memory_RTL_Opd(opd2->to_string()),
+                            is_float
                         ));
                     }
                 }
@@ -454,9 +544,11 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                 temp_to_register[result_str] = dest_reg;
             } else {
                 // For actual variables, store to memory
+                bool is_float = float_vars.count(result_str) && float_vars[result_str];
                 rtl_stmts.push_back(new Store_RTL_Stmt(
                     new Memory_RTL_Opd(result_str),
-                    new Register_RTL_Opd(dest_reg)
+                    new Register_RTL_Opd(dest_reg),
+                    is_float
                 ));
                 temp_to_register.erase(result_str);
             }
@@ -478,9 +570,11 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                     ));
                 } else {
                     // Load condition and branch if non-zero
+                    bool is_float = float_vars.count(cond_str) && float_vars[cond_str];
                     rtl_stmts.push_back(new Load_RTL_Stmt(
                         new Register_RTL_Opd("v0"),
-                        new Memory_RTL_Opd(cond_str)
+                        new Memory_RTL_Opd(cond_str),
+                        is_float
                     ));
                     rtl_stmts.push_back(new Bgtz_RTL_Stmt(
                         new Register_RTL_Opd("v0"),
@@ -525,9 +619,11 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                     ));
                 } else {
                     // For variables/integers, use load
+                    bool is_float = float_vars.count(opd->to_string()) && float_vars[opd->to_string()];
                     rtl_stmts.push_back(new Load_RTL_Stmt(
                         new Register_RTL_Opd("a0"),
-                        new Memory_RTL_Opd(opd->to_string())
+                        new Memory_RTL_Opd(opd->to_string()),
+                        is_float
                     ));
                 }
                 
@@ -550,9 +646,11 @@ list<RTL_Stmt*> RTL_Generator::generate_rtl(list<TAC_Stmt*> &tac_stmts) {
                 rtl_stmts.push_back(new Read_RTL_Stmt());
                 
                 // Store the read value into the variable
+                bool is_float = float_vars.count(opd->to_string()) && float_vars[opd->to_string()];
                 rtl_stmts.push_back(new Store_RTL_Stmt(
                     new Memory_RTL_Opd(opd->to_string()),
-                    new Register_RTL_Opd("v0")
+                    new Register_RTL_Opd("v0"),
+                    is_float
                 ));
                 temp_to_register.erase(opd->to_string());
             }

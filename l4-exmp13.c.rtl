@@ -1,41 +1,41 @@
 **PROCEDURE: main
 **BEGIN: RTL Statements
-    iLoad.d:	v0 <- 2.30			;; Loading float number 2.30
-    store:	a_ <- v0
-    iLoad.d:	v0 <- 3.40			;; Loading float number 3.40
-    store:	b_ <- v0
-    iLoad.d:	v0 <- 4.50			;; Loading float number 4.50
-    store:	c_ <- v0
-    iLoad.d:	v0 <- 5.60			;; Loading float number 5.60
-    store:	d_ <- v0
-    iLoad.d:	v0 <- 6.70			;; Loading float number 6.70
-    store:	e_ <- v0
-    load:	v0 <- b_			;; Loading variable b_ into register
-    load:	t1 <- c_			;; Loading variable c_ into register
-    add:	t0 <- v0 , t1
-    load:	v0 <- a_			;; Loading variable a_ into register
-    sge:	t0 <- v0 , t0
-    load:	v0 <- e_			;; Loading variable e_ into register
-    load:	t1 <- d_			;; Loading variable d_ into register
-    mul:	t0 <- v0 , t1
-    load:	t1 <- c_			;; Loading variable c_ into register
-    div:	v0 <- t0 , t1
-    load:	v0 <- d_			;; Loading variable d_ into register
-    sgt:	t1 <- v0 , v0
-    and:	v0 <- t0 , t1
-    not:	t0 <- v0
-    bgtz:	t0 , Label1
-    load:	v0 <- a_			;; Loading variable a_ into register
-    load:	t1 <- d_			;; Loading variable d_ into register
-    mul:	t0 <- v0 , t1
-    load:	t1 <- e_			;; Loading variable e_ into register
-    div:	v0 <- t0 , t1
-    store:	a_ <- v0
+    iLoad.d:	f2 <- 2.30			;; Loading float number 2.30
+    store.d:	a_ <- f2
+    iLoad.d:	f2 <- 3.40			;; Loading float number 3.40
+    store.d:	b_ <- f2
+    iLoad.d:	f2 <- 4.50			;; Loading float number 4.50
+    store.d:	c_ <- f2
+    iLoad.d:	f2 <- 5.60			;; Loading float number 5.60
+    store.d:	d_ <- f2
+    iLoad.d:	f2 <- 6.70			;; Loading float number 6.70
+    store.d:	e_ <- f2
+    load.d:	f2 <- b_			;; Loading variable b_ into register
+    load.d:	f6 <- c_			;; Loading variable c_ into register
+    add.d:	f4 <- f2 , f6
+    load.d:	f2 <- a_			;; Loading variable a_ into register
+    sge.d:	t0 <- f2 , f4
+    load.d:	f2 <- e_			;; Loading variable e_ into register
+    load.d:	f6 <- d_			;; Loading variable d_ into register
+    mul.d:	f4 <- f2 , f6
+    load.d:	f6 <- c_			;; Loading variable c_ into register
+    div.d:	f2 <- f4 , f6
+    load.d:	f2 <- d_			;; Loading variable d_ into register
+    sgt.d:	t1 <- f2 , f2
+    and:	f2 <- t0 , t1
+    not:	f4 <- f2
+    bgtz:	f4 , Label1
+    load.d:	f2 <- a_			;; Loading variable a_ into register
+    load.d:	f6 <- d_			;; Loading variable d_ into register
+    mul.d:	f4 <- f2 , f6
+    load.d:	f6 <- e_			;; Loading variable e_ into register
+    div.d:	f2 <- f4 , f6
+    store.d:	a_ <- f2
     goto:		Label0
 Label1:
-    load:	v0 <- e_			;; Loading variable e_ into register
-    load:	t1 <- d_			;; Loading variable d_ into register
-    add:	t0 <- v0 , t1
-    store:	e_ <- t0
+    load.d:	f2 <- e_			;; Loading variable e_ into register
+    load.d:	f6 <- d_			;; Loading variable d_ into register
+    add.d:	f4 <- f2 , f6
+    store.d:	e_ <- f4
 Label0:
 **END: RTL Statements
