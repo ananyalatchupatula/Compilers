@@ -19,13 +19,13 @@ Label2:
     seq:	t0 <- v0 , t1
     not:	v0 <- t0
     bgtz:	v0 , Label1
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    load:	a0 <- loop_			;; Loading variable loop_ into register
+    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
+    load:	a0 <- loop_			;; Moving the value to be printed into register a0
     write				;; This is where syscall will be made
     goto:		Label0
 Label1:
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    load:	a0 <- test_			;; Loading variable test_ into register
+    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
+    load:	a0 <- test_			;; Moving the value to be printed into register a0
     write				;; This is where syscall will be made
 Label0:
     goto:		Label2
@@ -39,7 +39,7 @@ Label4:
     iLoad:	t1 <- 10			;; Loading integer number 10
     slt:	t0 <- v0 , t1
     bgtz:	t0 , Label4
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    load:	a0 <- loop_			;; Loading variable loop_ into register
+    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
+    load:	a0 <- loop_			;; Moving the value to be printed into register a0
     write				;; This is where syscall will be made
 **END: RTL Statements

@@ -1,48 +1,31 @@
 **PROCEDURE: main
 **BEGIN: RTL Statements
-    iLoad:	v0 <- 1990			;; Loading integer number 1990
-    store:	year_ <- v0
-    load:	v0 <- year_			;; Loading variable year_ into register
-    iLoad:	t1 <- 400			;; Loading integer number 400
-    div:	t0 <- v0 , t1
-    iLoad:	t1 <- 400			;; Loading integer number 400
-    mul:	t0 <- t0 , t1
-    load:	t1 <- year_			;; Loading variable year_ into register
-    seq:	t0 <- t0 , t1
-    not:	v0 <- t0
-    bgtz:	v0 , Label1
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    store:	cntr_ <- v0
+    store:	year_ <- 1990
+    div:	v0 <- year_ , 400
+    mul:	v1 <- v0 , 400
+    seq:	t0 <- v1 , year_
+    not:	t1 <- t0
+    bgtz:	t1 , Label1
+    store:	cntr_ <- 1
     goto:		Label0
 Label1:
-    load:	v0 <- year_			;; Loading variable year_ into register
-    iLoad:	t1 <- 100			;; Loading integer number 100
-    div:	t0 <- v0 , t1
-    iLoad:	t1 <- 100			;; Loading integer number 100
-    mul:	t0 <- t0 , t1
-    load:	t1 <- year_			;; Loading variable year_ into register
-    seq:	t0 <- t0 , t1
-    not:	v0 <- t0
-    bgtz:	v0 , Label3
-    iLoad:	v0 <- 0			;; Loading integer number 0
-    store:	cntr_ <- v0
+    div:	t2 <- year_ , 100
+    mul:	t3 <- t2 , 100
+    seq:	t4 <- t3 , year_
+    not:	t5 <- t4
+    bgtz:	t5 , Label3
+    store:	cntr_ <- 0
     goto:		Label2
 Label3:
-    load:	v0 <- year_			;; Loading variable year_ into register
-    iLoad:	t1 <- 4			;; Loading integer number 4
-    div:	t0 <- v0 , t1
-    iLoad:	t1 <- 4			;; Loading integer number 4
-    mul:	t0 <- t0 , t1
-    load:	t1 <- year_			;; Loading variable year_ into register
-    seq:	t0 <- t0 , t1
-    not:	v0 <- t0
-    bgtz:	v0 , Label5
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    store:	cntr_ <- v0
+    div:	t6 <- year_ , 4
+    mul:	t7 <- t6 , 4
+    seq:	t8 <- t7 , year_
+    not:	t9 <- t8
+    bgtz:	t9 , Label5
+    store:	cntr_ <- 1
     goto:		Label4
 Label5:
-    iLoad:	v0 <- 0			;; Loading integer number 0
-    store:	cntr_ <- v0
+    store:	cntr_ <- 0
 Label4:
 Label2:
 Label0:

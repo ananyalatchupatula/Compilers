@@ -13,12 +13,12 @@
     load:	v0 <- local_			;; Loading variable local_ into register
     iLoad:	t1 <- 2			;; Loading integer number 2
     sub:	t0 <- v0 , t1
-    iLoad:	t2 <- 0			;; Loading integer number 0
-    sne:	t1 <- t0 , t2
-    and:	v0 <- t0 , t1
-    not:	t0 <- v0
-    bgtz:	t0 , Label0
-    iLoad:	v0 <- 1			;; Loading integer number 1
+    iLoad:	t1 <- 0			;; Loading integer number 0
+    sne:	t0 <- t0 , t1
+    and:	v0 <- t0 , t0
+    not:	v0 <- v0
+    bgtz:	v0 , Label0
+    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
     store:	stemp0 <- v0
     goto:		Label1
 Label0:
@@ -38,8 +38,8 @@ Label2:
     sgt:	t0 <- v0 , t1
     not:	v0 <- t0
     bgtz:	v0 , Label3
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    load:	a0 <- global2_			;; Loading variable global2_ into register
+    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
+    load:	a0 <- global2_			;; Moving the value to be printed into register a0
     write				;; This is where syscall will be made
     load:	v0 <- global2_			;; Loading variable global2_ into register
     iLoad:	t1 <- 1			;; Loading integer number 1
@@ -50,8 +50,8 @@ Label3:
     goto:		Label4
 Label5:
 Label6:
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    load:	a0 <- global2_			;; Loading variable global2_ into register
+    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
+    load:	a0 <- global2_			;; Moving the value to be printed into register a0
     write				;; This is where syscall will be made
     load:	v0 <- global2_			;; Loading variable global2_ into register
     iLoad:	t1 <- 1			;; Loading integer number 1

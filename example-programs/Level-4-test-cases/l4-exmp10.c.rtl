@@ -2,9 +2,9 @@
 **BEGIN: RTL Statements
     iLoad:	v0 <- 5			;; Loading integer number 5
     store:	n_ <- v0
-    iLoad:	v0 <- 1			;; Loading integer number 1
+    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
     store:	fact_ <- v0
-    iLoad:	v0 <- 1			;; Loading integer number 1
+    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
     store:	c_ <- v0
 Label0:
     load:	v0 <- c_			;; Loading variable c_ into register

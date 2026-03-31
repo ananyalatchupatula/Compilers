@@ -33,6 +33,7 @@ echo "=========================================="
 echo ""
 
 # Process all Level-4 test cases
+# Process all Level-4 test cases
 for testfile in "$TEST_DIR"/l4-exmp*.c; do
     if [ -f "$testfile" ]; then
         testname=$(basename "$testfile")
@@ -40,53 +41,46 @@ for testfile in "$TEST_DIR"/l4-exmp*.c; do
         
         total=$((total + 1))
         
-        # Generate RTL output from new compiler
-        echo -n "Processing $testname ... "
+        echo -n "Testing $testname ... "
         
-        # Copy test file to current directory temporarily
-        cp "$testfile" ./"$testname"
-        
-        # Run the new compiler with --show-rtl flag
-        if ./"$NEW_COMPILER" "$testname" --show-rtl > /dev/null 2>&1; then
-            # Check if RTL file was generated
-            if [ -f "${testname}.rtl" ]; then
-                echo "RTL generated"
+        # Run the new compiler directly on the file in its original location
+        # Most compilers output the .rtl file in the same directory as the source
+        if "$NEW_COMPILER" "$testfile" --show-rtl > /dev/null 2>&1; then
+            
+            # Path to the generated RTL file
+            generated_rtl="$TEST_DIR/${base_testname}.c.rtl"
+            
+            if [ -f "$generated_rtl" ]; then
+                # Match the expected file name (using your naming convention)
+                expected_file="$EXPECTED_DIR/${base_testname}.c.correct.rtl"
                 
-                # Check if expected RTL file exists (with .correct.rtl suffix)
-                # Convert l4-exmpX to l4-exmp-X for matching expected files
-                base_for_expected=$(echo "$base_testname" | sed 's/l4-exmp\([0-9]\)/l4-exmp-\1/')
-                expected_file="$EXPECTED_DIR/${base_for_expected}.c.correct.rtl"
-                if [ -f "$expected_file" ] && [ -s "$expected_file" ]; then
-                    # Compare the generated RTL with expected (strip comments before comparing)
-                    # Remove comments (anything after ;;) and extra whitespace
-                    generated_stripped=$(sed 's/;;.*//' "${testname}.rtl" | sed 's/[[:space:]]*$//')
-                    expected_stripped=$(sed 's/;;.*//' "$expected_file" | sed 's/[[:space:]]*$//')
-                    
-                    if diff -Bw <(echo "$generated_stripped") <(echo "$expected_stripped") > /dev/null 2>&1; then
-                        echo -e "${GREEN}✓ PASS${NC}: $testname"
+                if [ -f "$expected_file" ]; then
+                    # Strip comments and trailing whitespace for a fair comparison
+                    # <( ... ) is process substitution to avoid creating more temp files
+                    if diff -Bw <(sed 's/;;.*//; s/[[:space:]]*$//' "$generated_rtl") \
+                               <(sed 's/;;.*//; s/[[:space:]]*$//' "$expected_file") > /dev/null 2>&1; then
+                        echo -e "${GREEN}✓ PASS${NC}"
                         passed=$((passed + 1))
                     else
-                        echo -e "${RED}✗ FAIL${NC}: $testname (output differs)"
+                        echo -e "${RED}✗ FAIL${NC} (output differs)"
+                        echo "----- DIFF for $testname -----"
+                        diff -u -Bw \
+                            <(sed 's/;;.*//; s/[[:space:]]*$//' "$expected_file") \
+                            <(sed 's/;;.*//; s/[[:space:]]*$//' "$generated_rtl") || true
+                        echo "------------------------------"
                         failed=$((failed + 1))
-                        echo "  First 5 lines of diff:"
-                        diff -Bw <(echo "$generated_stripped") <(echo "$expected_stripped") | head -5 | sed 's/^/    /'
                     fi
                 else
-                    # No expected file or it's empty - this test is not ready yet
-                    echo -e "${GREEN}✓ SKIP${NC}: $testname (expected RTL not provided yet)"
-                    # Don't count as passed or failed, just informational
+                    echo -e "${NC}○ SKIP${NC} (no expected file)"
                 fi
             else
-                echo -e "${RED}✗ FAIL${NC}: $testname (RTL file not generated)"
+                echo -e "${RED}✗ FAIL${NC} (RTL not generated at $generated_rtl)"
                 failed=$((failed + 1))
             fi
         else
-            echo -e "${RED}✗ FAIL${NC}: $testname (compilation error)"
+            echo -e "${RED}✗ FAIL${NC} (compiler crashed)"
             failed=$((failed + 1))
         fi
-        
-        # Clean up temporary test file
-        rm -f "$testname"
     fi
 done
 

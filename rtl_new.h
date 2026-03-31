@@ -84,6 +84,12 @@ public:
 class Compute_RTL_Stmt : public RTL_Stmt {
 public:
     enum RTL_Op {
+        RTL_OP_ADD_D,
+        RTL_OP_SUB_D,
+        RTL_OP_MUL_D,
+        RTL_OP_DIV_D,
+        RTL_OP_SLT_D,
+        RTL_OP_SLE_D,
         RTL_OP_ILOAD,
         RTL_OP_FLOAD,
         RTL_OP_ADD,

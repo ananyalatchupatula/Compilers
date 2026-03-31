@@ -1,108 +1,64 @@
 **PROCEDURE: main
 **BEGIN: RTL Statements
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    store:	a1_ <- v0
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    store:	a2_ <- v0
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    store:	a_ <- v0
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    store:	b_ <- v0
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    store:	c_ <- v0
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    store:	d_ <- v0
+    store:	a1_ <- 1
+    store:	a2_ <- 1
+    store:	a_ <- 1
+    store:	b_ <- 1
+    store:	c_ <- 1
+    store:	d_ <- 1
 Label7:
-    load:	v0 <- a1_			;; Loading variable a1_ into register
-    iLoad:	t1 <- 100			;; Loading integer number 100
-    sle:	t0 <- v0 , t1
-    not:	v0 <- t0
-    bgtz:	v0 , Label8
-    load:	v0 <- a_			;; Loading variable a_ into register
-    iLoad:	t1 <- 1			;; Loading integer number 1
-    add:	t0 <- v0 , t1
+    add:	v0 <- a1_ , 100
+    not:	v1 <- v0
+    bgtz:	v1 , Label8
+    add:	t0 <- a_ , 1
     store:	a_ <- t0
-    iLoad:	v0 <- 2			;; Loading integer number 2
-    iLoad:	t1 <- 3			;; Loading integer number 3
-    sge:	t0 <- v0 , t1
-    not:	v0 <- t0
-    bgtz:	v0 , Label0
-    load:	v0 <- a_			;; Loading variable a_ into register
-    iLoad:	t1 <- 1			;; Loading integer number 1
-    add:	t0 <- v0 , t1
-    store:	a_ <- t0
+    add:	t1 <- 2 , 3
+    not:	t2 <- t1
+    bgtz:	t2 , Label0
+    add:	t3 <- a_ , 1
+    store:	a_ <- t3
     goto:		Label0
 Label0:
-    iLoad:	v0 <- 3			;; Loading integer number 3
-    iLoad:	t1 <- 2			;; Loading integer number 2
-    sge:	t0 <- v0 , t1
-    not:	v0 <- t0
-    bgtz:	v0 , Label1
-    load:	v0 <- a_			;; Loading variable a_ into register
-    iLoad:	t1 <- 1			;; Loading integer number 1
-    add:	t0 <- v0 , t1
-    store:	a_ <- t0
+    add:	t4 <- 3 , 2
+    not:	t5 <- t4
+    bgtz:	t5 , Label1
+    add:	t6 <- a_ , 1
+    store:	a_ <- t6
     goto:		Label1
 Label1:
-    iLoad:	v0 <- 2			;; Loading integer number 2
-    iLoad:	t1 <- 3			;; Loading integer number 3
-    sle:	t0 <- v0 , t1
-    not:	v0 <- t0
-    bgtz:	v0 , Label2
-    load:	v0 <- a_			;; Loading variable a_ into register
-    iLoad:	t1 <- 1			;; Loading integer number 1
-    add:	t0 <- v0 , t1
-    store:	a_ <- t0
+    add:	t7 <- 2 , 3
+    not:	t8 <- t7
+    bgtz:	t8 , Label2
+    add:	t9 <- a_ , 1
+    store:	a_ <- t9
     goto:		Label2
 Label2:
-    iLoad:	v0 <- 2			;; Loading integer number 2
-    iLoad:	t1 <- 3			;; Loading integer number 3
-    sne:	t0 <- v0 , t1
-    not:	v0 <- t0
-    bgtz:	v0 , Label3
-    load:	v0 <- a_			;; Loading variable a_ into register
-    iLoad:	t1 <- 1			;; Loading integer number 1
-    add:	t0 <- v0 , t1
-    store:	a_ <- t0
+    add:	s0 <- 2 , 3
+    not:	s1 <- s0
+    bgtz:	s1 , Label3
+    add:	s2 <- a_ , 1
+    store:	a_ <- s2
     goto:		Label3
 Label3:
-    iLoad:	v0 <- 2			;; Loading integer number 2
-    iLoad:	t1 <- 3			;; Loading integer number 3
-    seq:	t0 <- v0 , t1
-    not:	v0 <- t0
-    bgtz:	v0 , Label4
-    load:	v0 <- a_			;; Loading variable a_ into register
-    iLoad:	t1 <- 1			;; Loading integer number 1
-    add:	t0 <- v0 , t1
-    store:	a_ <- t0
+    seq:	s3 <- 2 , 3
+    not:	s4 <- s3
+    bgtz:	s4 , Label4
+    add:	s5 <- a_ , 1
+    store:	a_ <- s5
     goto:		Label4
 Label4:
-    iLoad:	v0 <- 4			;; Loading integer number 4
-    iLoad:	t1 <- 3			;; Loading integer number 3
-    sge:	t0 <- v0 , t1
-    not:	v0 <- t0
-    bgtz:	v0 , Label5
-    load:	v0 <- a_			;; Loading variable a_ into register
-    iLoad:	t1 <- 1			;; Loading integer number 1
-    add:	t0 <- v0 , t1
-    store:	a_ <- t0
+    add:	s6 <- 4 , 3
+    not:	s7 <- s6
+    bgtz:	s7 , Label5
+    add:	v0 <- a_ , 1
+    store:	a_ <- v0
     goto:		Label5
 Label5:
 Label6:
-    load:	v0 <- a1_			;; Loading variable a1_ into register
-    iLoad:	t1 <- 1			;; Loading integer number 1
-    add:	t0 <- v0 , t1
-    store:	a1_ <- t0
-    load:	v0 <- a1_			;; Loading variable a1_ into register
-    iLoad:	t1 <- 200			;; Loading integer number 200
-    sle:	t0 <- v0 , t1
+    add:	v1 <- a1_ , 1
+    store:	a1_ <- v1
+    add:	t0 <- a1_ , 200
     bgtz:	t0 , Label6
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    load:	a0 <- a1_			;; Loading variable a1_ into register
-    write				;; This is where syscall will be made
     goto:		Label7
 Label8:
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    load:	a0 <- a_			;; Loading variable a_ into register
-    write				;; This is where syscall will be made
 **END: RTL Statements

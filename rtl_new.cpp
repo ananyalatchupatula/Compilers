@@ -142,6 +142,12 @@ void Compute_RTL_Stmt::print(FILE *file) {
         case RTL_OP_UMINUS: op_str = is_float_op ? "uminus.d" : "uminus"; break;
         case RTL_OP_AND: op_str = "and"; break;
         case RTL_OP_OR: op_str = "or"; break;
+        case RTL_OP_ADD_D: op_str = "add.d"; break;
+        case RTL_OP_SUB_D: op_str = "sub.d"; break;
+        case RTL_OP_MUL_D: op_str = "mul.d"; break;
+        case RTL_OP_DIV_D: op_str = "div.d"; break;
+        case RTL_OP_SLT_D: op_str = "slt.d"; break;
+        case RTL_OP_SLE_D: op_str = "sle.d"; break;
     }
 
     fprintf(file, "    %s:\t", op_str);
@@ -154,9 +160,19 @@ void Compute_RTL_Stmt::print(FILE *file) {
             opd2->print(file);
         }
         if (op == RTL_OP_ILOAD && !is_float_op) {
-            fprintf(file, "\t\t\t;; Loading integer number ");
-            if (opd2) opd2->print(file);
-        } else if (op == RTL_OP_FLOAD || is_float_op) {
+    Register_RTL_Opd *reg_dest = dynamic_cast<Register_RTL_Opd*>(dest);
+    Const_RTL_Opd *const_val = dynamic_cast<Const_RTL_Opd*>(opd2);
+
+    if (reg_dest && const_val &&
+        reg_dest->get_name() == "v0" &&
+        const_val->to_string() == "1") {
+        fprintf(file, "\t\t\t;; Loading 1 in v0 to indicate syscall to print integter value");
+    }
+    else {
+        fprintf(file, "\t\t\t;; Loading integer number ");
+        if (opd2) opd2->print(file);
+    }
+} else if (op == RTL_OP_FLOAD || is_float_op) {
             fprintf(file, "\t\t\t;; Loading float number ");
             if (opd2) opd2->print(file);
         }
@@ -181,9 +197,16 @@ void Load_RTL_Stmt::print(FILE *file) {
     dest->print(file);
     fprintf(file, " <- ");
     source->print(file);
+    Register_RTL_Opd *reg_dest = dynamic_cast<Register_RTL_Opd*>(dest);
+
+if (reg_dest && reg_dest->get_name() == "a0") {
+    fprintf(file, "\t\t\t;; Moving the value to be printed into register a0\n");
+}
+else {
     fprintf(file, "\t\t\t;; Loading variable ");
     source->print(file);
     fprintf(file, " into register\n");
+}
 }
 
 Loadaddr_RTL_Stmt::Loadaddr_RTL_Stmt(RTL_Opd *d, RTL_Opd *s, string str_val) : dest(d), source(s), string_value(str_val) {}

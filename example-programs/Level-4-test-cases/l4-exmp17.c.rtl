@@ -2,7 +2,7 @@
 **BEGIN: RTL Statements
     iLoad:	v0 <- 5			;; Loading integer number 5
     store:	a_ <- v0
-    iLoad:	v0 <- 1			;; Loading integer number 1
+    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
     store:	b_ <- v0
 Label2:
     load:	v0 <- a_			;; Loading variable a_ into register
@@ -29,7 +29,7 @@ Label0:
     iLoad:	t1 <- 10			;; Loading integer number 10
     slt:	t0 <- v0 , t1
     bgtz:	t0 , Label2
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    load:	a0 <- a_			;; Loading variable a_ into register
+    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
+    load:	a0 <- a_			;; Moving the value to be printed into register a0
     write				;; This is where syscall will be made
 **END: RTL Statements

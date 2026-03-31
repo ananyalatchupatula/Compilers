@@ -22,7 +22,7 @@ Label1:
     sub:	t0 <- v0 , t1
     store:	n_ <- t0
 Label0:
-    iLoad:	v0 <- 1			;; Loading integer number 1
-    load:	a0 <- n_			;; Loading variable n_ into register
+    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
+    load:	a0 <- n_			;; Moving the value to be printed into register a0
     write				;; This is where syscall will be made
 **END: RTL Statements
