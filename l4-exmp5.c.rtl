@@ -13,8 +13,8 @@
     load:	v0 <- local_			;; Loading variable local_ into register
     iLoad:	t1 <- 2			;; Loading integer number 2
     sub:	t0 <- v0 , t1
-    iLoad:	t2 <- 0			;; Loading integer number 0
-    sne:	t1 <- t0 , t2
+    iLoad:	t1 <- 0			;; Loading integer number 0
+    sne:	t1 <- t0 , t1
     and:	v0 <- t0 , t1
     not:	t0 <- v0
     bgtz:	t0 , Label0

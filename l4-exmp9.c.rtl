@@ -17,8 +17,8 @@ Label2:
     iLoad:	t1 <- 20			;; Loading integer number 20
     sgt:	t0 <- v0 , t1
     load:	v0 <- c_			;; Loading variable c_ into register
-    iLoad:	t2 <- 30			;; Loading integer number 30
-    slt:	t1 <- v0 , t2
+    iLoad:	t1 <- 30			;; Loading integer number 30
+    slt:	t1 <- v0 , t1
     and:	v0 <- t0 , t1
     not:	t0 <- v0
     bgtz:	t0 , Label3

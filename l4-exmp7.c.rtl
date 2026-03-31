@@ -29,9 +29,9 @@ Label3:
     load:	v0 <- a_			;; Loading variable a_ into register
     uminus:	t0 <- v0
     iLoad:	t1 <- 30			;; Loading integer number 30
-    sgt:	v0 <- t0 , t1
-    not:	t0 <- v0
-    bgtz:	t0 , Label4
+    sgt:	t0 <- t0 , t1
+    not:	v0 <- t0
+    bgtz:	v0 , Label4
     iLoad:	v0 <- 50			;; Loading integer number 50
     store:	a_ <- v0
     goto:		Label4

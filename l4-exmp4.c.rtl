@@ -7,8 +7,8 @@
     iLoad:	t1 <- 5			;; Loading integer number 5
     sge:	t0 <- v0 , t1
     load:	v0 <- n_			;; Loading variable n_ into register
-    iLoad:	t2 <- 10			;; Loading integer number 10
-    sle:	t1 <- v0 , t2
+    iLoad:	t1 <- 10			;; Loading integer number 10
+    sle:	t1 <- v0 , t1
     and:	v0 <- t0 , t1
     not:	t0 <- v0
     bgtz:	t0 , Label3
@@ -22,7 +22,6 @@ Label0:
     load:	a0 <- n_			;; Loading variable n_ into register
     write				;; This is where syscall will be made
     iLoad:	v0 <- 4			;; Loading integer number 4
-    load_addr:	a0 <- _str_0			;; String = " "
     write				;; This is where syscall will be made
     load:	v0 <- n_			;; Loading variable n_ into register
     iLoad:	t1 <- 1			;; Loading integer number 1
@@ -36,9 +35,9 @@ Label3:
     iLoad:	t1 <- 1024			;; Loading integer number 1024
     sle:	t0 <- v0 , t1
     iLoad:	v0 <- 1024			;; Loading integer number 1024
-    uminus:	t0 <- v0
+    uminus:	t1 <- v0
     load:	v0 <- n_			;; Loading variable n_ into register
-    sge:	t1 <- v0 , t0
+    sge:	t1 <- v0 , t1
     and:	v0 <- t0 , t1
     not:	t0 <- v0
     bgtz:	t0 , Label6
@@ -47,7 +46,6 @@ Label4:
     load:	a0 <- n_			;; Loading variable n_ into register
     write				;; This is where syscall will be made
     iLoad:	v0 <- 4			;; Loading integer number 4
-    load_addr:	a0 <- _str_0			;; String = " "
     write				;; This is where syscall will be made
     load:	v0 <- n_			;; Loading variable n_ into register
     iLoad:	t1 <- 2			;; Loading integer number 2
@@ -60,7 +58,6 @@ Label4:
     goto:		Label5
 Label6:
     iLoad:	v0 <- 4			;; Loading integer number 4
-    load_addr:	a0 <- _str_1			;; String = "Your number is: "
     write				;; This is where syscall will be made
     iLoad:	v0 <- 1			;; Loading integer number 1
     load:	a0 <- n_			;; Loading variable n_ into register
