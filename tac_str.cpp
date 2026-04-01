@@ -68,7 +68,7 @@ void Var_TAC_Opd::print(FILE *file) {
 }
 
 string Var_TAC_Opd::to_string() {
-    return var_name + "_";
+    return var_name;
 }
 
 string Var_TAC_Opd::get_name() {

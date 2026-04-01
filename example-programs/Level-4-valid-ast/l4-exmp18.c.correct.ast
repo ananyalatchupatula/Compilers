@@ -1,0 +1,46 @@
+**PROCEDURE: main
+  Return Type: <void>
+  Formal Parameters:
+**BEGIN: Abstract Syntax Tree
+    Asgn:
+      LHS (Name : max_<int>)
+      RHS (Num : 0<int>)
+    Asgn:
+      LHS (Name : a_<int>)
+      RHS (Num : 5<int>)
+    Asgn:
+      LHS (Name : b_<int>)
+      RHS (Num : 1<int>)
+    If:
+      Condition (
+        Condition: GT<bool>
+          L_Opd (Name : a_<int>)
+          R_Opd (Name : max_<int>))
+      Then (
+        Asgn:
+          LHS (Name : max_<int>)
+          RHS (Name : a_<int>))
+      Else (
+        If:
+          Condition (
+            Condition: GT<bool>
+              L_Opd (Name : b_<int>)
+              R_Opd (Name : max_<int>))
+          Then (
+            Asgn:
+              LHS (Name : max_<int>)
+              RHS (Name : b_<int>))
+          Else (
+            If:
+              Condition (
+                Condition: GT<bool>
+                  L_Opd (Name : c_<int>)
+                  R_Opd (Name : max_<int>))
+              Then (
+                Asgn:
+                  LHS (Name : max_<int>)
+                  RHS (Name : c_<int>))))
+    Asgn:
+      LHS (Name : c_<int>)
+      RHS (Num : 2<int>)
+**END: Abstract Syntax Tree

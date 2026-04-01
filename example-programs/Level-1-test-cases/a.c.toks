@@ -1,8 +1,6 @@
-Token Name: VOID	Lexeme: void	Lineno: 1
-Token Name: NAME	Lexeme: main	Lineno: 1
-Token Name: LEFT_ROUND_BRACKET	Lexeme: (	Lineno: 1
-Token Name: RIGHT_ROUND_BRACKET	Lexeme: )	Lineno: 1
-Token Name: LEFT_CURLY_BRACKET	Lexeme: {	Lineno: 1
-Token Name: INTEGER	Lexeme: int	Lineno: 3
-Token Name: NAME	Lexeme: x	Lineno: 3
-Token Name: ASSIGN_OP	Lexeme: =	Lineno: 3
+**PROCEDURE: main
+  Return Type: <void>
+  Formal Parameters:
+**BEGIN: Abstract Syntax Tree
+
+**END: Abstract Syntax Tree
