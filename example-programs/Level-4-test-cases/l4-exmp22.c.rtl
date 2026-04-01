@@ -27,6 +27,6 @@ Label0:
     sub.d:	f4 <- f2 , f6
     store.d:	stemp0 <- f4
 Label1:
-    load:	t0 <- stemp0			;; Loading variable stemp0 into register
-    store:	d_ <- t0
+    load.d:	f2 <- stemp0			;; Loading variable stemp0 into register
+    store.d:	d_ <- f2
 **END: RTL Statements

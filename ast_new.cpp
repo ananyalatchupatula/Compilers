@@ -412,7 +412,9 @@ void Ternary_Expr_Ast::pre_allocate_temps() {
 
 TAC_Opd* Ternary_Expr_Ast::generate_tac(list<TAC_Stmt*>& statements) {
     // Create result temporary (using stemp for ternary results)
-    TAC_Opd* result = TAC_Generator::get_instance()->create_new_stemp();
+    TAC_Opd* result = TAC_Generator::get_instance()->create_new_stemp(
+        node_data_type == FLOAT_DATA_TYPE
+    );
     
     // Evaluate condition
     TAC_Opd* cond_tac = condition->generate_tac(statements);
