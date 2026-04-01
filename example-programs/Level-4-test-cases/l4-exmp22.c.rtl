@@ -1,29 +1,32 @@
 **PROCEDURE: main
 **BEGIN: RTL Statements
-    iLoad:	v0 <- 0			;; Loading integer number 0
-    store:	a_ <- v0
-    iLoad:	v0 <- 0			;; Loading integer number 0
-    store:	b_ <- v0
-    load:	v0 <- a_			;; Loading variable a_ into register
-    load:	t1 <- b_			;; Loading variable b_ into register
-    add:	t0 <- v0 , t1
-    load:	v0 <- a_			;; Loading variable a_ into register
-    load:	t2 <- b_			;; Loading variable b_ into register
-    sub:	t1 <- v0 , t2
-    slt:	v0 <- t0 , t1
-    not:	t0 <- v0
-    bgtz:	t0 , Label0
-    load:	v0 <- a_			;; Loading variable a_ into register
-    load:	t1 <- b_			;; Loading variable b_ into register
-    mul:	t0 <- v0 , t1
-    store:	stemp0 <- t0
+    iLoad.d:	f2 <- 2.30			;; Loading integer number 2.30
+    store.d:	a_ <- f2
+    iLoad.d:	f2 <- 3.40			;; Loading integer number 3.40
+    store.d:	b_ <- f2
+    load.d:	f2 <- a_			;; Loading variable a_ into register
+    load.d:	f6 <- b_			;; Loading variable b_ into register
+    add.d:	f4 <- f2 , f6
+    load.d:	f2 <- a_			;; Loading variable a_ into register
+    load.d:	f8 <- b_			;; Loading variable b_ into register
+    sub.d:	f6 <- f2 , f8
+    slt.d:	f4 , f6
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    move:	t0 <- zero
+    movt:	t0 <- v0 , 0
+    not:	t1 <- t0
+    bgtz:	t1 , Label0
+    load.d:	f2 <- a_			;; Loading variable a_ into register
+    load.d:	f6 <- b_			;; Loading variable b_ into register
+    mul.d:	f4 <- f2 , f6
+    store.d:	stemp0 <- f4
     goto:		Label1
 Label0:
-    load:	v0 <- a_			;; Loading variable a_ into register
-    load:	t1 <- b_			;; Loading variable b_ into register
-    sub:	t0 <- v0 , t1
-    store:	stemp0 <- t0
+    load.d:	f2 <- a_			;; Loading variable a_ into register
+    load.d:	f6 <- b_			;; Loading variable b_ into register
+    sub.d:	f4 <- f2 , f6
+    store.d:	stemp0 <- f4
 Label1:
-    load:	v0 <- stemp0			;; Loading variable stemp0 into register
-    store:	d_ <- v0
+    load:	t0 <- stemp0			;; Loading variable stemp0 into register
+    store:	d_ <- t0
 **END: RTL Statements

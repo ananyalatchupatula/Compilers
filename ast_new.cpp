@@ -68,8 +68,8 @@ TAC_Opd* Const_Expr_Ast::generate_tac(list<TAC_Stmt*>& statements) {
     if(node_data_type == INT_DATA_TYPE) {
         return new Const_TAC_Opd(atoi(value.c_str()));
     } else if(node_data_type == FLOAT_DATA_TYPE) {
-        return new Const_TAC_Opd(atof(value.c_str()));
-    } else if(node_data_type == STRING_DATA_TYPE) {
+    return new Const_TAC_Opd(atof(value.c_str()));
+}else if(node_data_type == STRING_DATA_TYPE) {
     string label = TAC_Generator::get_instance()->get_or_create_string_label(value);
     return new Var_TAC_Opd(label, STRING_DATA_TYPE);
     }else {
@@ -131,7 +131,9 @@ void Unary_Expr_Ast::pre_allocate_temps() {
     // Then allocate for this unary operation
     if (temp_id == -1) {
         temp_id = TAC_Generator::get_instance()->get_temp_counter();
-        TAC_Generator::get_instance()->create_new_temp();
+        TAC_Generator::get_instance()->create_new_temp(
+    node_data_type == FLOAT_DATA_TYPE
+);
     }
 }
 
@@ -141,7 +143,7 @@ TAC_Opd* Unary_Expr_Ast::generate_tac(list<TAC_Stmt*>& statements) {
     // Use pre-allocated temp ID if available, otherwise create new
     TAC_Opd* result;
     if (temp_id != -1) {
-        result = new Temp_TAC_Opd(temp_id);
+        result = new Temp_TAC_Opd(temp_id, node_data_type);
     } else {
         result = TAC_Generator::get_instance()->create_new_temp();
     }
@@ -226,7 +228,9 @@ void Binary_Expr_Ast::pre_allocate_temps() {
     // Then allocate for this binary operation
     if (temp_id == -1) {
         temp_id = TAC_Generator::get_instance()->get_temp_counter();
-        TAC_Generator::get_instance()->create_new_temp();
+        TAC_Generator::get_instance()->create_new_temp(
+    node_data_type == FLOAT_DATA_TYPE
+);
     }
 }
 
@@ -237,7 +241,7 @@ TAC_Opd* Binary_Expr_Ast::generate_tac(list<TAC_Stmt*>& statements) {
     // Use pre-allocated temp ID if available, otherwise create new
     TAC_Opd* result;
     if (temp_id != -1) {
-        result = new Temp_TAC_Opd(temp_id);
+        result = new Temp_TAC_Opd(temp_id, node_data_type);
     } else {
         result = TAC_Generator::get_instance()->create_new_temp();
     }

@@ -14,13 +14,42 @@ void RTL_Generator::reset() {
     rtl_list.clear();
     active_temp_map.clear();
     free_pool = {"v0", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9"};
+    float_pool = {"f2", "f4", "f6", "f8"};
 }
 
 void RTL_Generator::reset_block_allocator() {
     active_temp_map.clear();
     free_pool = {"v0","t0","t1","t2","t3","t4","t5","t6","t7","t8","t9"};
+    float_pool = {"f2","f4","f6","f8"};
 }
 
+string RTL_Generator::allocate_float_reg() {
+    if (float_pool.empty()) {
+        cerr << "Float register pool exhausted\n";
+        exit(1);
+    }
+
+    string reg = float_pool.front();
+    float_pool.erase(float_pool.begin());
+    return reg;
+}
+
+void RTL_Generator::free_float_reg(const string &reg) {
+    float_pool.push_back(reg);
+
+    sort(float_pool.begin(), float_pool.end(), [](string a, string b) {
+        return stoi(a.substr(1)) < stoi(b.substr(1));
+    });
+}
+
+void RTL_Generator::free_any_reg(const string &reg) {
+    if (reg.empty()) return;
+
+    if (reg[0] == 'f')
+        free_float_reg(reg);
+    else
+        free_reg(reg);
+}
 
 RTL_Generator* RTL_Generator::get_instance() {
     if (instance == NULL)
@@ -107,22 +136,42 @@ RTL_Opd* RTL_Generator::materialize_operand(
         }
     }
 
-    // fresh allocation
-    used_reg = allocate_reg();
+bool is_float =
+    (opd->get_data_type() == FLOAT_DATA_TYPE);
 
-    RTL_Opd *reg = new Register_RTL_Opd(used_reg);
+used_reg = is_float ? allocate_float_reg() : allocate_reg();
 
-    if (dynamic_cast<Const_TAC_Opd*>(opd)) {
-        auto c = dynamic_cast<Const_TAC_Opd*>(opd);
+RTL_Opd *reg = new Register_RTL_Opd(used_reg);
+
+if (dynamic_cast<Const_TAC_Opd*>(opd)) {
+    auto c = dynamic_cast<Const_TAC_Opd*>(opd);
+
+    if (is_float) {
+    rtl_list.push_back(
+        new Load_RTL_Stmt(
+            reg,
+            new Const_RTL_Opd(c->get_float_value()),
+            true
+        )
+    );
+}else {
         rtl_list.push_back(
-            new Load_RTL_Stmt(reg, new Const_RTL_Opd(c->get_int_value()))
+            new Load_RTL_Stmt(
+                reg,
+                new Const_RTL_Opd(c->get_int_value())
+            )
         );
     }
-    else {
-        rtl_list.push_back(
-            new Load_RTL_Stmt(reg, new Memory_RTL_Opd(opd->to_string()))
-        );
-    }
+}
+else {
+    rtl_list.push_back(
+    new Load_RTL_Stmt(
+        reg,
+        new Memory_RTL_Opd(opd->to_string()),
+        is_float
+    )
+);
+}
 
     return reg;
 }
@@ -137,7 +186,29 @@ if (auto comp = dynamic_cast<Compute_TAC_Stmt*>(stmt)) {
 
     RTL_Opd *lhs = materialize_operand(comp->get_opd1(), left_reg, left_temp);
 
+bool operands_float =
+    comp->get_opd1()->get_data_type() == FLOAT_DATA_TYPE;
+
+bool is_compare =
+    comp->get_op() == Compute_TAC_Stmt::TAC_OP_LT ||
+    comp->get_op() == Compute_TAC_Stmt::TAC_OP_LE ||
+    comp->get_op() == Compute_TAC_Stmt::TAC_OP_GT ||
+    comp->get_op() == Compute_TAC_Stmt::TAC_OP_GE ||
+    comp->get_op() == Compute_TAC_Stmt::TAC_OP_EQ ||
+    comp->get_op() == Compute_TAC_Stmt::TAC_OP_NE;
+
+bool use_float_dest = operands_float && !is_compare;
+
+if (operands_float && is_compare) {
     out_reg = allocate_reg();
+
+    // never use v0 for compare result materialization
+    if (out_reg == "v0")
+        out_reg = allocate_reg();
+}
+else {
+    out_reg = use_float_dest ? allocate_float_reg() : allocate_reg();
+}
     RTL_Opd *dest = new Register_RTL_Opd(out_reg);
 
     RTL_Opd *rhs = nullptr;
@@ -149,6 +220,76 @@ if (auto comp = dynamic_cast<Compute_TAC_Stmt*>(stmt)) {
     active_temp_map[comp->get_result()->to_string()] = out_reg;
 }
 
+    Compute_RTL_Stmt::RTL_Op float_cmp_op;
+
+switch (comp->get_op()) {
+    case Compute_TAC_Stmt::TAC_OP_GT:
+        float_cmp_op = Compute_RTL_Stmt::RTL_OP_SLE_D;
+        break;
+    case Compute_TAC_Stmt::TAC_OP_GE:
+        float_cmp_op = Compute_RTL_Stmt::RTL_OP_SLT_D;
+        break;
+    case Compute_TAC_Stmt::TAC_OP_LT:
+        float_cmp_op = Compute_RTL_Stmt::RTL_OP_SLT_D;
+        break;
+    case Compute_TAC_Stmt::TAC_OP_LE:
+        float_cmp_op = Compute_RTL_Stmt::RTL_OP_SLE_D;
+        break;
+    case Compute_TAC_Stmt::TAC_OP_EQ:
+        float_cmp_op = Compute_RTL_Stmt::RTL_OP_SEQ;
+        break;
+    case Compute_TAC_Stmt::TAC_OP_NE:
+        float_cmp_op = Compute_RTL_Stmt::RTL_OP_SEQ;
+        break;
+    default:
+        float_cmp_op = map_tac_to_rtl_op(comp->get_op());
+}
+    
+    if (operands_float && is_compare) {
+    // emit compare directly on float operands
+    rtl_list.push_back(
+        new Compute_RTL_Stmt(
+            lhs,
+            lhs,
+            float_cmp_op,
+            rhs
+        )
+    );
+
+    // materialize boolean result into integer register
+    rtl_list.push_back(
+        new Load_RTL_Stmt(
+            new Register_RTL_Opd("v0"),
+            new Const_RTL_Opd(1)
+        )
+    );
+
+   rtl_list.push_back(
+    new Compute_RTL_Stmt(
+        new Register_RTL_Opd(out_reg),
+        new Register_RTL_Opd("zero"),
+        Compute_RTL_Stmt::RTL_OP_MOVE,
+        nullptr
+    )
+);
+
+bool use_movt =
+    comp->get_op() == Compute_TAC_Stmt::TAC_OP_LT ||
+    comp->get_op() == Compute_TAC_Stmt::TAC_OP_LE ||
+    comp->get_op() == Compute_TAC_Stmt::TAC_OP_EQ;
+
+rtl_list.push_back(
+    new Compute_RTL_Stmt(
+        new Register_RTL_Opd(out_reg),
+        new Register_RTL_Opd("v0"),
+        use_movt
+            ? Compute_RTL_Stmt::RTL_OP_MOVT
+            : Compute_RTL_Stmt::RTL_OP_MOVF,
+        nullptr
+    )
+);
+}
+else {
     rtl_list.push_back(
         new Compute_RTL_Stmt(
             dest,
@@ -157,15 +298,20 @@ if (auto comp = dynamic_cast<Compute_TAC_Stmt*>(stmt)) {
             rhs
         )
     );
-    if (dynamic_cast<Var_TAC_Opd*>(comp->get_result())) {
+}
+  if (dynamic_cast<Var_TAC_Opd*>(comp->get_result())) {
+    bool is_float_result =
+        comp->get_result()->get_data_type() == FLOAT_DATA_TYPE;
+
     rtl_list.push_back(
         new Store_RTL_Stmt(
             new Memory_RTL_Opd(comp->get_result()->to_string()),
-            new Register_RTL_Opd(out_reg)
+            new Register_RTL_Opd(out_reg),
+            is_float_result
         )
     );
 
-    free_reg(out_reg);
+    free_any_reg(out_reg);
 }
 
     // use-and-lose input temps
@@ -174,7 +320,7 @@ if (left_reg != out_reg) {
     if (left_temp) {
         active_temp_map.erase(comp->get_opd1()->to_string());
     }
-    free_reg(left_reg);
+    free_any_reg(left_reg);
 }
 
 // free RIGHT input register after use
@@ -182,7 +328,7 @@ if (comp->get_opd2() && right_reg != out_reg) {
     if (right_temp) {
         active_temp_map.erase(comp->get_opd2()->to_string());
     }
-    free_reg(right_reg);
+    free_any_reg(right_reg);
 }
 }
 
@@ -192,19 +338,22 @@ else if (auto asg = dynamic_cast<Assign_TAC_Stmt*>(stmt)) {
 
     RTL_Opd *src =
         materialize_operand(asg->get_opd1(), src_reg, src_temp);
+        bool is_float =
+    asg->get_result()->get_data_type() == FLOAT_DATA_TYPE;
 
     rtl_list.push_back(
         new Store_RTL_Stmt(
-            new Memory_RTL_Opd(asg->get_result()->to_string()),
-            src
-        )
+    new Memory_RTL_Opd(asg->get_result()->to_string()),
+    src,
+    is_float
+)
     );
 
     if (src_temp) {
         active_temp_map.erase(asg->get_opd1()->to_string());
     }
 
-    free_reg(src_reg);
+    free_any_reg(src_reg);
 }
 
         else if (auto label = dynamic_cast<Label_TAC_Stmt*>(stmt)) {
@@ -240,7 +389,7 @@ else if (auto asg = dynamic_cast<Assign_TAC_Stmt*>(stmt)) {
         active_temp_map.erase(cgoto->get_cond()->to_string());
     }
 
-    free_reg(cond_reg);
+    free_any_reg(cond_reg);
 
     // THEN reset for next basic block
     
@@ -271,22 +420,25 @@ else if (auto p = dynamic_cast<Print_TAC_Stmt*>(stmt)) {
 
     // ✅ INTEGER / VARIABLE PRINT
     else {
-        rtl_list.push_back(
-            new Load_RTL_Stmt(
-                new Register_RTL_Opd("v0"),
-                new Const_RTL_Opd(1)
-            )
-        );
+    bool is_float =
+        p->get_opd()->get_data_type() == FLOAT_DATA_TYPE;
 
-        rtl_list.push_back(
-            new Load_RTL_Stmt(
-                new Register_RTL_Opd("a0"),
-                new Memory_RTL_Opd(opd_name)
-            )
-        );
+    rtl_list.push_back(
+        new Load_RTL_Stmt(
+            new Register_RTL_Opd("v0"),
+            new Const_RTL_Opd(is_float ? 2 : 1)
+        )
+    );
 
-        rtl_list.push_back(new Write_RTL_Stmt());
-    }
+    rtl_list.push_back(
+        new Load_RTL_Stmt(
+            new Register_RTL_Opd(is_float ? "f12" : "a0"),
+            new Memory_RTL_Opd(opd_name)
+        )
+    );
+
+    rtl_list.push_back(new Write_RTL_Stmt());
+}
 }
 
 else if (auto r = dynamic_cast<Read_TAC_Stmt*>(stmt)) {

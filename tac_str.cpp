@@ -15,17 +15,26 @@ TAC_Opd::TAC_Opd(Opd_Type type, DataType dt) : opd_type(type), data_type(dt) {}
 // ============================================================================
 
 Const_TAC_Opd::Const_TAC_Opd(int val) 
-    : TAC_Opd(CONSTANT_OPD), int_value(val), is_float(false), is_string(false) {
+    : TAC_Opd(CONSTANT_OPD, INT_DATA_TYPE),
+      int_value(val),
+      is_float(false),
+      is_string(false) {
     float_value = 0;
 }
 
 Const_TAC_Opd::Const_TAC_Opd(double val) 
-    : TAC_Opd(CONSTANT_OPD), float_value(val), is_float(true), is_string(false) {
+    : TAC_Opd(CONSTANT_OPD, FLOAT_DATA_TYPE),
+      float_value(val),
+      is_float(true),
+      is_string(false) {
     int_value = 0;
 }
 
 Const_TAC_Opd::Const_TAC_Opd(string val) 
-    : TAC_Opd(CONSTANT_OPD), string_value(val), is_float(false), is_string(true) {
+    : TAC_Opd(CONSTANT_OPD, STRING_DATA_TYPE),
+      string_value(val),
+      is_float(false),
+      is_string(true) {
     int_value = 0;
     float_value = 0;
 }

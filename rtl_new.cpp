@@ -18,7 +18,7 @@ string Register_RTL_Opd::get_name() {
 }
 
 bool Register_RTL_Opd::is_float_register() {
-    return (reg_name == "f2" || reg_name == "f4" || reg_name == "f6");
+    return !reg_name.empty() && reg_name[0] == 'f';
 }
 
 Memory_RTL_Opd::Memory_RTL_Opd(string name) : var_name(name) {}
@@ -148,11 +148,19 @@ void Compute_RTL_Stmt::print(FILE *file) {
         case RTL_OP_DIV_D: op_str = "div.d"; break;
         case RTL_OP_SLT_D: op_str = "slt.d"; break;
         case RTL_OP_SLE_D: op_str = "sle.d"; break;
+        case RTL_OP_MOVE: op_str = "move"; break;
+        case RTL_OP_MOVT: op_str = "movt"; break;
+        case RTL_OP_MOVF: op_str = "movf"; break;
     }
 
     fprintf(file, "    %s:\t", op_str);
+    bool compare_no_dest =
+    op == RTL_OP_SLT_D ||
+    op == RTL_OP_SLE_D;
+    if (!compare_no_dest) {
     dest->print(file);
     fprintf(file, " <- ");
+}
     
     // For iLoad/fLoad, opd1 is NULL and the constant is in opd2
     if (op == RTL_OP_ILOAD || op == RTL_OP_FLOAD) {
@@ -177,11 +185,20 @@ void Compute_RTL_Stmt::print(FILE *file) {
             if (opd2) opd2->print(file);
         }
     } else {
-        if (opd1) opd1->print(file);
-        if (opd2) {
-            fprintf(file, " , ");
-            opd2->print(file);
-        }
+        if (op == RTL_OP_MOVE) {
+    if (opd1) opd1->print(file);
+}
+else if (op == RTL_OP_MOVT || op == RTL_OP_MOVF) {
+    if (opd1) opd1->print(file);
+    fprintf(file, " , 0");
+}
+else {
+    if (opd1) opd1->print(file);
+    if (opd2) {
+        fprintf(file, " , ");
+        opd2->print(file);
+    }
+}
     }
     fprintf(file, "\n");
 }
@@ -195,16 +212,20 @@ Load_RTL_Stmt::~Load_RTL_Stmt() {
 void Load_RTL_Stmt::print(FILE *file) {
     Const_RTL_Opd *const_src = dynamic_cast<Const_RTL_Opd*>(source);
 
-    if (const_src)
-        fprintf(file, "    iLoad%s:\t", is_float ? ".d" : "");
-    else
-        fprintf(file, "    load%s:\t", is_float ? ".d" : "");
+bool float_load = false;
+Register_RTL_Opd *reg_dest = dynamic_cast<Register_RTL_Opd*>(dest);
+if (reg_dest && reg_dest->is_float_register())
+    float_load = true;
+
+if (const_src)
+    fprintf(file, "    iLoad%s:\t", float_load ? ".d" : "");
+else
+    fprintf(file, "    load%s:\t", float_load ? ".d" : "");
 
     dest->print(file);
     fprintf(file, " <- ");
     source->print(file);
 
-    Register_RTL_Opd *reg_dest = dynamic_cast<Register_RTL_Opd*>(dest);
 
     if (reg_dest && reg_dest->get_name() == "a0") {
         fprintf(file, "\t\t\t;; Moving the value to be printed into register a0\n");
@@ -245,7 +266,12 @@ Store_RTL_Stmt::~Store_RTL_Stmt() {
 }
 
 void Store_RTL_Stmt::print(FILE *file) {
-    fprintf(file, "    store%s:\t", is_float ? ".d" : "");
+    bool float_store = false;
+Register_RTL_Opd *reg_src = dynamic_cast<Register_RTL_Opd*>(source);
+if (reg_src && reg_src->is_float_register())
+    float_store = true;
+
+fprintf(file, "    store%s:\t", float_store ? ".d" : "");
     dest->print(file);
     fprintf(file, " <- ");
     source->print(file);

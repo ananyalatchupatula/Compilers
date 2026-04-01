@@ -106,7 +106,10 @@ public:
         RTL_OP_NEG,
         RTL_OP_UMINUS,
         RTL_OP_AND,
-        RTL_OP_OR
+        RTL_OP_OR,
+        RTL_OP_MOVE,
+        RTL_OP_MOVT,
+        RTL_OP_MOVF
     };
 
 private:

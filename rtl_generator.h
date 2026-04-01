@@ -13,7 +13,10 @@ using namespace std;
 class RTL_Generator {
 private:
     static RTL_Generator* instance;
-
+    vector<string> float_pool;
+    string allocate_float_reg();
+    void free_float_reg(const string &reg);
+    void free_any_reg(const string &reg);
     list<RTL_Stmt*> rtl_list;
     void reset_block_allocator();
     map<string, string> active_temp_map;
