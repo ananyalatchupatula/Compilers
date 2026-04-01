@@ -257,9 +257,12 @@ switch (comp->get_op()) {
     );
 
     // materialize boolean result into integer register
+    // Use v0 (reserved for syscalls/returns) for float compare results
+    // This is MIPS architecture-specific, not user-allocated
+    string cmp_reg = "v0";
     rtl_list.push_back(
         new Load_RTL_Stmt(
-            new Register_RTL_Opd("v0"),
+            new Register_RTL_Opd(cmp_reg),
             new Const_RTL_Opd(1)
         )
     );
@@ -281,13 +284,33 @@ bool use_movt =
 rtl_list.push_back(
     new Compute_RTL_Stmt(
         new Register_RTL_Opd(out_reg),
-        new Register_RTL_Opd("v0"),
+        new Register_RTL_Opd(cmp_reg),
         use_movt
             ? Compute_RTL_Stmt::RTL_OP_MOVT
             : Compute_RTL_Stmt::RTL_OP_MOVF,
         nullptr
     )
 );
+
+// Free all registers after using them for comparison
+// v0 is reserved for syscalls but still part of the pool when not in use
+free_any_reg(cmp_reg);
+
+// Free left input register
+if (left_reg != out_reg) {
+    if (left_temp) {
+        active_temp_map.erase(comp->get_opd1()->to_string());
+    }
+    free_any_reg(left_reg);
+}
+
+// Free right input register
+if (rhs && right_reg != out_reg) {
+    if (right_temp) {
+        active_temp_map.erase(comp->get_opd2()->to_string());
+    }
+    free_any_reg(right_reg);
+}
 }
 else {
     rtl_list.push_back(
@@ -298,6 +321,23 @@ else {
             rhs
         )
     );
+
+    // use-and-lose input temps for non-float-compare operations
+    // free LEFT input register after use
+    if (left_reg != out_reg) {
+        if (left_temp) {
+            active_temp_map.erase(comp->get_opd1()->to_string());
+        }
+        free_any_reg(left_reg);
+    }
+
+    // free RIGHT input register after use
+    if (comp->get_opd2() && right_reg != out_reg) {
+        if (right_temp) {
+            active_temp_map.erase(comp->get_opd2()->to_string());
+        }
+        free_any_reg(right_reg);
+    }
 }
   if (dynamic_cast<Var_TAC_Opd*>(comp->get_result())) {
     bool is_float_result =
@@ -312,23 +352,6 @@ else {
     );
 
     free_any_reg(out_reg);
-}
-
-    // use-and-lose input temps
-// free LEFT input register after use
-if (left_reg != out_reg) {
-    if (left_temp) {
-        active_temp_map.erase(comp->get_opd1()->to_string());
-    }
-    free_any_reg(left_reg);
-}
-
-// free RIGHT input register after use
-if (comp->get_opd2() && right_reg != out_reg) {
-    if (right_temp) {
-        active_temp_map.erase(comp->get_opd2()->to_string());
-    }
-    free_any_reg(right_reg);
 }
 }
 
