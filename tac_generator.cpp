@@ -26,6 +26,16 @@ string TAC_Generator::get_or_create_string_label(const string &literal) {
     return label;
 }
 
+string TAC_Generator::get_string_literal_from_label(const string &label) const {
+    // Reverse lookup: find literal from label
+    for (const auto& pair : string_label_map) {
+        if (pair.second == label) {
+            return pair.first;
+        }
+    }
+    return label;  // If not found, return the label as-is
+}
+
 TAC_Generator::~TAC_Generator() {}
 
 TAC_Opd* TAC_Generator::create_new_temp(bool is_float) {

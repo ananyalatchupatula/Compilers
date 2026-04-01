@@ -81,6 +81,8 @@ public:
     void print(FILE *file = stdout);
     string to_string();
     string get_name();
+    string get_display_string() const;
+    bool is_string_label() const;
 };
 
 // Temporary Variable Operand

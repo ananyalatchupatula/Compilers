@@ -30,6 +30,7 @@ public:
     Label_TAC_Opd* create_new_label();
 
     string get_or_create_string_label(const string &literal);
+    string get_string_literal_from_label(const string &label) const;
 
     uint32_t allocate_label_id();
     void reset_counters();

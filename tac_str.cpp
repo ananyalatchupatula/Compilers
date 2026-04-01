@@ -1,4 +1,5 @@
 #include "tac_str.h"
+#include "tac_generator.h"
 #include <iostream>
 #include <sstream>
 #include <cstdio>
@@ -82,6 +83,23 @@ string Var_TAC_Opd::to_string() {
 
 string Var_TAC_Opd::get_name() {
     return var_name;
+}
+
+string Var_TAC_Opd::get_display_string() const {
+    // If var_name starts with _str_, lookup the literal string value
+    if (var_name.length() > 5 && var_name.substr(0, 5) == "_str_") {
+        string literal = TAC_Generator::get_instance()->get_string_literal_from_label(var_name);
+        if (literal != var_name) {
+            // Found the literal, return it as-is (already has quotes from parser)
+            return literal;
+        }
+    }
+    return var_name;
+}
+
+bool Var_TAC_Opd::is_string_label() const {
+    // Check if this variable is a string label (starts with _str_)
+    return var_name.length() > 5 && var_name.substr(0, 5) == "_str_";
 }
 
 // ============================================================================
@@ -176,7 +194,16 @@ void Assign_TAC_Stmt::print(FILE *file) {
 
 string Assign_TAC_Stmt::to_string() {
     stringstream ss;
-    ss << result->to_string() << " = " << opd1->to_string();
+    string opd1_str = opd1->to_string();
+    
+    // Check if opd1 is a string label - if so, use display string
+    if (auto var = dynamic_cast<Var_TAC_Opd*>(opd1)) {
+        if (var->is_string_label()) {
+            opd1_str = var->get_display_string();
+        }
+    }
+    
+    ss << result->to_string() << " = " << opd1_str;
     return ss.str();
 }
 
@@ -308,6 +335,12 @@ void Print_TAC_Stmt::print(FILE *file) {
 }
 
 string Print_TAC_Stmt::to_string() {
+    // Check if operand is a string label - if so, show the literal
+    if (auto var = dynamic_cast<Var_TAC_Opd*>(opd1)) {
+        if (var->is_string_label()) {
+            return "write " + var->get_display_string();
+        }
+    }
     return "write " + opd1->to_string();
 }
 
