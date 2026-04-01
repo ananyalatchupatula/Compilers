@@ -18,8 +18,8 @@
     iLoad:	v0 <- 1			;; Loading integer number 1
     move:	t0 <- zero
     movf:	t0 <- v0 , 0
-    not:	t1 <- t0
-    bgtz:	t1 , Label0
+    not:	v0 <- t0
+    bgtz:	v0 , Label0
     load.d:	f2 <- a_			;; Loading variable a_ into register
     iLoad.d:	f6 <- 1.00			;; Loading integer number 1.00
     sub.d:	f4 <- f2 , f6

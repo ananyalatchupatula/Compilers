@@ -1,10 +1,6 @@
 #include "ast.h"
-#include "rtl_generator.h"
 #include <stdio.h>
 #include <string.h>
-
-extern FILE *rtl_file;
-int show_rtl = 0;
 extern int yylex(void);
 extern int yyparse(void);
 extern FILE *yyin;
@@ -52,9 +48,6 @@ int main(int argc, char *argv[])
 
         else if (strcmp(argv[i], "--show-tac") == 0)
             show_tac = 1;
-
-        else if (strcmp(argv[i], "--show-rtl") == 0)
-            show_rtl = 1;
 
         else
             input_file = argv[i];
@@ -162,20 +155,7 @@ int main(int argc, char *argv[])
         }
     }
 
-        if (show_rtl)
-    {
-        char rtl_name[256];
 
-        snprintf(rtl_name, sizeof(rtl_name), "%s.rtl", input_file);
-
-        rtl_file = fopen(rtl_name, "w");
-
-        if (!rtl_file)
-        {
-            perror("rtl file open failed");
-            return 1;
-        }
-    }
 
     /* PARSING */
 
@@ -228,12 +208,6 @@ int main(int argc, char *argv[])
     }
 
     /* TAC generation happens inside parser/AST code if show_tac enabled */
-        if (show_rtl)
-    {
-        RTL_Generator rtl_gen;
-        rtl_gen.generate_from_existing_tac();
-        rtl_gen.print_rtl(rtl_file);
-    }
 
     if (tok_file)
         fclose(tok_file);
@@ -243,8 +217,7 @@ int main(int argc, char *argv[])
 
     if (tac_file)
         fclose(tac_file);
-    if(rtl_file)
-        fclose(rtl_file);
+ 
 
     fclose(yyin);
 

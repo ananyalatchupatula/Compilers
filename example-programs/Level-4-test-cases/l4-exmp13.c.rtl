@@ -28,8 +28,8 @@
     iLoad:	v0 <- 1			;; Loading integer number 1
     move:	t1 <- zero
     movf:	t1 <- v0 , 0
-    and:	t2 <- t0 , t1
-    not:	t0 <- t2
+    and:	v0 <- t0 , t1
+    not:	t0 <- v0
     bgtz:	t0 , Label1
     load.d:	f2 <- a_			;; Loading variable a_ into register
     load.d:	f6 <- d_			;; Loading variable d_ into register
