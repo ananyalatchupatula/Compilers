@@ -11,7 +11,7 @@
     seq:	t0 <- v0 , t1
     not:	v0 <- t0
     bgtz:	v0 , Label1
-    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
+    iLoad:	v0 <- 1			;; Loading integer number 1
     store:	cntr_ <- v0
     goto:		Label0
 Label1:
@@ -37,7 +37,7 @@ Label3:
     seq:	t0 <- v0 , t1
     not:	v0 <- t0
     bgtz:	v0 , Label5
-    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
+    iLoad:	v0 <- 1			;; Loading integer number 1
     store:	cntr_ <- v0
     goto:		Label4
 Label5:

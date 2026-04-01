@@ -1,7 +1,7 @@
 #include "ast_new.h"
 #include "tac_str.h"
 #include "tac_generator.h"
-#include "rtl_generator_new.h"
+#include "rtl_generator.h"
 #include <cstdio>
 #include <iostream>
 
@@ -70,8 +70,9 @@ TAC_Opd* Const_Expr_Ast::generate_tac(list<TAC_Stmt*>& statements) {
     } else if(node_data_type == FLOAT_DATA_TYPE) {
         return new Const_TAC_Opd(atof(value.c_str()));
     } else if(node_data_type == STRING_DATA_TYPE) {
-        return new Const_TAC_Opd(value);
-    } else {
+    string label = TAC_Generator::get_instance()->get_or_create_string_label(value);
+    return new Var_TAC_Opd(label, STRING_DATA_TYPE);
+    }else {
         return new Const_TAC_Opd(0);
     }
 }

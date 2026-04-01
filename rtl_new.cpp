@@ -75,7 +75,7 @@ string Const_RTL_Opd::to_string() {
 }
 
 Compute_RTL_Stmt::Compute_RTL_Stmt(RTL_Opd *d, RTL_Opd *op1, RTL_Op operation, RTL_Opd *op2)
-    : dest(d), opd1(op1), op(operation), opd2(op2) {}
+    : dest(d), opd1(op1), opd2(op2), op(operation) {}
 
 Compute_RTL_Stmt::~Compute_RTL_Stmt() {
     delete dest;
@@ -193,20 +193,32 @@ Load_RTL_Stmt::~Load_RTL_Stmt() {
 }
 
 void Load_RTL_Stmt::print(FILE *file) {
-    fprintf(file, "    load%s:\t", is_float ? ".d" : "");
+    Const_RTL_Opd *const_src = dynamic_cast<Const_RTL_Opd*>(source);
+
+    if (const_src)
+        fprintf(file, "    iLoad%s:\t", is_float ? ".d" : "");
+    else
+        fprintf(file, "    load%s:\t", is_float ? ".d" : "");
+
     dest->print(file);
     fprintf(file, " <- ");
     source->print(file);
+
     Register_RTL_Opd *reg_dest = dynamic_cast<Register_RTL_Opd*>(dest);
 
-if (reg_dest && reg_dest->get_name() == "a0") {
-    fprintf(file, "\t\t\t;; Moving the value to be printed into register a0\n");
-}
-else {
-    fprintf(file, "\t\t\t;; Loading variable ");
-    source->print(file);
-    fprintf(file, " into register\n");
-}
+    if (reg_dest && reg_dest->get_name() == "a0") {
+        fprintf(file, "\t\t\t;; Moving the value to be printed into register a0\n");
+    }
+    else if (const_src) {
+        fprintf(file, "\t\t\t;; Loading integer number ");
+        source->print(file);
+        fprintf(file, "\n");
+    }
+    else {
+        fprintf(file, "\t\t\t;; Loading variable ");
+        source->print(file);
+        fprintf(file, " into register\n");
+    }
 }
 
 Loadaddr_RTL_Stmt::Loadaddr_RTL_Stmt(RTL_Opd *d, RTL_Opd *s, string str_val) : dest(d), source(s), string_value(str_val) {}

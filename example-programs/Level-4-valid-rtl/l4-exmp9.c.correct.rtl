@@ -37,7 +37,7 @@ Label4:
     load:       v0 <- c_            ;; Loading variable c_ into register
     iLoad:      t1 <- 2             ;; Loading integer number 2
     add:        t0 <- v0 , t1
-    store:      c_ <- v0
+    store:      c_ <- t0
     load:       v0 <- c_            ;; Loading variable c_ into register
     iLoad:      t1 <- 30            ;; Loading integer number 30
     sgt:        t0 <- v0 , t1

@@ -1,25 +1,25 @@
 **PROCEDURE: main
 **BEGIN: RTL Statements
-    iLoad:	v0 <- 2			;; Loading integer number 2
+    iLoad:	v0 <- 0			;; Loading integer number 0
     store:	b_ <- v0
-    iLoad:	v0 <- 8			;; Loading integer number 8
+    iLoad:	v0 <- 0			;; Loading integer number 0
     store:	c_ <- v0
-    load:	f2 <- b_			;; Loading variable b_ into register
-    load:	f4 <- c_			;; Loading variable c_ into register
-    div.d:	t0 <- f2 , f4
-    load:	f4 <- a_			;; Loading variable a_ into register
-    div.d:	v0 <- t0 , f4
-    load:	f4 <- b_			;; Loading variable b_ into register
-    mul.d:	v0 <- t0 , f4
-    load:	f2 <- a_			;; Loading variable a_ into register
-    add.d:	t0 <- f2 , t0
+    load:	v0 <- b_			;; Loading variable b_ into register
+    load:	t1 <- c_			;; Loading variable c_ into register
+    div:	t0 <- v0 , t1
+    load:	t1 <- a_			;; Loading variable a_ into register
+    div:	v0 <- t0 , t1
+    load:	t1 <- b_			;; Loading variable b_ into register
+    mul:	t0 <- v0 , t1
+    load:	v0 <- a_			;; Loading variable a_ into register
+    add:	t1 <- v0 , t0
+    iLoad:	t0 <- 0			;; Loading integer number 0
+    sgt:	v0 <- t1 , t0
+    not:	t0 <- v0
+    bgtz:	t0 , Label0
+    load:	v0 <- a_			;; Loading variable a_ into register
     iLoad:	t1 <- 0			;; Loading integer number 0
-    sgt:	t0 <- t0 , t1
-    not:	v0 <- t0
-    bgtz:	v0 , Label0
-    load:	f2 <- a_			;; Loading variable a_ into register
-    iLoad:	t1 <- 1			;; Loading integer number 1
-    sub.d:	t0 <- f2 , t1
+    sub:	t0 <- v0 , t1
     store:	a_ <- t0
     goto:		Label0
 Label0:

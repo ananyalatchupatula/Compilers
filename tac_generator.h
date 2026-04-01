@@ -4,42 +4,36 @@
 #include <string>
 #include <list>
 #include <stdint.h>
+#include <map>
 using namespace std;
 
 class TAC_Opd;
 class Label_TAC_Opd;
 
-// TAC Generator Utility Class
 class TAC_Generator {
 private:
     uint32_t temp_counter;
     uint32_t stemp_counter;
     uint32_t label_counter;
-    
-    // Singleton pattern
+    uint32_t string_counter;
+    map<string, string> string_label_map;
+
     static TAC_Generator *instance;
     TAC_Generator();
-    
+
 public:
     static TAC_Generator* get_instance();
-    
     ~TAC_Generator();
-    
-    // Generate unique temporary variable names
+
     TAC_Opd* create_new_temp(bool is_float = false);
-    
-    // Generate unique string temporary variable names (for ternary results)
     TAC_Opd* create_new_stemp(bool is_float = false);
-    
-    // Generate unique labels
     Label_TAC_Opd* create_new_label();
-    
-    // Get next label ID without creating object
+
+    string get_or_create_string_label(const string &literal);
+
     uint32_t allocate_label_id();
-    
-    // Reset counters
     void reset_counters();
-    
+
     uint32_t get_temp_counter() { return temp_counter; }
     uint32_t get_stemp_counter() { return stemp_counter; }
     uint32_t get_label_counter() { return label_counter; }

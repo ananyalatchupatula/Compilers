@@ -14,7 +14,7 @@ Label0:
     slt:	t0 <- v0 , t1
     not:	v0 <- t0
     bgtz:	v0 , Label1
-    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
+    iLoad:	v0 <- 1			;; Loading integer number 1
     load:	a0 <- i_			;; Moving the value to be printed into register a0
     write				;; This is where syscall will be made
     load:	v0 <- i_			;; Loading variable i_ into register
@@ -36,7 +36,7 @@ Label2:
     load:	t1 <- number_			;; Loading variable number_ into register
     add:	t0 <- v0 , t1
     store:	sum_ <- t0
-    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
+    iLoad:	v0 <- 1			;; Loading integer number 1
     load:	a0 <- sum_			;; Moving the value to be printed into register a0
     write				;; This is where syscall will be made
 **END: RTL Statements

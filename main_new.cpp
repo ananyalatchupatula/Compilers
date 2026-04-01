@@ -1,6 +1,6 @@
 #include "ast_new.h"
 #include "rtl_new.h"
-#include "rtl_generator_new.h"
+#include "rtl_generator.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -133,9 +133,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    int num_nodes = 0;
-    int num_stmt_nodes = 0;
-    int num_expr_nodes = 0;
 
     if (sa_parse)
     {

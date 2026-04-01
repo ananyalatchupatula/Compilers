@@ -5,7 +5,7 @@
 #include "ast_new.h"
 #include "tac_str.h"
 #include "tac_generator.h"
-#include "rtl_generator_new.h"
+#include "rtl_generator.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -316,9 +316,10 @@ func_def
             fprintf(ast_file, "\n**END: Abstract Syntax Tree");
         }
 
-        /* Generate TAC for the function body */
+        /* Generate  for the function body */
         if($7) {
             list<TAC_Stmt*> tac_stmts;
+            TAC_Generator::get_instance()->reset_counters();
             $7->pre_allocate_temps();
             $7->generate_tac(tac_stmts);
             

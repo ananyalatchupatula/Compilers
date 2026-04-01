@@ -14,7 +14,7 @@ Label0:
     iLoad:	t1 <- 1			;; Loading integer number 1
     add:	t0 <- v0 , t1
     store:	i_ <- t0
-    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
+    iLoad:	v0 <- 1			;; Loading integer number 1
     load:	a0 <- i_			;; Moving the value to be printed into register a0
     write				;; This is where syscall will be made
     goto:		Label0

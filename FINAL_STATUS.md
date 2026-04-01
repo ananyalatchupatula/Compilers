@@ -121,7 +121,7 @@ Expected:  uminus: t1 <- v0
    - Added `string_value` field to Loadaddr statement
    - Added `get_is_float()` method to Const_RTL_Opd
 
-2. **rtl_generator_new.h/rtl_generator_new.cpp**
+2. **rtl_generator.h/rtl_generator.cpp**
    - Static maps: `float_vars`, `string_indices`
    - Pre-pass analysis for float variable detection
    - Float register allocation logic

@@ -16,30 +16,30 @@
     load:	t1 <- c_			;; Loading variable c_ into register
     add:	t0 <- v0 , t1
     load:	v0 <- a_			;; Loading variable a_ into register
-    sge:	t0 <- v0 , t0
+    sge:	t1 <- v0 , t0
     load:	v0 <- e_			;; Loading variable e_ into register
-    load:	t1 <- a_			;; Loading variable a_ into register
-    sub:	t0 <- v0 , t1
+    load:	t2 <- a_			;; Loading variable a_ into register
+    sub:	t0 <- v0 , t2
     load:	v0 <- d_			;; Loading variable d_ into register
-    slt:	t0 <- v0 , t0
-    and:	v0 <- t0 , t0
-    load:	v0 <- f_			;; Loading variable f_ into register
-    load:	t1 <- d_			;; Loading variable d_ into register
-    sne:	t0 <- v0 , t1
-    or:	v0 <- t0 , t0
-    not:	v0 <- v0
+    slt:	t2 <- v0 , t0
+    and:	v0 <- t1 , t2
+    load:	t0 <- f_			;; Loading variable f_ into register
+    load:	t2 <- d_			;; Loading variable d_ into register
+    sne:	t1 <- t0 , t2
+    or:	t0 <- v0 , t1
+    not:	v0 <- t0
     bgtz:	v0 , Label1
     load:	v0 <- d_			;; Loading variable d_ into register
     load:	t1 <- e_			;; Loading variable e_ into register
     mul:	t0 <- v0 , t1
     load:	t1 <- f_			;; Loading variable f_ into register
     div:	v0 <- t0 , t1
-    load:	v0 <- a_			;; Loading variable a_ into register
-    add:	t0 <- v0 , t0
-    store:	a_ <- t0
+    load:	t0 <- a_			;; Loading variable a_ into register
+    add:	t1 <- t0 , v0
+    store:	a_ <- t1
     goto:		Label0
 Label1:
-    iLoad:	v0 <- 1			;; Loading 1 in v0 to indicate syscall to print integter value
+    iLoad:	v0 <- 1			;; Loading integer number 1
     store:	b_ <- v0
 Label0:
 **END: RTL Statements

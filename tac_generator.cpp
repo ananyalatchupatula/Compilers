@@ -6,13 +6,24 @@ using namespace std;
 TAC_Generator *TAC_Generator::instance = NULL;
 
 TAC_Generator::TAC_Generator() 
-    : temp_counter(0), stemp_counter(0), label_counter(0) {}
+    : temp_counter(0), stemp_counter(0), label_counter(0), string_counter(0) {}
 
 TAC_Generator* TAC_Generator::get_instance() {
     if (instance == NULL) {
         instance = new TAC_Generator();
     }
     return instance;
+}
+
+string TAC_Generator::get_or_create_string_label(const string &literal) {
+    auto it = string_label_map.find(literal);
+    if (it != string_label_map.end()) {
+        return it->second;
+    }
+
+    string label = "_str_" + to_string(string_counter++);
+    string_label_map[literal] = label;
+    return label;
 }
 
 TAC_Generator::~TAC_Generator() {}
@@ -43,4 +54,6 @@ void TAC_Generator::reset_counters() {
     temp_counter = 0;
     stemp_counter = 0;
     label_counter = 0;
+    string_counter = 0;
+    string_label_map.clear();
 }
