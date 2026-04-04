@@ -1,0 +1,24 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad.d:	f2 <- 2.30			;; Loading integer number 2.30
+    store.d:	a_ <- f2
+    iLoad.d:	f2 <- 3.40			;; Loading integer number 3.40
+    store.d:	b_ <- f2
+    load.d:	f2 <- a_			;; Loading variable a_ into register
+    load.d:	f6 <- b_			;; Loading variable b_ into register
+    mul.d:	f4 <- f2 , f6
+    load.d:	f2 <- a_			;; Loading variable a_ into register
+    slt.d:	f4 , f2
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    move:	t0 <- zero
+    movf:	t0 <- v0 , 0
+    load.d:	f2 <- b_			;; Loading variable b_ into register
+    load.d:	f4 <- a_			;; Loading variable a_ into register
+    slt.d:	f2 , f4
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    move:	t1 <- zero
+    movt:	t1 <- v0 , 0
+    not:	v0 <- t1
+    or:	t1 <- t0 , v0
+    store:	c_ <- t1
+**END: RTL Statements

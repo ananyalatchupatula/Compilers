@@ -29,4 +29,11 @@ Label0:
 Label1:
     load.d:	f2 <- stemp0			;; Loading variable stemp0 into register
     store.d:	d_ <- f2
+    load.d:	f2 <- a_			;; Loading variable a_ into register
+    load.d:	f4 <- b_			;; Loading variable b_ into register
+    seq.d:	f2 <- f2 , f4
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    move:	t0 <- zero
+    movf:	t0 <- v0 , 0
+    store:	e_ <- t0
 **END: RTL Statements

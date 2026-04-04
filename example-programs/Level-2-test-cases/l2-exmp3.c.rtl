@@ -1,0 +1,18 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad.d:	f2 <- 2.40			;; Loading integer number 2.40
+    store.d:	value1_ <- f2
+    iLoad:	v0 <- 4			;; Loading integer number 4
+    load_addr:	a0 <- _str_0
+    write				;; This is where syscall will be made
+    iLoad:	v0 <- 7			;; Loading integer number 7
+    read				;; This is where syscall will be made
+    store.d:	value2_ <- f0
+    load.d:	f2 <- value1_			;; Loading variable value1_ into register
+    load.d:	f6 <- value2_			;; Loading variable value2_ into register
+    mul.d:	f4 <- f2 , f6
+    store.d:	result_ <- f4
+    iLoad:	v0 <- 3			;; Loading integer number 3
+    load.d:	f12 <- result_			;; Loading variable result_ into register
+    write				;; This is where syscall will be made
+**END: RTL Statements

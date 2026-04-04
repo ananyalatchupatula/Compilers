@@ -164,13 +164,23 @@ if (dynamic_cast<Const_TAC_Opd*>(opd)) {
     }
 }
 else {
-    rtl_list.push_back(
-    new Load_RTL_Stmt(
-        reg,
-        new Memory_RTL_Opd(opd->to_string()),
-        is_float
-    )
-);
+    // For string literals (_str_0, _str_1, etc.), use load_addr to get the address
+    if (opd->to_string().find("_str_") == 0) {
+        rtl_list.push_back(
+            new Loadaddr_RTL_Stmt(
+                reg,
+                new Memory_RTL_Opd(opd->to_string())
+            )
+        );
+    } else {
+        rtl_list.push_back(
+            new Load_RTL_Stmt(
+                reg,
+                new Memory_RTL_Opd(opd->to_string()),
+                is_float
+            )
+        );
+    }
 }
 
     return reg;
@@ -422,7 +432,7 @@ else if (auto asg = dynamic_cast<Assign_TAC_Stmt*>(stmt)) {
 else if (auto p = dynamic_cast<Print_TAC_Stmt*>(stmt)) {
     string opd_name = p->get_opd()->to_string();
 
-    // ✅ STRING PRINT
+    // ✅ STRING LITERAL PRINT (_str_0, _str_1, etc.)
     if (opd_name.find("_str_") == 0) {
         rtl_list.push_back(
             new Load_RTL_Stmt(
@@ -441,36 +451,91 @@ else if (auto p = dynamic_cast<Print_TAC_Stmt*>(stmt)) {
         rtl_list.push_back(new Write_RTL_Stmt());
     }
 
-    // ✅ INTEGER / VARIABLE PRINT
+    // ✅ STRING VARIABLE PRINT (variable holding string address)
+    else if (p->get_opd()->get_data_type() == STRING_DATA_TYPE) {
+        rtl_list.push_back(
+            new Load_RTL_Stmt(
+                new Register_RTL_Opd("v0"),
+                new Const_RTL_Opd(4)
+            )
+        );
+
+        rtl_list.push_back(
+            new Load_RTL_Stmt(
+                new Register_RTL_Opd("a0"),
+                new Memory_RTL_Opd(opd_name)
+            )
+        );
+
+        rtl_list.push_back(new Write_RTL_Stmt());
+    }
+
+    // ✅ INTEGER / FLOAT / VARIABLE PRINT
     else {
     bool is_float =
         p->get_opd()->get_data_type() == FLOAT_DATA_TYPE;
+    bool is_const = dynamic_cast<Const_TAC_Opd*>(p->get_opd()) != nullptr;
 
     rtl_list.push_back(
         new Load_RTL_Stmt(
             new Register_RTL_Opd("v0"),
-            new Const_RTL_Opd(is_float ? 2 : 1)
+            new Const_RTL_Opd(is_float ? 3 : 1)
         )
     );
 
-    rtl_list.push_back(
-        new Load_RTL_Stmt(
-            new Register_RTL_Opd(is_float ? "f12" : "a0"),
-            new Memory_RTL_Opd(opd_name)
-        )
-    );
+    // Handle constants differently - use immediate load, not memory load
+    if (is_const) {
+        auto const_opd = dynamic_cast<Const_TAC_Opd*>(p->get_opd());
+        if (is_float) {
+            rtl_list.push_back(
+                new Load_RTL_Stmt(
+                    new Register_RTL_Opd("f12"),
+                    new Const_RTL_Opd(const_opd->get_float_value()),
+                    true
+                )
+            );
+        } else {
+            rtl_list.push_back(
+                new Load_RTL_Stmt(
+                    new Register_RTL_Opd("a0"),
+                    new Const_RTL_Opd(const_opd->get_int_value())
+                )
+            );
+        }
+    } else {
+                if (active_temp_map.count(opd_name)) {
+            rtl_list.push_back(
+                new Compute_RTL_Stmt(
+                    new Register_RTL_Opd(is_float ? "f12" : "a0"),
+                    new Register_RTL_Opd(active_temp_map[opd_name]),
+                    Compute_RTL_Stmt::RTL_OP_MOVE,
+                    nullptr
+                )
+            );
+            active_temp_map.erase(opd_name);
+        }
+        else {
+            rtl_list.push_back(
+                new Load_RTL_Stmt(
+                    new Register_RTL_Opd(is_float ? "f12" : "a0"),
+                    new Memory_RTL_Opd(opd_name)
+                )
+            );
+        }
+    }
 
     rtl_list.push_back(new Write_RTL_Stmt());
 }
 }
 
 else if (auto r = dynamic_cast<Read_TAC_Stmt*>(stmt)) {
-
-    // syscall code 5 for integer read
+    // syscall code 5 for integer read, 7 for double read
+    bool is_float = r->get_var()->get_data_type() == FLOAT_DATA_TYPE;
+    
     rtl_list.push_back(
         new Load_RTL_Stmt(
             new Register_RTL_Opd("v0"),
-            new Const_RTL_Opd(5)
+            new Const_RTL_Opd(is_float ? 7 : 5)
         )
     );
 
@@ -481,7 +546,8 @@ else if (auto r = dynamic_cast<Read_TAC_Stmt*>(stmt)) {
     rtl_list.push_back(
         new Store_RTL_Stmt(
             new Memory_RTL_Opd(r->get_var()->to_string()),
-            new Register_RTL_Opd("v0")
+            new Register_RTL_Opd(is_float ? "f0" : "v0"),
+            is_float
         )
     );
 }

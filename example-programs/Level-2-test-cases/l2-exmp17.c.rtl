@@ -1,0 +1,91 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 10			;; Loading integer number 10
+    store:	a_ <- v0
+    load:	v0 <- a_			;; Loading variable a_ into register
+    uminus:	t0 <- v0
+    load:	v0 <- a_			;; Loading variable a_ into register
+    add:	t1 <- v0 , t0
+    load:	v0 <- a_			;; Loading variable a_ into register
+    uminus:	t0 <- v0
+    add:	v0 <- t1 , t0
+    load:	t0 <- a_			;; Loading variable a_ into register
+    uminus:	t1 <- t0
+    add:	t0 <- v0 , t1
+    load:	v0 <- a_			;; Loading variable a_ into register
+    uminus:	t1 <- v0
+    add:	v0 <- t0 , t1
+    load:	t0 <- a_			;; Loading variable a_ into register
+    uminus:	t1 <- t0
+    add:	t0 <- v0 , t1
+    load:	v0 <- a_			;; Loading variable a_ into register
+    uminus:	t1 <- v0
+    sub:	v0 <- t0 , t1
+    load:	t0 <- a_			;; Loading variable a_ into register
+    uminus:	t1 <- t0
+    sub:	t0 <- v0 , t1
+    load:	v0 <- a_			;; Loading variable a_ into register
+    uminus:	t1 <- v0
+    sub:	v0 <- t0 , t1
+    load:	t0 <- a_			;; Loading variable a_ into register
+    uminus:	t1 <- t0
+    sub:	t0 <- v0 , t1
+    load:	v0 <- a_			;; Loading variable a_ into register
+    uminus:	t1 <- v0
+    sub:	v0 <- t0 , t1
+    load:	t1 <- a_			;; Loading variable a_ into register
+    add:	t0 <- v0 , t1
+    load:	v0 <- a_			;; Loading variable a_ into register
+    uminus:	t1 <- v0
+    add:	v0 <- t0 , t1
+    load:	t0 <- a_			;; Loading variable a_ into register
+    uminus:	t1 <- t0
+    add:	t0 <- v0 , t1
+    store:	a_ <- t0
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- a_			;; Moving the value to be printed into register a0
+    write				;; This is where syscall will be made
+    iLoad:	v0 <- 5			;; Loading integer number 5
+    store:	b_ <- v0
+    load:	v0 <- b_			;; Loading variable b_ into register
+    uminus:	t0 <- v0
+    load:	v0 <- b_			;; Loading variable b_ into register
+    sub:	t1 <- v0 , t0
+    load:	v0 <- b_			;; Loading variable b_ into register
+    uminus:	t0 <- v0
+    sub:	v0 <- t1 , t0
+    load:	t0 <- b_			;; Loading variable b_ into register
+    uminus:	t1 <- t0
+    sub:	t0 <- v0 , t1
+    load:	v0 <- b_			;; Loading variable b_ into register
+    uminus:	t1 <- v0
+    sub:	v0 <- t0 , t1
+    load:	t0 <- b_			;; Loading variable b_ into register
+    uminus:	t1 <- t0
+    load:	t0 <- b_			;; Loading variable b_ into register
+    uminus:	t2 <- t0
+    sub:	t0 <- t1 , t2
+    sub:	t1 <- v0 , t0
+    load:	v0 <- b_			;; Loading variable b_ into register
+    uminus:	t0 <- v0
+    sub:	v0 <- t1 , t0
+    load:	t0 <- b_			;; Loading variable b_ into register
+    uminus:	t1 <- t0
+    sub:	t0 <- v0 , t1
+    load:	v0 <- b_			;; Loading variable b_ into register
+    uminus:	t1 <- v0
+    sub:	v0 <- t0 , t1
+    load:	t0 <- b_			;; Loading variable b_ into register
+    uminus:	t1 <- t0
+    sub:	t0 <- v0 , t1
+    load:	v0 <- b_			;; Loading variable b_ into register
+    uminus:	t1 <- v0
+    load:	v0 <- b_			;; Loading variable b_ into register
+    uminus:	t2 <- v0
+    sub:	v0 <- t1 , t2
+    sub:	t1 <- t0 , v0
+    store:	b_ <- t1
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- b_			;; Moving the value to be printed into register a0
+    write				;; This is where syscall will be made
+**END: RTL Statements

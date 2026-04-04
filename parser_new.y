@@ -318,31 +318,36 @@ func_def
 
         /* Generate  for the function body */
         if($7) {
-            list<TAC_Stmt*> tac_stmts;
-            TAC_Generator::get_instance()->reset_counters();
-            $7->pre_allocate_temps();
-            $7->generate_tac(tac_stmts);
-            
-            if(show_tac && tac_file && !tac_stmts.empty()) {
-                fprintf(tac_file, "**PROCEDURE: %s\n", $2);
-                fprintf(tac_file, "**BEGIN: Three Address Code Statements\n");
-                for(auto stmt : tac_stmts) {
-                    stmt->print(tac_file);
-                }
-                fprintf(tac_file, "**END: Three Address Code Statements\n");
-            }
-            
-            if(show_rtl && rtl_file && !tac_stmts.empty()) {
-                RTL_Generator::get_instance()->reset();
-                list<RTL_Stmt*> rtl_stmts = RTL_Generator::get_instance()->generate_rtl(tac_stmts);
-                fprintf(rtl_file, "**PROCEDURE: %s\n", $2);
-                fprintf(rtl_file, "**BEGIN: RTL Statements\n");
-                for(auto stmt : rtl_stmts) {
-                    stmt->print(rtl_file);
-                }
-                fprintf(rtl_file, "**END: RTL Statements\n");
-            }
+    list<TAC_Stmt*> tac_stmts;
+    if(show_tac || show_rtl) {
+    TAC_Generator::get_instance()->reset_counters();
+    $7->pre_allocate_temps();
+}
+
+$7->generate_tac(tac_stmts);
+    
+    if(show_tac && tac_file && !tac_stmts.empty()) {
+        fprintf(tac_file, "**PROCEDURE: %s\n", $2);
+        fprintf(tac_file, "**BEGIN: Three Address Code Statements\n");
+        for(auto stmt : tac_stmts) {
+            stmt->print(tac_file);
         }
+        fprintf(tac_file, "**END: Three Address Code Statements\n");
+    }
+    
+    if(show_rtl && rtl_file && !tac_stmts.empty()) {
+        RTL_Generator::get_instance()->reset();
+        list<RTL_Stmt*> rtl_stmts =
+            RTL_Generator::get_instance()->generate_rtl(tac_stmts);
+
+        fprintf(rtl_file, "**PROCEDURE: %s\n", $2);
+        fprintf(rtl_file, "**BEGIN: RTL Statements\n");
+        for(auto stmt : rtl_stmts) {
+            stmt->print(rtl_file);
+        }
+        fprintf(rtl_file, "**END: RTL Statements\n");
+    }
+}
 
         in_function = false;
         delete $7;

@@ -385,29 +385,31 @@ void Ternary_Expr_Ast::print(int indent) {
 }
 
 void Ternary_Expr_Ast::pre_allocate_temps() {
-    // Pre-allocate condition first
+    // Pre-allocate condition first (may contain nested ternaries)
     condition->pre_allocate_temps();
     
-    // Pre-allocate true branch
-    true_expr->pre_allocate_temps();
-    
-    // Pre-allocate false branch
-    false_expr->pre_allocate_temps();
-    
-    // Allocate the NOT temp for the condition (AFTER all branches)
-    if (not_temp_id == -1) {
-        not_temp_id = TAC_Generator::get_instance()->get_temp_counter();
-        TAC_Generator::get_instance()->create_new_temp();
-    }
-    
-    // Allocate labels for this ternary AFTER temps
+    // Allocate this ternary's false label (after condition, before true branch)
     Label_TAC_Opd* false_lbl = TAC_Generator::get_instance()->create_new_label();
     false_label_id = false_lbl->get_label_id();
     delete false_lbl;
     
+    // Allocate this ternary's end label (before true branch)
     Label_TAC_Opd* end_lbl = TAC_Generator::get_instance()->create_new_label();
     end_label_id = end_lbl->get_label_id();
     delete end_lbl;
+    
+    // Pre-allocate true branch (may contain nested ternaries)
+    true_expr->pre_allocate_temps();
+    
+    // Pre-allocate false branch (may contain nested ternaries)
+    false_expr->pre_allocate_temps();
+    
+    // Allocate the NOT temp for the condition AFTER all branches
+    // This ensures: condition temps, true temps, false temps, then NOT temp
+    if (not_temp_id == -1) {
+        not_temp_id = TAC_Generator::get_instance()->get_temp_counter();
+        TAC_Generator::get_instance()->create_new_temp();
+    }
 }
 
 TAC_Opd* Ternary_Expr_Ast::generate_tac(list<TAC_Stmt*>& statements) {
@@ -958,4 +960,3 @@ Print_Stmt* get_single_print_stmt(Statement_Ast* stmt) {
     // This is a limitation but we can work around it in the calling code
     return nullptr;
 }
-

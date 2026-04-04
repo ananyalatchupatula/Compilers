@@ -23,6 +23,7 @@ int show_rtl = 0;
 int sa_scan = 0;
 int sa_parse = 0;
 int sa_ast = 0;
+int sa_tac = 0;
 
 extern int lex_error;
 
@@ -46,6 +47,9 @@ int main(int argc, char *argv[])
 
         else if (strcmp(argv[i], "--sa-ast") == 0)
             sa_ast = 1;
+
+        else if (strcmp(argv[i], "--sa-tac") == 0)
+            sa_tac = 1;
 
         else if (strcmp(argv[i], "--show-tokens") == 0)
             show_tokens = 1;
@@ -150,6 +154,14 @@ int main(int argc, char *argv[])
     if (sa_ast)
     {
         if (ast_file) fclose(ast_file);
+        fclose(ip_file);
+        return 0;
+    }
+
+    if (sa_tac)
+    {
+        if (ast_file) fclose(ast_file);
+        if (tac_file) fclose(tac_file);
         fclose(ip_file);
         return 0;
     }

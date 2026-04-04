@@ -1,0 +1,33 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 5			;; Loading integer number 5
+    store:	global1_ <- v0
+    iLoad:	v0 <- 5			;; Loading integer number 5
+    read				;; This is where syscall will be made
+    store:	local_ <- v0
+    load:	v0 <- local_			;; Loading variable local_ into register
+    iLoad:	t1 <- 1			;; Loading integer number 1
+    add:	t0 <- v0 , t1
+    store:	global2_ <- t0
+    load:	v0 <- local_			;; Loading variable local_ into register
+    uminus:	t0 <- v0
+    load:	v0 <- global1_			;; Loading variable global1_ into register
+    uminus:	t1 <- v0
+    load:	v0 <- global2_			;; Loading variable global2_ into register
+    mul:	t2 <- v0 , t1
+    add:	v0 <- t0 , t2
+    store:	local_ <- v0
+    load:	v0 <- local_			;; Loading variable local_ into register
+    iLoad:	t1 <- 2			;; Loading integer number 2
+    div:	t0 <- v0 , t1
+    store:	global2_ <- t0
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- global1_			;; Moving the value to be printed into register a0
+    write				;; This is where syscall will be made
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- global2_			;; Moving the value to be printed into register a0
+    write				;; This is where syscall will be made
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- local_			;; Moving the value to be printed into register a0
+    write				;; This is where syscall will be made
+**END: RTL Statements

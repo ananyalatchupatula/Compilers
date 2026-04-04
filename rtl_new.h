@@ -36,6 +36,7 @@ public:
 };
 
 class Memory_RTL_Opd : public RTL_Opd {
+    
 private:
     string var_name;
 

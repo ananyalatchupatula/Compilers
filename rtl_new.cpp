@@ -57,7 +57,6 @@ Const_RTL_Opd::~Const_RTL_Opd() {}
 
 void Const_RTL_Opd::print(FILE *file) {
     if (is_float) {
-        // Print with 2 decimal places (removes trailing zeros automatically)
         fprintf(file, "%.2f", float_value);
     } else {
         fprintf(file, "%d", int_value);
@@ -86,7 +85,6 @@ Compute_RTL_Stmt::~Compute_RTL_Stmt() {
 void Compute_RTL_Stmt::print(FILE *file) {
     // Check if this is a float operation
     bool is_float_op = (op == RTL_OP_FLOAD);
-    
     // Check if destination is a float register
     if (!is_float_op && dest) {
         Register_RTL_Opd *reg_dest = dynamic_cast<Register_RTL_Opd*>(dest);
@@ -94,7 +92,6 @@ void Compute_RTL_Stmt::print(FILE *file) {
             is_float_op = true;
         }
     }
-    
     // Check if any operand is a float constant
     if (!is_float_op && opd2) {
         Const_RTL_Opd *const_opd2 = dynamic_cast<Const_RTL_Opd*>(opd2);
@@ -148,7 +145,7 @@ void Compute_RTL_Stmt::print(FILE *file) {
         case RTL_OP_DIV_D: op_str = "div.d"; break;
         case RTL_OP_SLT_D: op_str = "slt.d"; break;
         case RTL_OP_SLE_D: op_str = "sle.d"; break;
-        case RTL_OP_MOVE: op_str = "move"; break;
+        case RTL_OP_MOVE: op_str = is_float_op ? "move.d" : "move"; break;
         case RTL_OP_MOVT: op_str = "movt"; break;
         case RTL_OP_MOVF: op_str = "movf"; break;
     }
@@ -156,7 +153,8 @@ void Compute_RTL_Stmt::print(FILE *file) {
     fprintf(file, "    %s:\t", op_str);
     bool compare_no_dest =
     op == RTL_OP_SLT_D ||
-    op == RTL_OP_SLE_D;
+    op == RTL_OP_SLE_D ||
+    (op == RTL_OP_SEQ && is_float_op);
     if (!compare_no_dest) {
     dest->print(file);
     fprintf(file, " <- ");
@@ -174,7 +172,7 @@ void Compute_RTL_Stmt::print(FILE *file) {
     if (reg_dest && const_val &&
         reg_dest->get_name() == "v0" &&
         const_val->to_string() == "1") {
-        fprintf(file, "\t\t\t;; Loading 1 in v0 to indicate syscall to print integter value");
+        fprintf(file, "\t\t\t;; Loading 1 in v0 to indicate syscall to print integer value");
     }
     else {
         fprintf(file, "\t\t\t;; Loading integer number ");
