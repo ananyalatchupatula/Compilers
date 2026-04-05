@@ -362,3 +362,63 @@ void Read_TAC_Stmt::print(FILE *file) {
 string Read_TAC_Stmt::to_string() {
     return "read " + var->to_string();
 }
+// ============================================================================
+// PARAM_TAC_STMT CLASS (Push argument onto stack)
+// ============================================================================
+
+Param_TAC_Stmt::Param_TAC_Stmt(TAC_Opd *op) 
+    : TAC_Stmt(PARAM_STMT), opd1(op) {}
+
+Param_TAC_Stmt::~Param_TAC_Stmt() {
+    delete opd1;
+}
+
+void Param_TAC_Stmt::print(FILE *file) {
+    fprintf(file, "%s\n", to_string().c_str());
+}
+
+string Param_TAC_Stmt::to_string() {
+    return "param " + opd1->to_string();
+}
+
+// ============================================================================
+// CALL_TAC_STMT CLASS
+// ============================================================================
+
+Call_TAC_Stmt::Call_TAC_Stmt(TAC_Opd *fn) 
+    : TAC_Stmt(CALL_STMT), func_name(fn) {}
+
+Call_TAC_Stmt::~Call_TAC_Stmt() {
+    delete func_name;
+}
+
+void Call_TAC_Stmt::print(FILE *file) {
+    fprintf(file, "%s\n", to_string().c_str());
+}
+
+string Call_TAC_Stmt::to_string() {
+    return "call " + func_name->to_string();
+}
+
+// ============================================================================
+// RETURN_TAC_STMT CLASS
+// ============================================================================
+
+Return_TAC_Stmt::Return_TAC_Stmt(TAC_Opd *ret_val) 
+    : TAC_Stmt(RETURN_STMT), return_val(ret_val) {}
+
+Return_TAC_Stmt::~Return_TAC_Stmt() {
+    if(return_val) delete return_val;
+}
+
+void Return_TAC_Stmt::print(FILE *file) {
+    fprintf(file, "%s\n", to_string().c_str());
+}
+
+string Return_TAC_Stmt::to_string() {
+    if(return_val) {
+        return "return " + return_val->to_string();
+    } else {
+        return "return";
+    }
+}

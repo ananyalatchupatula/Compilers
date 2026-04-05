@@ -486,8 +486,8 @@ void Assignment_Stmt::pre_allocate_temps() {
 
 void Assignment_Stmt::print(int indent) {
     fprintf(ast_file, "%*sAsgn:\n", indent, "");
-    fprintf(ast_file, "%*sLHS (Name : %s<%s>)\n", indent+2, "", lhs_name.c_str(), data_type_to_string(rhs->get_data_type()));
-    fprintf(ast_file, "%*sRHS (", indent+2, "");
+    fprintf(ast_file, "%*sLHS (Name : %s<%s>)\n", indent+4, "", lhs_name.c_str(), data_type_to_string(node_data_type));
+    fprintf(ast_file, "%*sRHS (", indent+4, "");
     
     // Check if RHS needs wrapping - skip for simple constants
     Const_Expr_Ast* const_expr = dynamic_cast<Const_Expr_Ast*>(rhs);
@@ -495,9 +495,10 @@ void Assignment_Stmt::print(int indent) {
         Binary_Expr_Ast* bin_expr = dynamic_cast<Binary_Expr_Ast*>(rhs);
         Unary_Expr_Ast* unary_expr = dynamic_cast<Unary_Expr_Ast*>(rhs);
         Ternary_Expr_Ast* tern_expr = dynamic_cast<Ternary_Expr_Ast*>(rhs);
+        FunctionCall_Expr_Ast* func_call = dynamic_cast<FunctionCall_Expr_Ast*>(rhs);
         
         bool should_wrap = false;
-        if(bin_expr || unary_expr) {
+        if(bin_expr || unary_expr || func_call) {
             should_wrap = true;
         } else if(tern_expr) {
             Binary_Expr_Ast* cond_bin = dynamic_cast<Binary_Expr_Ast*>(tern_expr->get_condition());
@@ -506,11 +507,11 @@ void Assignment_Stmt::print(int indent) {
         
         if(should_wrap) {
             fprintf(ast_file, "\n");
-            for(int i = 0; i < indent + 4; i++) fprintf(ast_file, " ");
+            for(int i = 0; i < indent + 8; i++) fprintf(ast_file, " ");
         }
     }
     
-    rhs->print(indent + 2);
+    rhs->print(indent + 4);
     fprintf(ast_file, ")");
 }
 
@@ -959,4 +960,255 @@ Print_Stmt* get_single_print_stmt(Statement_Ast* stmt) {
     // So we'll use a different approach: try to cast and check
     // This is a limitation but we can work around it in the calling code
     return nullptr;
+}
+
+/* ============================================================================
+   FUNCTION CALL EXPRESSION IMPLEMENTATION
+   ============================================================================ */
+
+FunctionCall_Expr_Ast::FunctionCall_Expr_Ast(string fn_name) : function_name(fn_name) {}
+
+FunctionCall_Expr_Ast::~FunctionCall_Expr_Ast() {
+    for(auto arg : arguments) {
+        delete arg;
+    }
+    arguments.clear();
+}
+
+void FunctionCall_Expr_Ast::add_argument(Expression_Ast* arg) {
+    if(arg) arguments.push_back(arg);
+}
+
+void FunctionCall_Expr_Ast::print(int indent) {
+    // Add underscore suffix to function name
+    fprintf(ast_file, "FN CALL: %s_(", function_name.c_str());
+    
+    if(!arguments.empty()) {
+        fprintf(ast_file, "\n");
+        size_t arg_count = 0;
+        for(auto arg : arguments) {
+            // Print each argument on a new line with proper indentation
+            for(int i = 0; i < indent + 4; i++) fprintf(ast_file, " ");
+            arg->print(indent+4);
+            arg_count++;
+            if(arg_count < arguments.size()) {
+                fprintf(ast_file, "\n");
+            }
+        }
+        fprintf(ast_file, ")");
+    } else {
+        fprintf(ast_file, ")");
+    }
+}
+
+void FunctionCall_Expr_Ast::pre_allocate_temps() {
+    // Pre-allocate temps for all arguments first
+    for(auto arg : arguments) {
+        arg->pre_allocate_temps();
+    }
+    
+    // Then allocate temp for return value if needed
+    if(node_data_type != VOID_DATA_TYPE && temp_id == -1) {
+        temp_id = TAC_Generator::get_instance()->get_temp_counter();
+        TAC_Generator::get_instance()->create_new_temp(
+            node_data_type == FLOAT_DATA_TYPE
+        );
+    }
+}
+
+TAC_Opd* FunctionCall_Expr_Ast::generate_tac(list<TAC_Stmt*>& statements) {
+    // Generate TAC for all arguments first
+    for(auto arg : arguments) {
+        TAC_Opd* arg_tac = arg->generate_tac(statements);
+        statements.push_back(new Param_TAC_Stmt(arg_tac));
+    }
+    
+    // Call the function
+    statements.push_back(new Call_TAC_Stmt(new Var_TAC_Opd(function_name, node_data_type)));
+    
+    // If the function returns a value, assign it to a temp
+    TAC_Opd* result = nullptr;
+    if(node_data_type != VOID_DATA_TYPE) {
+        if(temp_id != -1) {
+            result = new Temp_TAC_Opd(temp_id, node_data_type);
+        } else {
+            result = TAC_Generator::get_instance()->create_new_temp(
+                node_data_type == FLOAT_DATA_TYPE
+            );
+        }
+    }
+    
+    return result;
+}
+
+/* ============================================================================
+   RETURN STATEMENT IMPLEMENTATION
+   ============================================================================ */
+
+Return_Stmt::Return_Stmt(Expression_Ast* expr) : return_expr(expr) {}
+
+Return_Stmt::~Return_Stmt() {
+    if(return_expr) delete return_expr;
+}
+
+void Return_Stmt::print(int indent) {
+    if(return_expr) {
+        fprintf(ast_file, "Return: ");
+        
+        // Check if return expression is complex
+        Binary_Expr_Ast* expr_bin = dynamic_cast<Binary_Expr_Ast*>(return_expr);
+        Ternary_Expr_Ast* expr_tern = dynamic_cast<Ternary_Expr_Ast*>(return_expr);
+        Unary_Expr_Ast* expr_unary = dynamic_cast<Unary_Expr_Ast*>(return_expr);
+        
+        if(expr_bin || expr_tern || expr_unary) {
+            fprintf(ast_file, "\n");
+            for(int i = 0; i < indent + 4; i++) fprintf(ast_file, " ");
+        }
+        return_expr->print(indent+2);
+    } else {
+        fprintf(ast_file, "Return");
+    }
+}
+
+void Return_Stmt::pre_allocate_temps() {
+    if(return_expr) {
+        return_expr->pre_allocate_temps();
+    }
+    
+    // Allocate return label if not already done
+    if(return_label_id == 0) {
+        Label_TAC_Opd* ret_lbl = TAC_Generator::get_instance()->create_new_label();
+        return_label_id = ret_lbl->get_label_id();
+        delete ret_lbl;
+    }
+}
+
+TAC_Opd* Return_Stmt::generate_tac(list<TAC_Stmt*>& statements) {
+    if(return_expr) {
+        TAC_Opd* ret_val = return_expr->generate_tac(statements);
+        statements.push_back(new Return_TAC_Stmt(ret_val));
+    } else {
+        statements.push_back(new Return_TAC_Stmt(nullptr));
+    }
+    
+    return NULL;
+}
+
+/* ============================================================================
+   FUNCTION CALL STATEMENT IMPLEMENTATION
+   ============================================================================ */
+
+FunctionCall_Stmt::FunctionCall_Stmt(string fn_name) : function_name(fn_name) {}
+
+FunctionCall_Stmt::~FunctionCall_Stmt() {
+    for(auto arg : arguments) {
+        if(arg) delete arg;
+    }
+    arguments.clear();
+}
+
+void FunctionCall_Stmt::add_argument(Expression_Ast* arg) {
+    if(arg) arguments.push_back(arg);
+}
+
+void FunctionCall_Stmt::print(int indent) {
+    fprintf(ast_file, "FN CALL: %s_()", function_name.c_str());
+}
+
+void FunctionCall_Stmt::pre_allocate_temps() {
+    for(auto arg : arguments) {
+        if(arg) arg->pre_allocate_temps();
+    }
+}
+
+TAC_Opd* FunctionCall_Stmt::generate_tac(list<TAC_Stmt*>& statements) {
+    // Generate TAC for function call statement
+    // Push arguments
+    for(auto arg : arguments) {
+        if(arg) {
+            TAC_Opd* arg_opd = arg->generate_tac(statements);
+            Param_TAC_Stmt* param_stmt = new Param_TAC_Stmt(arg_opd);
+            statements.push_back(param_stmt);
+        }
+    }
+    
+    // Create a TAC operand for the function name
+    Var_TAC_Opd* func_opd = new Var_TAC_Opd(function_name);
+    
+    // Call function
+    Call_TAC_Stmt* call_stmt = new Call_TAC_Stmt(func_opd);
+    statements.push_back(call_stmt);
+    
+    return NULL;  // Function call statements don't return a value
+}
+
+/* ============================================================================
+   FUNCTION DEFINITION STATEMENT IMPLEMENTATION
+   ============================================================================ */
+
+FunctionDef_Stmt::FunctionDef_Stmt(string fn_name, DataType ret_type) 
+    : function_name(fn_name), body(nullptr) {
+    set_data_type(ret_type);  // Set data type to return type
+}
+
+FunctionDef_Stmt::~FunctionDef_Stmt() {
+    if(body) delete body;
+    parameters.clear();
+}
+
+void FunctionDef_Stmt::add_parameter(string param_name, DataType param_type) {
+    parameters.push_back(std::make_pair(param_name, param_type));
+}
+
+void FunctionDef_Stmt::set_body(Compound_Stmt* function_body) {
+    body = function_body;
+}
+
+void FunctionDef_Stmt::print(int indent) {
+    fprintf(ast_file, "PROCEDURE: %s\n", function_name.c_str());
+    fprintf(ast_file, "%*sReturn Type: %s\n", indent+2, "", data_type_to_string(node_data_type));
+    
+    // Print formal parameters
+    fprintf(ast_file, "%*sFormal Parameters:\n", indent+2, "");
+    for(auto param : parameters) {
+        fprintf(ast_file, "%*s%s<%s>\n", indent+4, "", param.first.c_str(), 
+                data_type_to_string(param.second));
+    }
+    
+    // Print body
+    fprintf(ast_file, "%*s**BEGIN: Abstract Syntax Tree\n", indent, "");
+    if(body) {
+        body->print(indent+2);
+    }
+    fprintf(ast_file, "\n%*s**END: Abstract Syntax Tree", indent, "");
+}
+
+void FunctionDef_Stmt::pre_allocate_temps() {
+    if(body) {
+        body->pre_allocate_temps();
+    }
+    
+    // Allocate return label
+    if(return_label_id == 0) {
+        Label_TAC_Opd* ret_lbl = TAC_Generator::get_instance()->create_new_label();
+        return_label_id = ret_lbl->get_label_id();
+        delete ret_lbl;
+    }
+}
+
+TAC_Opd* FunctionDef_Stmt::generate_tac(list<TAC_Stmt*>& statements) {
+    // Create function label using the function name
+    Label_TAC_Opd* func_label = TAC_Generator::get_instance()->create_new_label();
+    statements.push_back(new Label_TAC_Stmt(func_label));
+    
+    // Generate TAC for function body
+    if(body) {
+        body->generate_tac(statements);
+    }
+    
+    // Add return label at end (for any implicit return paths)
+    Label_TAC_Opd* ret_label = new Label_TAC_Opd(return_label_id);
+    statements.push_back(new Label_TAC_Stmt(ret_label));
+    
+    return NULL;
 }

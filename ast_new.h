@@ -7,6 +7,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <utility>
 #include <cstdint>
 
 using std::string;
@@ -180,6 +181,26 @@ public:
     TAC_Opd* generate_tac(list<TAC_Stmt*>& statements);
 };
 
+/* Function Call Expression (function_name(arg1, arg2, ...)) */
+class FunctionCall_Expr_Ast : public Expression_Ast {
+private:
+    string function_name;
+    list<Expression_Ast*> arguments;
+    int temp_id = -1;  // Pre-allocated temp ID for return value
+    
+public:
+    FunctionCall_Expr_Ast(string fn_name);
+    ~FunctionCall_Expr_Ast();
+    
+    string get_function_name() { return function_name; }
+    void add_argument(Expression_Ast* arg);
+    list<Expression_Ast*>& get_arguments() { return arguments; }
+    
+    void pre_allocate_temps();
+    void print(int indent = 0);
+    TAC_Opd* generate_tac(list<TAC_Stmt*>& statements);
+};
+
 /* ============================================================================
    STATEMENT AST CLASSES
    ============================================================================ */
@@ -305,6 +326,70 @@ public:
     void print(int indent = 0);
     void print_inline_if_single_print(int indent);  // Print inline if single Print_Stmt
     void print_with_last_no_newline(int indent);  // Print all stmts, last one without trailing newline
+    TAC_Opd* generate_tac(list<TAC_Stmt*>& statements);
+};
+
+/* Return Statement */
+class Return_Stmt : public Statement_Ast {
+private:
+    Expression_Ast* return_expr;  // NULL if returning void
+    uint32_t return_label_id = 0;  // Label to jump to for return
+    
+public:
+    Return_Stmt(Expression_Ast* expr = NULL);
+    ~Return_Stmt();
+    
+    Expression_Ast* get_return_expr() { return return_expr; }
+    void set_return_label_id(uint32_t label_id) { return_label_id = label_id; }
+    uint32_t get_return_label_id() { return return_label_id; }
+    
+    void pre_allocate_temps();
+    void print(int indent = 0);
+    TAC_Opd* generate_tac(list<TAC_Stmt*>& statements);
+};
+
+/* Function Call Statement */
+class FunctionCall_Stmt : public Statement_Ast {
+private:
+    string function_name;
+    list<Expression_Ast*> arguments;
+    
+public:
+    FunctionCall_Stmt(string fn_name);
+    ~FunctionCall_Stmt();
+    
+    string get_function_name() { return function_name; }
+    void add_argument(Expression_Ast* arg);
+    list<Expression_Ast*>& get_arguments() { return arguments; }
+    
+    void pre_allocate_temps();
+    void print(int indent = 0);
+    TAC_Opd* generate_tac(list<TAC_Stmt*>& statements);
+};
+
+/* Function Definition Statement */
+class FunctionDef_Stmt : public Statement_Ast {
+private:
+    string function_name;
+    list<std::pair<string, DataType>> parameters;  // (param_name, param_type)
+    Compound_Stmt* body;
+    uint32_t return_label_id = 0;  // Label for the return point
+    
+public:
+    FunctionDef_Stmt(string fn_name, DataType ret_type);
+    ~FunctionDef_Stmt();
+    
+    string get_function_name() { return function_name; }
+    void add_parameter(string param_name, DataType param_type);
+    list<std::pair<string, DataType>>& get_parameters() { return parameters; }
+    void set_body(Compound_Stmt* function_body);
+    Compound_Stmt* get_body() { return body; }
+    
+    void set_return_label_id(uint32_t label_id) { return_label_id = label_id; }
+    uint32_t get_return_label_id() { return return_label_id; }
+    
+    void pre_allocate_temps();
+    void print(int indent = 0);
     TAC_Opd* generate_tac(list<TAC_Stmt*>& statements);
 };
 

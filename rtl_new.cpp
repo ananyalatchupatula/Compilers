@@ -218,7 +218,7 @@ if (reg_dest && reg_dest->is_float_register())
 if (const_src)
     fprintf(file, "    iLoad%s:\t", float_load ? ".d" : "");
 else
-    fprintf(file, "    load%s:\t", float_load ? ".d" : "");
+    {fprintf(file, "    load%s:\t", float_load ? ".d" : "");}
 
     dest->print(file);
     fprintf(file, " <- ");

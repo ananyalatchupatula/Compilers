@@ -66,33 +66,34 @@ extern int yydebug;
     ELSE = 267,                    /* ELSE  */
     WHILE = 268,                   /* WHILE  */
     DO = 269,                      /* DO  */
-    NAME = 270,                    /* NAME  */
-    INT_NUM = 271,                 /* INT_NUM  */
-    FLOAT_NUM = 272,               /* FLOAT_NUM  */
-    STR_CONST = 273,               /* STR_CONST  */
-    ASSIGN_OP = 274,               /* ASSIGN_OP  */
-    COMMA = 275,                   /* COMMA  */
-    SEMICOLON = 276,               /* SEMICOLON  */
-    LEFT_ROUND_BRACKET = 277,      /* LEFT_ROUND_BRACKET  */
-    RIGHT_ROUND_BRACKET = 278,     /* RIGHT_ROUND_BRACKET  */
-    LEFT_CURLY_BRACKET = 279,      /* LEFT_CURLY_BRACKET  */
-    RIGHT_CURLY_BRACKET = 280,     /* RIGHT_CURLY_BRACKET  */
-    PLUS = 281,                    /* PLUS  */
-    MINUS = 282,                   /* MINUS  */
-    MULT = 283,                    /* MULT  */
-    DIV = 284,                     /* DIV  */
-    GREATER_THAN = 285,            /* GREATER_THAN  */
-    LESS_THAN = 286,               /* LESS_THAN  */
-    GREATER_THAN_EQUAL = 287,      /* GREATER_THAN_EQUAL  */
-    LESS_THAN_EQUAL = 288,         /* LESS_THAN_EQUAL  */
-    EQUAL = 289,                   /* EQUAL  */
-    NOT_EQUAL = 290,               /* NOT_EQUAL  */
-    AND = 291,                     /* AND  */
-    OR = 292,                      /* OR  */
-    QUESTION_MARK = 293,           /* QUESTION_MARK  */
-    COLON = 294,                   /* COLON  */
-    NOT = 295,                     /* NOT  */
-    UMINUS = 296                   /* UMINUS  */
+    RETURN = 270,                  /* RETURN  */
+    NAME = 271,                    /* NAME  */
+    INT_NUM = 272,                 /* INT_NUM  */
+    FLOAT_NUM = 273,               /* FLOAT_NUM  */
+    STR_CONST = 274,               /* STR_CONST  */
+    ASSIGN_OP = 275,               /* ASSIGN_OP  */
+    COMMA = 276,                   /* COMMA  */
+    SEMICOLON = 277,               /* SEMICOLON  */
+    LEFT_ROUND_BRACKET = 278,      /* LEFT_ROUND_BRACKET  */
+    RIGHT_ROUND_BRACKET = 279,     /* RIGHT_ROUND_BRACKET  */
+    LEFT_CURLY_BRACKET = 280,      /* LEFT_CURLY_BRACKET  */
+    RIGHT_CURLY_BRACKET = 281,     /* RIGHT_CURLY_BRACKET  */
+    PLUS = 282,                    /* PLUS  */
+    MINUS = 283,                   /* MINUS  */
+    MULT = 284,                    /* MULT  */
+    DIV = 285,                     /* DIV  */
+    GREATER_THAN = 286,            /* GREATER_THAN  */
+    LESS_THAN = 287,               /* LESS_THAN  */
+    GREATER_THAN_EQUAL = 288,      /* GREATER_THAN_EQUAL  */
+    LESS_THAN_EQUAL = 289,         /* LESS_THAN_EQUAL  */
+    EQUAL = 290,                   /* EQUAL  */
+    NOT_EQUAL = 291,               /* NOT_EQUAL  */
+    AND = 292,                     /* AND  */
+    OR = 293,                      /* OR  */
+    QUESTION_MARK = 294,           /* QUESTION_MARK  */
+    COLON = 295,                   /* COLON  */
+    NOT = 296,                     /* NOT  */
+    UMINUS = 297                   /* UMINUS  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -101,7 +102,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 160 "parser_new.y"
+#line 194 "parser_new.y"
 
     int type;
     char* name;
@@ -110,8 +111,9 @@ union YYSTYPE
     Expression_Ast* expr;
     Statement_Ast* stmt;
     Compound_Stmt* block;
+    std::vector<Expression_Ast*>* expr_list;
 
-#line 115 "parser_new.tab.hpp"
+#line 117 "parser_new.tab.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;

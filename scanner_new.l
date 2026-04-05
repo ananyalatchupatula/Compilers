@@ -100,6 +100,12 @@ int lex_error = 0;
     return DO;
 }
 
+"return" {
+    if (show_tokens && !token_dump_done)
+        fprintf(tok_file, "\tToken Name: RETURN\tLexeme: %s\tLine no: %d\n", yytext, yylineno);
+    return RETURN;
+}
+
 "==" {
     if (show_tokens && !token_dump_done)
         fprintf(tok_file, "\tToken Name: EQ\tLexeme: %s\tLine no: %d\n", yytext, yylineno);

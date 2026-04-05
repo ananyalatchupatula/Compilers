@@ -136,7 +136,8 @@ public:
         LABEL_STMT,       // label:
         GOTO_STMT,        // goto label
         COND_GOTO_STMT,   // if (opd1) goto label
-        CALL_STMT,        // result = call func(args)
+        PARAM_STMT,       // param opd1 (push argument)
+        CALL_STMT,        // call func_name
         RETURN_STMT,      // return opd1
         PRINT_STMT,       // print opd1
         READ_STMT         // read var
@@ -289,6 +290,51 @@ public:
     string to_string();
     
     TAC_Opd* get_var() { return var; }
+};
+
+// Parameter TAC Statement: PARAM opd1 (push argument onto stack)
+class Param_TAC_Stmt : public TAC_Stmt {
+private:
+    TAC_Opd *opd1;
+    
+public:
+    Param_TAC_Stmt(TAC_Opd *op);
+    ~Param_TAC_Stmt();
+    
+    void print(FILE *file = stdout);
+    string to_string();
+    
+    TAC_Opd* get_opd() { return opd1; }
+};
+
+// Call TAC Statement: CALL func_name
+class Call_TAC_Stmt : public TAC_Stmt {
+private:
+    TAC_Opd *func_name;  // Variable containing function name
+    
+public:
+    Call_TAC_Stmt(TAC_Opd *fn);
+    ~Call_TAC_Stmt();
+    
+    void print(FILE *file = stdout);
+    string to_string();
+    
+    TAC_Opd* get_func() { return func_name; }
+};
+
+// Return TAC Statement: RETURN opd1 (or RETURN with no value)
+class Return_TAC_Stmt : public TAC_Stmt {
+private:
+    TAC_Opd *return_val;  // NULL if returning void
+    
+public:
+    Return_TAC_Stmt(TAC_Opd *ret_val = NULL);
+    ~Return_TAC_Stmt();
+    
+    void print(FILE *file = stdout);
+    string to_string();
+    
+    TAC_Opd* get_return_val() { return return_val; }
 };
 
 #endif
