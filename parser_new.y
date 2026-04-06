@@ -25,8 +25,6 @@ void yyerror(const char *s)
     printf("parse error\n");
 }
 
-/* DISABLE GLR PARSER - USE LALR FOR ZERO CONFLICTS */
-
 extern int show_ast;
 extern int show_tac;
 extern int show_rtl;
@@ -43,16 +41,29 @@ struct MainParam {
     string name;
     int type;
 };
-vector<MainParam> main_decl_params;
-vector<MainParam> main_def_params;
-bool parsing_main_declaration = false;
 
-/* Function parameter tracking for ALL functions */
+/* Function parameter tracking for parameter list printing */
 struct FuncParam {
     string name;
     int type;
 };
 vector<FuncParam> current_func_params;
+
+class FunctionInfo {
+public:
+    string name;
+    int return_type;
+    bool is_defined;
+
+    FunctionInfo(string n, int rt, bool def=false)
+        : name(n), return_type(rt), is_defined(def) {}
+};
+
+vector<FunctionInfo> function_table;
+string current_function_name;
+vector<MainParam> main_decl_params;
+vector<MainParam> main_def_params;
+bool parsing_main_declaration = false;
 
 /* TYPE DEFINITIONS */
 #define TYPE_INT    1
@@ -73,19 +84,6 @@ int numericResult(int t1,int t2)
     if(t1==TYPE_FLOAT || t2==TYPE_FLOAT)
         return TYPE_FLOAT;
     return TYPE_INT;
-}
-
-const char* type_to_string(int t)
-{
-    switch(t) {
-        case TYPE_INT:    return "int";
-        case TYPE_FLOAT:  return "float";
-        case TYPE_BOOL:   return "bool";
-        case TYPE_STRING: return "string";
-        case TYPE_CHAR:   return "char";
-        case TYPE_VOID:   return "void";
-        default:          return "error";
-    }
 }
 
 DataType int_to_datatype(int t)
@@ -160,20 +158,6 @@ SymbolTable global_symtab;
 SymbolTable local_symtab;
 bool in_function = false;
 int current_decl_type;
-int current_func_return_type = TYPE_VOID;  /* Track current function's return type */
-
-/* Function table to track function definitions */
-class FunctionInfo {
-public:
-    string name;
-    int return_type;
-    bool is_defined;
-
-    FunctionInfo(string n, int rt, bool def=false)
-        : name(n), return_type(rt), is_defined(def) {}
-};
-
-vector<FunctionInfo> function_table;
 
 int lookup(string name){
     for(auto &s:local_symtab.table){
@@ -201,7 +185,6 @@ int lookup(string name){
     Expression_Ast* expr;
     Statement_Ast* stmt;
     Compound_Stmt* block;
-    std::vector<Expression_Ast*>* expr_list;
 }
 
 /* TOKENS */
@@ -224,14 +207,15 @@ int lookup(string name){
 
 /* TYPES */
 %type <type> type
+%type <type> func_header
 %type <expr> expr
 %type <stmt> stmt assign_stmt read_stmt write_stmt if_stmt while_stmt do_while_stmt return_stmt func_call_stmt
 %type <block> stmt_list block
 %type <ast> param_list_opt param_list param
-%type <expr_list> arg_list args
+%type <ast> arg_list_opt arg_list
+
 
 /* PRECEDENCE */
-%left NAME
 %right QUESTION_MARK COLON
 %left OR
 %left AND
@@ -243,29 +227,36 @@ int lookup(string name){
 %right UMINUS
 %nonassoc IF
 %nonassoc ELSE
-%nonassoc LEFT_ROUND_BRACKET
 
 %%
 
 program
-    : globals_var_decls func_list
+    : program_items
     {
         if(!main_defined){
-            cout << "Semantic error:main fn not defined" << endl;
+            cout << "Semantic error: main fn not defined" << endl;
             exit(1);
         }
     }
     ;
 
-func_list
-    : func_list func_item
+program_items
+    : program_items program_item
+    | program_item
+    ;
+
+program_item
+    : global_var_group
     | func_item
     ;
 
+global_var_group
+    : type id_list SEMICOLON
+    ;
 
-globals_var_decls
-    : globals_var_decls var_decl
-    | /* empty */
+func_item
+    : func_decl
+    | func_def
     ;
 
 var_decl
@@ -306,50 +297,57 @@ id_list
       }
     ;
 
-func_decl
+func_header
     : type NAME LEFT_ROUND_BRACKET
-      param_list_opt RIGHT_ROUND_BRACKET SEMICOLON
     {
-        current_func_params.clear();
+        current_function_name = string($2);
+        in_function = true;
+        local_symtab.table.clear();
+        current_func_params.clear();  /* Clear parameters for new function */
+    }
+    param_list_opt RIGHT_ROUND_BRACKET
+    {
+        $$ = $1;
+    }
+    ;
 
-        bool already_declared = false;
+func_decl
+    : func_header SEMICOLON
+    {
+        string fname = current_function_name;
+        bool found = false;
 
         for(auto &f : function_table){
-            if(f.name == string($2)){
-                already_declared = true;
-                break;
+            if(f.name == fname){
+                cout << "Semantic error: multiple declaration of function "
+                     << fname << endl;
+                exit(1);
             }
         }
 
-        if(already_declared){
-            cout << "Semantic error: multiple declaration of function "
-                 << $2 << endl;
-            exit(1);
-        }
+        function_table.push_back(FunctionInfo(fname, $1, false));
 
-        function_table.push_back(FunctionInfo($2, $1, false));
+        if(fname == "main"){
+            main_seen = true;
+        }
+        
+        in_function = false;  /* Reset after function declaration */
     }
     ;
 
 func_def
-    : type NAME LEFT_ROUND_BRACKET
+    : func_header
     {
+        string fname = current_function_name;
         bool found = false;
 
         for(auto &f : function_table){
-            if(f.name == string($2)){
+            if(f.name == fname){
                 if(f.is_defined){
                     cout << "Semantic error: multiple definition of function "
-                         << $2 << endl;
+                         << fname << endl;
                     exit(1);
                 }
-
-                if(f.return_type != $1){
-                    cout << "Semantic error: return type mismatch in definition of "
-                         << $2 << endl;
-                    exit(1);
-                }
-
                 f.is_defined = true;
                 found = true;
                 break;
@@ -357,69 +355,55 @@ func_def
         }
 
         if(!found){
-            function_table.push_back(FunctionInfo($2, $1, true));
+            function_table.push_back(FunctionInfo(fname, $1, true));
         }
-
-        in_function = true;
-        current_func_return_type = $1;
-        main_def_params.clear();
-        current_func_params.clear();
-        local_symtab.table.clear();
     }
-    param_list_opt RIGHT_ROUND_BRACKET
     block
     {
-        /* Check if this is main function */
-        bool is_main = (strcmp($2, "main") == 0);
-        
-        if(is_main && $1 != TYPE_VOID) {
-            cout << "Semantic error: main must have void return type" << endl;
-            exit(1);
-        }
-        
-        if(is_main) {
-            if(main_defined){
-                cout << "Semantic error:multiple main definitions" << endl;
+        if(current_function_name == "main"){
+            if($1 != TYPE_VOID && $1 != TYPE_INT){
+                cout << "Semantic error: main must be void or int" << endl;
                 exit(1);
             }
+
+            if(main_defined){
+                cout << "Semantic error: multiple main definitions" << endl;
+                exit(1);
+            }
+
+            main_seen = true;
             main_defined = true;
         }
 
-        /* Print the AST of the function body */
+        /* For now, just print the AST of the function body */
         if(show_ast && ast_file) {
-            /* Print function name and signature */
-            if(is_main) {
-                fprintf(ast_file, "**PROCEDURE: main\n");
-            } else {
-                fprintf(ast_file, "**PROCEDURE: %s_\n", $2);
-            }
-            
-            /* Print return type */
-            fprintf(ast_file, "    Return Type: <%s>\n", type_to_string($1));
-            
+            if(current_function_name == "main")
+    fprintf(ast_file, "**PROCEDURE: %s\n", current_function_name.c_str());
+else
+    fprintf(ast_file, "**PROCEDURE: %s_\n", current_function_name.c_str());
+            fprintf(ast_file, "  Return Type: <%s>\n", data_type_to_string(int_to_datatype($1)));
+            fprintf(ast_file, "  Formal Parameters:\n");
             /* Print formal parameters */
-            fprintf(ast_file, "    Formal Parameters:\n");
-            for(auto &p : current_func_params) {
-                fprintf(ast_file, "        %s_  Type:<%s>\n", p.name.c_str(), type_to_string(p.type));
+            for(auto &param : current_func_params) {
+                fprintf(ast_file, "      %s_  Type:<%s>\n", param.name.c_str(), data_type_to_string(int_to_datatype(param.type)));
             }
-            
             fprintf(ast_file, "**BEGIN: Abstract Syntax Tree\n");
-            if($7) $7->print(4);
+            if($3) $3->print(2);
             fprintf(ast_file, "\n**END: Abstract Syntax Tree\n");
         }
 
-        /* Generate TAC for the function body */
-        if($7) {
+        /* Generate  for the function body */
+        if($3) {
     list<TAC_Stmt*> tac_stmts;
     if(show_tac || show_rtl) {
     TAC_Generator::get_instance()->reset_counters();
-    $7->pre_allocate_temps();
+    $3->pre_allocate_temps();
 }
 
-$7->generate_tac(tac_stmts);
+$3->generate_tac(tac_stmts);
     
     if(show_tac && tac_file && !tac_stmts.empty()) {
-        fprintf(tac_file, "**PROCEDURE: %s_\n", $2);
+        fprintf(tac_file, "**PROCEDURE: %s\n", current_function_name.c_str());
         fprintf(tac_file, "**BEGIN: Three Address Code Statements\n");
         for(auto stmt : tac_stmts) {
             stmt->print(tac_file);
@@ -432,7 +416,7 @@ $7->generate_tac(tac_stmts);
         list<RTL_Stmt*> rtl_stmts =
             RTL_Generator::get_instance()->generate_rtl(tac_stmts);
 
-        fprintf(rtl_file, "**PROCEDURE: %s_\n", $2);
+        fprintf(rtl_file, "**PROCEDURE: %s\n", current_function_name.c_str());
         fprintf(rtl_file, "**BEGIN: RTL Statements\n");
         for(auto stmt : rtl_stmts) {
             stmt->print(rtl_file);
@@ -442,7 +426,7 @@ $7->generate_tac(tac_stmts);
 }
 
         in_function = false;
-        delete $7;
+        delete $3;
     }
     ;
 
@@ -472,13 +456,31 @@ param
           }
           if(in_function) {
               local_symtab.add($2,$1);
-              // Track parameter for output
-              FuncParam fp;
-              fp.name = string($2);
-              fp.type = $1;
-              current_func_params.push_back(fp);
+              /* Also add to current_func_params for AST printing */
+              current_func_params.push_back(FuncParam{string($2), $1});
           }
           $$ = NULL;  /* Placeholder for now */
+      }
+    ;
+
+arg_list_opt
+    : arg_list { $$ = $1; }
+    | /* empty */ { $$ = NULL; }
+    ;
+
+arg_list
+    : expr
+      {
+          FunctionCall_Expr_Ast *tmp = new FunctionCall_Expr_Ast("__tmp__");
+          tmp->add_argument($1);
+          $$ = tmp;
+      }
+    | arg_list COMMA expr
+      {
+          FunctionCall_Expr_Ast *tmp =
+              dynamic_cast<FunctionCall_Expr_Ast*>($1);
+          tmp->add_argument($3);
+          $$ = tmp;
       }
     ;
 
@@ -514,11 +516,11 @@ stmt
     : assign_stmt SEMICOLON { $$ = $1; }
     | read_stmt SEMICOLON { $$ = $1; }
     | write_stmt SEMICOLON { $$ = $1; }
-    | return_stmt SEMICOLON { $$ = $1; }
-    | func_call_stmt SEMICOLON { $$ = $1; }
     | if_stmt { $$ = $1; }
     | while_stmt { $$ = $1; }
     | do_while_stmt { $$ = $1; }
+    | return_stmt SEMICOLON { $$ = $1; }
+    | func_call_stmt SEMICOLON { $$ = $1; }
     | block { $$ = $1; }
     ;
 
@@ -613,42 +615,41 @@ return_stmt
     : RETURN expr
     {
         $$ = new Return_Stmt($2);
-        $$->set_data_type($2->get_data_type());
-    }
-    | RETURN
-    {
-        $$ = new Return_Stmt(NULL);
-        $$->set_data_type(VOID_DATA_TYPE);
     }
     ;
 
 func_call_stmt
-    : NAME LEFT_ROUND_BRACKET args RIGHT_ROUND_BRACKET
+    : NAME LEFT_ROUND_BRACKET arg_list_opt RIGHT_ROUND_BRACKET
     {
-        /* Function call as a statement */
-        FunctionCall_Stmt* func_call = new FunctionCall_Stmt($1);
-        /* TODO: Add arguments from args to func_call */
-        $$ = func_call;
-    }
-    ;
+        FunctionCall_Stmt *call = new FunctionCall_Stmt($1);
 
-arg_list
-    : expr
-    {
-        vector<Expression_Ast*>* args = new vector<Expression_Ast*>();
-        args->push_back($1);
-        $$ = args;
-    }
-    | expr COMMA arg_list
-    {
-        $3->insert($3->begin(), $1);  /* Insert current expr at beginning */
-        $$ = $3;
-    }
-    ;
+        if($3){
+            FunctionCall_Expr_Ast *tmp =
+                dynamic_cast<FunctionCall_Expr_Ast*>($3);
 
-args
-    : arg_list { $$ = $1; }
-    | /* empty */ { $$ = NULL; }
+            for(auto arg : tmp->get_arguments()){
+                call->add_argument(arg);
+            }
+
+            tmp->get_arguments().clear();
+            delete tmp;
+        }
+
+        bool found = false;
+        for(auto &f : function_table){
+            if(f.name == string($1)){
+                found = true;
+                break;
+            }
+        }
+
+        if(!found){
+            cout << "Semantic error: function not declared " << $1 << endl;
+            exit(1);
+        }
+
+        $$ = call;
+    }
     ;
 
 expr
@@ -873,23 +874,42 @@ expr
     {
         $$ = $2;
     }
-    | NAME LEFT_ROUND_BRACKET args RIGHT_ROUND_BRACKET
+    | NAME LEFT_ROUND_BRACKET arg_list_opt RIGHT_ROUND_BRACKET
     {
-        /* Function call as an expression */
-        FunctionCall_Expr_Ast* func_call = new FunctionCall_Expr_Ast($1);
-        
-        /* Add all arguments from the args list */
-        if($3) {
-            vector<Expression_Ast*>* args_list = (vector<Expression_Ast*>*)$3;
-            for(auto arg : *args_list) {
-                func_call->add_argument(arg);
+        FunctionCall_Expr_Ast *call = new FunctionCall_Expr_Ast($1);
+
+        if($3){
+            FunctionCall_Expr_Ast *tmp =
+                dynamic_cast<FunctionCall_Expr_Ast*>($3);
+
+            for(auto arg : tmp->get_arguments()){
+                call->add_argument(arg);
             }
-            delete args_list;
+
+            tmp->get_arguments().clear();
+            delete tmp;
         }
-        
-        $$ = func_call;
-        $$->set_data_type(INT_DATA_TYPE);
+
+        int ret_type = TYPE_VOID;
+        bool found = false;
+
+        for(auto &f : function_table){
+            if(f.name == string($1)){
+                ret_type = f.return_type;
+                found = true;
+                break;
+            }
+        }
+
+        if(!found){
+            cout << "Semantic error: function not declared " << $1 << endl;
+            exit(1);
+        }
+
+        $$ = call;
+        $$->set_data_type(int_to_datatype(ret_type));
     }
+
     | NAME
     {
         int var_type = lookup($1);
