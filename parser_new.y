@@ -167,8 +167,10 @@ class FunctionInfo {
 public:
     string name;
     int return_type;
-    
-    FunctionInfo(string n, int rt) : name(n), return_type(rt) {}
+    bool is_defined;
+
+    FunctionInfo(string n, int rt, bool def=false)
+        : name(n), return_type(rt), is_defined(def) {}
 };
 
 vector<FunctionInfo> function_table;
@@ -256,13 +258,10 @@ program
     ;
 
 func_list
-    : func_list func_def_item
-    | func_def_item
+    : func_list func_item
+    | func_item
     ;
 
-func_def_item
-    : func_def
-    ;
 
 globals_var_decls
     : globals_var_decls var_decl
@@ -307,9 +306,60 @@ id_list
       }
     ;
 
+func_decl
+    : type NAME LEFT_ROUND_BRACKET
+      param_list_opt RIGHT_ROUND_BRACKET SEMICOLON
+    {
+        current_func_params.clear();
+
+        bool already_declared = false;
+
+        for(auto &f : function_table){
+            if(f.name == string($2)){
+                already_declared = true;
+                break;
+            }
+        }
+
+        if(already_declared){
+            cout << "Semantic error: multiple declaration of function "
+                 << $2 << endl;
+            exit(1);
+        }
+
+        function_table.push_back(FunctionInfo($2, $1, false));
+    }
+    ;
+
 func_def
     : type NAME LEFT_ROUND_BRACKET
     {
+        bool found = false;
+
+        for(auto &f : function_table){
+            if(f.name == string($2)){
+                if(f.is_defined){
+                    cout << "Semantic error: multiple definition of function "
+                         << $2 << endl;
+                    exit(1);
+                }
+
+                if(f.return_type != $1){
+                    cout << "Semantic error: return type mismatch in definition of "
+                         << $2 << endl;
+                    exit(1);
+                }
+
+                f.is_defined = true;
+                found = true;
+                break;
+            }
+        }
+
+        if(!found){
+            function_table.push_back(FunctionInfo($2, $1, true));
+        }
+
         in_function = true;
         current_func_return_type = $1;
         main_def_params.clear();
@@ -317,9 +367,6 @@ func_def
         local_symtab.table.clear();
     }
     param_list_opt RIGHT_ROUND_BRACKET
-    {
-        /* Parameters have been added to local_symtab and current_func_params */
-    }
     block
     {
         /* Check if this is main function */
@@ -357,19 +404,19 @@ func_def
             }
             
             fprintf(ast_file, "**BEGIN: Abstract Syntax Tree\n");
-            if($8) $8->print(4);
+            if($7) $7->print(4);
             fprintf(ast_file, "\n**END: Abstract Syntax Tree\n");
         }
 
         /* Generate TAC for the function body */
-        if($8) {
+        if($7) {
     list<TAC_Stmt*> tac_stmts;
     if(show_tac || show_rtl) {
     TAC_Generator::get_instance()->reset_counters();
-    $8->pre_allocate_temps();
+    $7->pre_allocate_temps();
 }
 
-$8->generate_tac(tac_stmts);
+$7->generate_tac(tac_stmts);
     
     if(show_tac && tac_file && !tac_stmts.empty()) {
         fprintf(tac_file, "**PROCEDURE: %s_\n", $2);
@@ -395,7 +442,7 @@ $8->generate_tac(tac_stmts);
 }
 
         in_function = false;
-        delete $8;
+        delete $7;
     }
     ;
 
