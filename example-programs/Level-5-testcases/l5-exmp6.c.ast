@@ -1,4 +1,4 @@
-**PROCEDURE: f_
+**PROCEDURE: f2_
   Return Type: <float>
   Formal Parameters:
       p_  Type:<float>
@@ -6,7 +6,7 @@
 **BEGIN: Abstract Syntax Tree
 Return: Name : p_<float>
 **END: Abstract Syntax Tree
-**PROCEDURE: f2_
+**PROCEDURE: f_
   Return Type: <float>
   Formal Parameters:
       p_  Type:<float>
