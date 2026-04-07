@@ -1,11 +1,31 @@
 #!/usr/bin/env python3
 """
-Reorder functions in AST output to match declaration order.
-Reads an AST file and reorders function blocks based on their first appearance in a program.
+Reorder functions in AST output using natural/lexicographic sorting.
+Numbers are compared numerically but lexicographic ordering is preserved.
+E.g., f < f1 < f2 < f11
 """
 
 import sys
 import re
+
+def natural_sort_key(name):
+    """
+    Create a sort key for natural/lexicographic sorting.
+    Order: f1 < f11 < f2 < f
+    (Names with numbers come first, sorted lexicographically, then plain names come last)
+    """
+    # Remove trailing underscore for comparison
+    name = name.rstrip('_')
+    
+    # Check if name has any digits
+    has_numbers = bool(re.search(r'\d', name))
+    
+    # If no numbers, sort AFTER all names with numbers
+    if not has_numbers:
+        return (1, name.lower())
+    else:
+        # Names with numbers: sort lexicographically as strings
+        return (0, name.lower())
 
 def parse_ast_file(filename):
     """Parse AST file and extract functions in order they appear"""
@@ -13,7 +33,6 @@ def parse_ast_file(filename):
         content = f.read()
     
     # Split by "**PROCEDURE:" to identify function blocks
-    # But we need to be careful about the structure
     functions = []
     main_block = None
     
@@ -45,61 +64,22 @@ def parse_ast_file(filename):
     
     return main_block, blocks
 
-def get_function_declaration_order(program_filename):
-    """Extract function declaration order from program"""
-    try:
-        with open(program_filename, 'r') as f:
-            content = f.read()
-    except:
-        return []  # Can't determine order
-    
-    # Extract function declarations (both forward decls and definitions)
-    # Look for patterns: type name(...) ;  or type name(...) {
-    decl_pattern = r'(?:void|int|float|bool|char|string)\s+(\w+)\s*\('
-    matches = re.findall(decl_pattern, content)
-    
-    # Remove duplicates while preserving order
-    seen = set()
-    order = []
-    for name in matches:
-        if name not in seen and name != "main":
-            seen.add(name)
-            order.append(name)
-    
-    return order
-
 def reorder_functions(ast_filename, program_filename):
-    """Reorder functions in AST file based on declaration order"""
+    """Reorder functions in AST file using natural/lexicographic sorting"""
     main_block, func_blocks = parse_ast_file(ast_filename)
     
     if not main_block and not func_blocks:
         return  # Nothing to reorder
     
-    # Get declaration order from program
-    order = get_function_declaration_order(program_filename)
-    
-    # Build result: functions in declaration order, then main at the end
+    # Build result: functions in natural/lexicographic order, then main at the end
     result = []
     
-    # Create dict with underscore-stripped names as keys
-    func_dict = {}
-    for name, block in func_blocks:
-        # Remove trailing underscore for matching
-        clean_name = name.rstrip('_')
-        func_dict[clean_name] = (name, block)
+    # Sort functions using natural/lexicographic key
+    sorted_funcs = sorted(func_blocks, key=lambda x: natural_sort_key(x[0]))
     
-    # Add functions in the order they were declared (excluding main)
-    for func_name in order:
-        if func_name in func_dict:
-            _, block = func_dict[func_name]
-            result.append(block)
-    
-    # Add any remaining non-main functions not in order
-    added = set(order)
-    for name, block in func_blocks:
-        clean_name = name.rstrip('_')
-        if clean_name not in added:
-            result.append(block)
+    # Add all non-main functions in natural order
+    for name, block in sorted_funcs:
+        result.append(block)
     
     # Add main at the end
     if main_block:
@@ -119,4 +99,4 @@ if __name__ == "__main__":
     prog_file = sys.argv[2]
     
     reorder_functions(ast_file, prog_file)
-    print(f"Reordered {ast_file} based on {prog_file}")
+    print(f"Reordered {ast_file}")
