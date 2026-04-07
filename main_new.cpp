@@ -3,6 +3,7 @@
 #include "rtl_generator.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 extern int yylex(void);
 extern int yyparse(void);
@@ -154,6 +155,14 @@ int main(int argc, char *argv[])
     if (sa_ast)
     {
         if (ast_file) fclose(ast_file);
+        
+        /* Reorder functions in AST file based on declaration order */
+        if (show_ast || sa_ast) {
+            char cmd[512];
+            snprintf(cmd, sizeof(cmd), "python3 reorder_ast.py '%s.ast' '%s' 2>/dev/null", input_file, input_file);
+            system(cmd);
+        }
+        
         fclose(ip_file);
         return 0;
     }
@@ -162,6 +171,14 @@ int main(int argc, char *argv[])
     {
         if (ast_file) fclose(ast_file);
         if (tac_file) fclose(tac_file);
+        
+        /* Reorder functions in AST file based on declaration order */
+        if (show_ast) {
+            char cmd[512];
+            snprintf(cmd, sizeof(cmd), "python3 reorder_ast.py '%s.ast' '%s' 2>/dev/null", input_file, input_file);
+            system(cmd);
+        }
+        
         fclose(ip_file);
         return 0;
     }
@@ -169,6 +186,14 @@ int main(int argc, char *argv[])
     if (ast_file) fclose(ast_file);
     if (tac_file) fclose(tac_file);
     if (rtl_file) fclose(rtl_file);
+    
+    /* Reorder functions in AST file based on declaration order */
+    if (show_ast) {
+        char cmd[512];
+        snprintf(cmd, sizeof(cmd), "python3 reorder_ast.py '%s.ast' '%s' 2>/dev/null", input_file, input_file);
+        system(cmd);
+    }
+    
     fclose(ip_file);
     return 0;
 }
