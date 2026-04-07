@@ -28,20 +28,16 @@ def natural_sort_key(name):
         return (0, name.lower())
 
 def parse_ast_file(filename):
-    """Parse AST file and extract functions in order they appear"""
+    """Parse AST file and extract all functions in order they appear"""
     with open(filename, 'r') as f:
         content = f.read()
-    
-    # Split by "**PROCEDURE:" to identify function blocks
-    functions = []
-    main_block = None
     
     # Find all procedures
     procedure_pattern = r'\*\*PROCEDURE: (\w+)\n'
     matches = list(re.finditer(procedure_pattern, content))
     
     if not matches:
-        return content  # No procedures found, return as is
+        return []  # No procedures found
     
     # Extract each function block
     blocks = []
@@ -56,36 +52,25 @@ def parse_ast_file(filename):
             end = len(content)
         
         block = content[start:end]
-        
-        if func_name == "main":
-            main_block = block
-        else:
-            blocks.append((func_name, block))
+        blocks.append((func_name, block))
     
-    return main_block, blocks
+    return blocks
 
 def reorder_functions(ast_filename, program_filename):
-    """Reorder functions in AST file using natural/lexicographic sorting"""
-    main_block, func_blocks = parse_ast_file(ast_filename)
+    """Reorder all functions (including main) using the sorting rule"""
+    func_blocks = parse_ast_file(ast_filename)
     
-    if not main_block and not func_blocks:
+    if not func_blocks:
         return  # Nothing to reorder
     
-    # Build result: functions in natural/lexicographic order, then main at the end
-    result = []
-    
-    # Sort functions using natural/lexicographic key
+    # Sort ALL functions (including main) using the natural/lexicographic key
     sorted_funcs = sorted(func_blocks, key=lambda x: natural_sort_key(x[0]))
     
-    # Add all non-main functions in natural order
+    # Write reordered content
+    result = []
     for name, block in sorted_funcs:
         result.append(block)
     
-    # Add main at the end
-    if main_block:
-        result.append(main_block)
-    
-    # Write reordered content
     reordered = ''.join(result)
     with open(ast_filename, 'w') as f:
         f.write(reordered)
