@@ -187,10 +187,17 @@ int main(int argc, char *argv[])
     if (tac_file) fclose(tac_file);
     if (rtl_file) fclose(rtl_file);
     
-    /* Reorder functions in AST file based on declaration order */
+    /* Reorder functions in AST file */
     if (show_ast) {
         char cmd[512];
         snprintf(cmd, sizeof(cmd), "python3 reorder_ast.py '%s.ast' '%s' 2>/dev/null", input_file, input_file);
+        system(cmd);
+    }
+    
+    /* Reorder functions in TAC file */
+    if (show_tac) {
+        char cmd[512];
+        snprintf(cmd, sizeof(cmd), "python3 reorder_tac.py '%s.tac' '%s' 2>/dev/null", input_file, input_file);
         system(cmd);
     }
     

@@ -1086,7 +1086,27 @@ void Return_Stmt::pre_allocate_temps() {
 TAC_Opd* Return_Stmt::generate_tac(list<TAC_Stmt*>& statements) {
     if(return_expr) {
         TAC_Opd* ret_val = return_expr->generate_tac(statements);
-        statements.push_back(new Return_TAC_Stmt(ret_val));
+        
+        // Create stemp for return value using TACGenerator
+        TAC_Opd* stemp = TAC_Generator::get_instance()->create_new_stemp();
+        
+        // Create assignment: stemp = ret_val
+        Assign_TAC_Stmt* assign = new Assign_TAC_Stmt(stemp, ret_val);
+        statements.push_back(assign);
+        
+        // Create label for return using TACGenerator
+        Label_TAC_Opd* ret_label = TAC_Generator::get_instance()->create_new_label();
+        
+        // Create goto label
+        Goto_TAC_Stmt* goto_stmt = new Goto_TAC_Stmt(ret_label);
+        statements.push_back(goto_stmt);
+        
+        // Create label statement
+        Label_TAC_Stmt* label_stmt = new Label_TAC_Stmt(ret_label);
+        statements.push_back(label_stmt);
+        
+        // Return stemp
+        statements.push_back(new Return_TAC_Stmt(stemp));
     } else {
         statements.push_back(new Return_TAC_Stmt(nullptr));
     }

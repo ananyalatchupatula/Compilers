@@ -287,16 +287,13 @@ void FCall_TAC_Stmt::add_argument(TAC_Opd *arg) {
 }
 
 void FCall_TAC_Stmt::print() {
-    printf("call %s(", func_name.c_str());
-    
-    bool first = true;
-    for (auto arg : arguments) {
-        if (!first) printf(", ");
-        arg->print();
-        first = false;
-    }
-    
-    printf(")\n");
+    fprintf(stdout, "%s_()", func_name.c_str());
+    fprintf(stdout, "\n");
+}
+
+void FCall_TAC_Stmt::print(FILE *file) {
+    fprintf(file, "%s_()", func_name.c_str());
+    fprintf(file, "\n");
 }
 
 /* FCall_Return_TAC_Stmt */

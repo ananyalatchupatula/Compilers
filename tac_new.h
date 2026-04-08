@@ -275,6 +275,7 @@ public:
     void add_argument(TAC_Opd *arg);
     
     void print();
+    void print(FILE *file);
 };
 
 /**
