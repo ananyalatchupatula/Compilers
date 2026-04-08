@@ -63,7 +63,8 @@ uint32_t TAC_Generator::allocate_label_id() {
 void TAC_Generator::reset_counters() {
     temp_counter = 0;
     stemp_counter = 0;
-    label_counter = 0;
+    // NOTE: label_counter is NOT reset - labels should be globally unique across functions
+    // label_counter = 0;
     string_counter = 0;
     string_label_map.clear();
 }

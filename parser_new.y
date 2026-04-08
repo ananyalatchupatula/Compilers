@@ -403,7 +403,11 @@ else
 $3->generate_tac(tac_stmts);
     
     if(show_tac && tac_file && !tac_stmts.empty()) {
-        fprintf(tac_file, "**PROCEDURE: %s\n", current_function_name.c_str());
+        if(strcmp(current_function_name.c_str(), "main") == 0) {
+            fprintf(tac_file, "**PROCEDURE: main\n", current_function_name.c_str());
+        } else {
+            fprintf(tac_file, "**PROCEDURE: %s_\n", current_function_name.c_str());
+        }
         fprintf(tac_file, "**BEGIN: Three Address Code Statements\n");
         for(auto stmt : tac_stmts) {
             stmt->print(tac_file);

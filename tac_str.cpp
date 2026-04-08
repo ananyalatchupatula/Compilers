@@ -397,7 +397,7 @@ void Call_TAC_Stmt::print(FILE *file) {
 }
 
 string Call_TAC_Stmt::to_string() {
-    return "call " + func_name->to_string();
+    return func_name->to_string() + "_()";
 }
 
 // ============================================================================
