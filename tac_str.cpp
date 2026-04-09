@@ -397,7 +397,61 @@ void Call_TAC_Stmt::print(FILE *file) {
 }
 
 string Call_TAC_Stmt::to_string() {
-    return func_name->to_string() + "_()";
+    string result = func_name->to_string() + "_(";
+    
+    // Add arguments
+    bool first = true;
+    for(auto arg : arguments) {
+        if(!first) result += ", ";
+        result += arg->to_string();
+        first = false;
+    }
+    
+    result += ")";
+    return result;
+}
+
+void Call_TAC_Stmt::add_argument(TAC_Opd *arg) {
+    if(arg) arguments.push_back(arg);
+}
+
+// ============================================================================
+// ASSIGNCALL_TAC_STMT CLASS
+// ============================================================================
+
+AssignCall_TAC_Stmt::AssignCall_TAC_Stmt(TAC_Opd *result, TAC_Opd *fn)
+    : TAC_Stmt(ASSIGN_STMT), lhs(result), func_name(fn) {}
+
+AssignCall_TAC_Stmt::~AssignCall_TAC_Stmt() {
+    if(lhs) delete lhs;
+    if(func_name) delete func_name;
+    for(auto arg : arguments) {
+        if(arg) delete arg;
+    }
+    arguments.clear();
+}
+
+void AssignCall_TAC_Stmt::add_argument(TAC_Opd *arg) {
+    if(arg) arguments.push_back(arg);
+}
+
+void AssignCall_TAC_Stmt::print(FILE *file) {
+    fprintf(file, "%s\n", to_string().c_str());
+}
+
+string AssignCall_TAC_Stmt::to_string() {
+    string result = lhs->to_string() + " = " + func_name->to_string() + "(";
+    
+    // Add arguments
+    bool first = true;
+    for(auto arg : arguments) {
+        if(!first) result += ", ";
+        result += arg->to_string();
+        first = false;
+    }
+    
+    result += ")";
+    return result;
 }
 
 // ============================================================================

@@ -4,24 +4,26 @@ temp0 = n_ == 0
 temp1 = ! temp0
 if(temp1) goto Label1
 ret_ = 1
-return ret_
+stemp0 = ret_
+goto Label3
+Label3:
+return stemp0
 goto Label1
 Label1:
 temp2 = n_ - 1
 k_ = temp2
-param k_
-f_()
-ret_ = temp3
+ret_ = f_(k_)
 temp4 = n_ * ret_
 ret_ = temp4
-return ret_
+stemp1 = ret_
+goto Label4
+Label4:
+return stemp1
 **END: Three Address Code Statements
 **PROCEDURE: main
 **BEGIN: Three Address Code Statements
 b_ = 5
-param b_
-f_()
-a_ = temp0
+a_ = f_(b_)
 write a_
 m_ = 2
 write m_

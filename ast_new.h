@@ -195,6 +195,7 @@ public:
     string get_function_name() { return function_name; }
     void add_argument(Expression_Ast* arg);
     list<Expression_Ast*>& get_arguments() { return arguments; }
+    int get_temp_id() { return temp_id; }  // Get pre-allocated temp ID
     
     void pre_allocate_temps();
     void print(int indent = 0);

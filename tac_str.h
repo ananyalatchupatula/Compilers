@@ -311,6 +311,7 @@ public:
 class Call_TAC_Stmt : public TAC_Stmt {
 private:
     TAC_Opd *func_name;  // Variable containing function name
+    list<TAC_Opd*> arguments;  // Function call arguments
     
 public:
     Call_TAC_Stmt(TAC_Opd *fn);
@@ -320,6 +321,23 @@ public:
     string to_string();
     
     TAC_Opd* get_func() { return func_name; }
+    void add_argument(TAC_Opd *arg);  // Add argument to function call
+};
+
+// Assignment with function call: temp = f_(args)
+class AssignCall_TAC_Stmt : public TAC_Stmt {
+private:
+    TAC_Opd *lhs;  // Result variable
+    TAC_Opd *func_name;  // Function name
+    list<TAC_Opd*> arguments;  // Function call arguments
+    
+public:
+    AssignCall_TAC_Stmt(TAC_Opd *result, TAC_Opd *fn);
+    ~AssignCall_TAC_Stmt();
+    
+    void add_argument(TAC_Opd *arg);
+    void print(FILE *file = stdout);
+    string to_string();
 };
 
 // Return TAC Statement: RETURN opd1 (or RETURN with no value)

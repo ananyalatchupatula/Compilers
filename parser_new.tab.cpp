@@ -739,12 +739,12 @@ static const yytype_int16 yyrline[] =
 {
        0,   234,   234,   244,   245,   249,   250,   254,   258,   259,
      263,   267,   268,   269,   270,   271,   272,   276,   287,   302,
-     301,   315,   340,   339,   438,   439,   443,   444,   454,   471,
-     472,   476,   482,   492,   499,   500,   504,   514,   520,   521,
-     522,   523,   524,   525,   526,   527,   528,   532,   540,   551,
-     562,   573,   597,   607,   619,   626,   660,   676,   692,   708,
-     724,   740,   756,   772,   788,   804,   820,   831,   842,   852,
-     862,   877,   881,   917,   924,   933,   937
+     301,   315,   340,   339,   458,   459,   463,   464,   474,   491,
+     492,   496,   502,   512,   519,   520,   524,   534,   540,   541,
+     542,   543,   544,   545,   546,   547,   548,   552,   560,   571,
+     582,   593,   617,   627,   639,   646,   680,   696,   712,   728,
+     744,   760,   776,   792,   808,   824,   840,   851,   862,   872,
+     882,   897,   901,   937,   944,   953,   957
 };
 #endif
 
@@ -1600,10 +1600,30 @@ else
     list<TAC_Stmt*> tac_stmts;
     if(show_tac || show_rtl) {
     TAC_Generator::get_instance()->reset_counters();
+    FILE *pf = fopen("/tmp/parser.log", "a");
+    if(pf) {
+        fprintf(pf, "DEBUG: Calling pre_allocate_temps\n");
+        fflush(pf);
+        fclose(pf);
+    }
     (yyvsp[0].block)->pre_allocate_temps();
 }
 
+FILE *pf = fopen("/tmp/parser.log", "a");
+if(pf) {
+    fprintf(pf, "DEBUG: Calling generate_tac, show_tac=%d\n", show_tac);
+    fprintf(pf, "DEBUG: about to call $3->generate_tac with function %s\n", current_function_name.c_str());
+    fflush(pf);
+    fclose(pf);
+}
+// Generate TAC for the function body
 (yyvsp[0].block)->generate_tac(tac_stmts);
+pf = fopen("/tmp/parser.log", "a");
+if(pf) {
+    fprintf(pf, "DEBUG: generate_tac done, got %zu statements\n", tac_stmts.size());
+    fflush(pf);
+    fclose(pf);
+}
     
     if(show_tac && tac_file && !tac_stmts.empty()) {
         if(strcmp(current_function_name.c_str(), "main") == 0) {
@@ -1635,40 +1655,40 @@ else
         in_function = false;
         delete (yyvsp[0].block);
     }
-#line 1639 "parser_new.tab.cpp"
+#line 1659 "parser_new.tab.cpp"
     break;
 
   case 24: /* param_list_opt: param_list  */
-#line 438 "parser_new.y"
+#line 458 "parser_new.y"
                  { (yyval.ast) = (yyvsp[0].ast); }
-#line 1645 "parser_new.tab.cpp"
+#line 1665 "parser_new.tab.cpp"
     break;
 
   case 25: /* param_list_opt: %empty  */
-#line 439 "parser_new.y"
+#line 459 "parser_new.y"
                   { (yyval.ast) = NULL; }
-#line 1651 "parser_new.tab.cpp"
+#line 1671 "parser_new.tab.cpp"
     break;
 
   case 26: /* param_list: param  */
-#line 443 "parser_new.y"
+#line 463 "parser_new.y"
             { (yyval.ast) = (yyvsp[0].ast); }
-#line 1657 "parser_new.tab.cpp"
+#line 1677 "parser_new.tab.cpp"
     break;
 
   case 27: /* param_list: param_list COMMA param  */
-#line 445 "parser_new.y"
+#line 465 "parser_new.y"
       {
           // For new AST, params are handled differently
           // Just return the first param for now
           // Full param list support requires compound statement structure
           (yyval.ast) = (yyvsp[-2].ast);
       }
-#line 1668 "parser_new.tab.cpp"
+#line 1688 "parser_new.tab.cpp"
     break;
 
   case 28: /* param: type NAME  */
-#line 455 "parser_new.y"
+#line 475 "parser_new.y"
       {
           // Check for char parameters - this is not allowed
           if((yyvsp[-1].type) == TYPE_CHAR) {
@@ -1682,52 +1702,52 @@ else
           }
           (yyval.ast) = NULL;  /* Placeholder for now */
       }
-#line 1686 "parser_new.tab.cpp"
+#line 1706 "parser_new.tab.cpp"
     break;
 
   case 29: /* arg_list_opt: arg_list  */
-#line 471 "parser_new.y"
+#line 491 "parser_new.y"
                { (yyval.ast) = (yyvsp[0].ast); }
-#line 1692 "parser_new.tab.cpp"
+#line 1712 "parser_new.tab.cpp"
     break;
 
   case 30: /* arg_list_opt: %empty  */
-#line 472 "parser_new.y"
+#line 492 "parser_new.y"
                   { (yyval.ast) = NULL; }
-#line 1698 "parser_new.tab.cpp"
+#line 1718 "parser_new.tab.cpp"
     break;
 
   case 31: /* arg_list: expr  */
-#line 477 "parser_new.y"
+#line 497 "parser_new.y"
       {
           FunctionCall_Expr_Ast *tmp = new FunctionCall_Expr_Ast("__tmp__");
           tmp->add_argument((yyvsp[0].expr));
           (yyval.ast) = tmp;
       }
-#line 1708 "parser_new.tab.cpp"
+#line 1728 "parser_new.tab.cpp"
     break;
 
   case 32: /* arg_list: arg_list COMMA expr  */
-#line 483 "parser_new.y"
+#line 503 "parser_new.y"
       {
           FunctionCall_Expr_Ast *tmp =
               dynamic_cast<FunctionCall_Expr_Ast*>((yyvsp[-2].ast));
           tmp->add_argument((yyvsp[0].expr));
           (yyval.ast) = tmp;
       }
-#line 1719 "parser_new.tab.cpp"
+#line 1739 "parser_new.tab.cpp"
     break;
 
   case 33: /* block: LEFT_CURLY_BRACKET decl_list_opt stmt_list RIGHT_CURLY_BRACKET  */
-#line 493 "parser_new.y"
+#line 513 "parser_new.y"
     {
         (yyval.block) = (yyvsp[-1].block);  /* Return the statement list as a compound statement */
     }
-#line 1727 "parser_new.tab.cpp"
+#line 1747 "parser_new.tab.cpp"
     break;
 
   case 36: /* stmt_list: stmt_list stmt  */
-#line 505 "parser_new.y"
+#line 525 "parser_new.y"
     {
         if((yyvsp[-1].block) == NULL) {
             (yyval.block) = new Compound_Stmt();
@@ -1736,73 +1756,73 @@ else
             (yyval.block)->add_stmt((yyvsp[0].stmt));
         }
     }
-#line 1740 "parser_new.tab.cpp"
-    break;
-
-  case 37: /* stmt_list: %empty  */
-#line 514 "parser_new.y"
-    {
-        (yyval.block) = new Compound_Stmt();
-    }
-#line 1748 "parser_new.tab.cpp"
-    break;
-
-  case 38: /* stmt: assign_stmt SEMICOLON  */
-#line 520 "parser_new.y"
-                            { (yyval.stmt) = (yyvsp[-1].stmt); }
-#line 1754 "parser_new.tab.cpp"
-    break;
-
-  case 39: /* stmt: read_stmt SEMICOLON  */
-#line 521 "parser_new.y"
-                          { (yyval.stmt) = (yyvsp[-1].stmt); }
 #line 1760 "parser_new.tab.cpp"
     break;
 
+  case 37: /* stmt_list: %empty  */
+#line 534 "parser_new.y"
+    {
+        (yyval.block) = new Compound_Stmt();
+    }
+#line 1768 "parser_new.tab.cpp"
+    break;
+
+  case 38: /* stmt: assign_stmt SEMICOLON  */
+#line 540 "parser_new.y"
+                            { (yyval.stmt) = (yyvsp[-1].stmt); }
+#line 1774 "parser_new.tab.cpp"
+    break;
+
+  case 39: /* stmt: read_stmt SEMICOLON  */
+#line 541 "parser_new.y"
+                          { (yyval.stmt) = (yyvsp[-1].stmt); }
+#line 1780 "parser_new.tab.cpp"
+    break;
+
   case 40: /* stmt: write_stmt SEMICOLON  */
-#line 522 "parser_new.y"
+#line 542 "parser_new.y"
                            { (yyval.stmt) = (yyvsp[-1].stmt); }
-#line 1766 "parser_new.tab.cpp"
+#line 1786 "parser_new.tab.cpp"
     break;
 
   case 41: /* stmt: if_stmt  */
-#line 523 "parser_new.y"
+#line 543 "parser_new.y"
               { (yyval.stmt) = (yyvsp[0].stmt); }
-#line 1772 "parser_new.tab.cpp"
+#line 1792 "parser_new.tab.cpp"
     break;
 
   case 42: /* stmt: while_stmt  */
-#line 524 "parser_new.y"
+#line 544 "parser_new.y"
                  { (yyval.stmt) = (yyvsp[0].stmt); }
-#line 1778 "parser_new.tab.cpp"
+#line 1798 "parser_new.tab.cpp"
     break;
 
   case 43: /* stmt: do_while_stmt  */
-#line 525 "parser_new.y"
+#line 545 "parser_new.y"
                     { (yyval.stmt) = (yyvsp[0].stmt); }
-#line 1784 "parser_new.tab.cpp"
+#line 1804 "parser_new.tab.cpp"
     break;
 
   case 44: /* stmt: return_stmt SEMICOLON  */
-#line 526 "parser_new.y"
+#line 546 "parser_new.y"
                             { (yyval.stmt) = (yyvsp[-1].stmt); }
-#line 1790 "parser_new.tab.cpp"
+#line 1810 "parser_new.tab.cpp"
     break;
 
   case 45: /* stmt: func_call_stmt SEMICOLON  */
-#line 527 "parser_new.y"
+#line 547 "parser_new.y"
                                { (yyval.stmt) = (yyvsp[-1].stmt); }
-#line 1796 "parser_new.tab.cpp"
+#line 1816 "parser_new.tab.cpp"
     break;
 
   case 46: /* stmt: block  */
-#line 528 "parser_new.y"
+#line 548 "parser_new.y"
             { (yyval.stmt) = (yyvsp[0].block); }
-#line 1802 "parser_new.tab.cpp"
+#line 1822 "parser_new.tab.cpp"
     break;
 
   case 47: /* if_stmt: IF LEFT_ROUND_BRACKET expr RIGHT_ROUND_BRACKET stmt  */
-#line 533 "parser_new.y"
+#line 553 "parser_new.y"
     {
         if(datatype_to_int((yyvsp[-2].expr)->get_data_type()) != TYPE_BOOL) {
             cout << "Semantic error: if condition must be bool" << endl;
@@ -1810,11 +1830,11 @@ else
         }
         (yyval.stmt) = new If_Stmt((yyvsp[-2].expr), (yyvsp[0].stmt), NULL);
     }
-#line 1814 "parser_new.tab.cpp"
+#line 1834 "parser_new.tab.cpp"
     break;
 
   case 48: /* if_stmt: IF LEFT_ROUND_BRACKET expr RIGHT_ROUND_BRACKET stmt ELSE stmt  */
-#line 541 "parser_new.y"
+#line 561 "parser_new.y"
     {
         if(datatype_to_int((yyvsp[-4].expr)->get_data_type()) != TYPE_BOOL) {
             cout << "Semantic error: if condition must be bool" << endl;
@@ -1822,11 +1842,11 @@ else
         }
         (yyval.stmt) = new If_Stmt((yyvsp[-4].expr), (yyvsp[-2].stmt), (yyvsp[0].stmt));
     }
-#line 1826 "parser_new.tab.cpp"
+#line 1846 "parser_new.tab.cpp"
     break;
 
   case 49: /* while_stmt: WHILE LEFT_ROUND_BRACKET expr RIGHT_ROUND_BRACKET stmt  */
-#line 552 "parser_new.y"
+#line 572 "parser_new.y"
     {
         if(datatype_to_int((yyvsp[-2].expr)->get_data_type()) != TYPE_BOOL) {
             cout << "Semantic error: while condition must be bool" << endl;
@@ -1834,11 +1854,11 @@ else
         }
         (yyval.stmt) = new While_Stmt((yyvsp[-2].expr), (yyvsp[0].stmt));
     }
-#line 1838 "parser_new.tab.cpp"
+#line 1858 "parser_new.tab.cpp"
     break;
 
   case 50: /* do_while_stmt: DO stmt WHILE LEFT_ROUND_BRACKET expr RIGHT_ROUND_BRACKET SEMICOLON  */
-#line 563 "parser_new.y"
+#line 583 "parser_new.y"
     {
         if(datatype_to_int((yyvsp[-2].expr)->get_data_type()) != TYPE_BOOL) {
             cout << "Semantic error: do-while condition must be bool" << endl;
@@ -1846,11 +1866,11 @@ else
         }
         (yyval.stmt) = new Do_While_Stmt((yyvsp[-5].stmt), (yyvsp[-2].expr));
     }
-#line 1850 "parser_new.tab.cpp"
+#line 1870 "parser_new.tab.cpp"
     break;
 
   case 51: /* assign_stmt: NAME ASSIGN_OP expr  */
-#line 574 "parser_new.y"
+#line 594 "parser_new.y"
     {
         int lhs_type = lookup((yyvsp[-2].name));
         int rhs_type = datatype_to_int((yyvsp[0].expr)->get_data_type());
@@ -1871,22 +1891,22 @@ else
         (yyval.stmt) = new Assignment_Stmt(lhs_name_with_underscore, (yyvsp[0].expr));
         (yyval.stmt)->set_data_type(int_to_datatype(lhs_type));
     }
-#line 1875 "parser_new.tab.cpp"
+#line 1895 "parser_new.tab.cpp"
     break;
 
   case 52: /* read_stmt: READ NAME  */
-#line 598 "parser_new.y"
+#line 618 "parser_new.y"
     {
         int var_type = lookup((yyvsp[0].name));
         string var_name_with_underscore = string((yyvsp[0].name)) + "_";
         (yyval.stmt) = new Read_Stmt(var_name_with_underscore);
         (yyval.stmt)->set_data_type(int_to_datatype(var_type));
     }
-#line 1886 "parser_new.tab.cpp"
+#line 1906 "parser_new.tab.cpp"
     break;
 
   case 53: /* write_stmt: WRITE expr  */
-#line 608 "parser_new.y"
+#line 628 "parser_new.y"
     {
         if((yyvsp[0].expr)->get_data_type() == BOOL_DATA_TYPE){
             cout << "Semantic error: cannot print bool" << endl;
@@ -1895,19 +1915,19 @@ else
 
         (yyval.stmt) = new Print_Stmt((yyvsp[0].expr));
     }
-#line 1899 "parser_new.tab.cpp"
+#line 1919 "parser_new.tab.cpp"
     break;
 
   case 54: /* return_stmt: RETURN expr  */
-#line 620 "parser_new.y"
+#line 640 "parser_new.y"
     {
         (yyval.stmt) = new Return_Stmt((yyvsp[0].expr));
     }
-#line 1907 "parser_new.tab.cpp"
+#line 1927 "parser_new.tab.cpp"
     break;
 
   case 55: /* func_call_stmt: NAME LEFT_ROUND_BRACKET arg_list_opt RIGHT_ROUND_BRACKET  */
-#line 627 "parser_new.y"
+#line 647 "parser_new.y"
     {
         FunctionCall_Stmt *call = new FunctionCall_Stmt((yyvsp[-3].name));
 
@@ -1938,11 +1958,11 @@ else
 
         (yyval.stmt) = call;
     }
-#line 1942 "parser_new.tab.cpp"
+#line 1962 "parser_new.tab.cpp"
     break;
 
   case 56: /* expr: expr PLUS expr  */
-#line 661 "parser_new.y"
+#line 681 "parser_new.y"
     {
         if(!isNumeric(datatype_to_int((yyvsp[-2].expr)->get_data_type())) || 
            !isNumeric(datatype_to_int((yyvsp[0].expr)->get_data_type()))) {
@@ -1958,11 +1978,11 @@ else
         (yyval.expr) = new Binary_Expr_Ast((yyvsp[-2].expr), Binary_Expr_Ast::PLUS_OP, (yyvsp[0].expr));
         (yyval.expr)->set_data_type(int_to_datatype(result_type));
     }
-#line 1962 "parser_new.tab.cpp"
+#line 1982 "parser_new.tab.cpp"
     break;
 
   case 57: /* expr: expr MINUS expr  */
-#line 677 "parser_new.y"
+#line 697 "parser_new.y"
     {
         if(!isNumeric(datatype_to_int((yyvsp[-2].expr)->get_data_type())) || 
            !isNumeric(datatype_to_int((yyvsp[0].expr)->get_data_type()))) {
@@ -1978,11 +1998,11 @@ else
         (yyval.expr) = new Binary_Expr_Ast((yyvsp[-2].expr), Binary_Expr_Ast::MINUS_OP, (yyvsp[0].expr));
         (yyval.expr)->set_data_type(int_to_datatype(result_type));
     }
-#line 1982 "parser_new.tab.cpp"
+#line 2002 "parser_new.tab.cpp"
     break;
 
   case 58: /* expr: expr MULT expr  */
-#line 693 "parser_new.y"
+#line 713 "parser_new.y"
     {
         if(!isNumeric(datatype_to_int((yyvsp[-2].expr)->get_data_type())) || 
            !isNumeric(datatype_to_int((yyvsp[0].expr)->get_data_type()))) {
@@ -1998,11 +2018,11 @@ else
         (yyval.expr) = new Binary_Expr_Ast((yyvsp[-2].expr), Binary_Expr_Ast::MULT_OP, (yyvsp[0].expr));
         (yyval.expr)->set_data_type(int_to_datatype(result_type));
     }
-#line 2002 "parser_new.tab.cpp"
+#line 2022 "parser_new.tab.cpp"
     break;
 
   case 59: /* expr: expr DIV expr  */
-#line 709 "parser_new.y"
+#line 729 "parser_new.y"
     {
         if(!isNumeric(datatype_to_int((yyvsp[-2].expr)->get_data_type())) || 
            !isNumeric(datatype_to_int((yyvsp[0].expr)->get_data_type()))) {
@@ -2018,11 +2038,11 @@ else
         (yyval.expr) = new Binary_Expr_Ast((yyvsp[-2].expr), Binary_Expr_Ast::DIV_OP, (yyvsp[0].expr));
         (yyval.expr)->set_data_type(int_to_datatype(result_type));
     }
-#line 2022 "parser_new.tab.cpp"
+#line 2042 "parser_new.tab.cpp"
     break;
 
   case 60: /* expr: expr GREATER_THAN expr  */
-#line 725 "parser_new.y"
+#line 745 "parser_new.y"
     {
         if(!isNumeric(datatype_to_int((yyvsp[-2].expr)->get_data_type())) || 
            !isNumeric(datatype_to_int((yyvsp[0].expr)->get_data_type()))) {
@@ -2038,11 +2058,11 @@ else
         (yyval.expr) = new Binary_Expr_Ast((yyvsp[-2].expr), Binary_Expr_Ast::GT_OP, (yyvsp[0].expr));
         (yyval.expr)->set_data_type(BOOL_DATA_TYPE);
     }
-#line 2042 "parser_new.tab.cpp"
+#line 2062 "parser_new.tab.cpp"
     break;
 
   case 61: /* expr: expr LESS_THAN expr  */
-#line 741 "parser_new.y"
+#line 761 "parser_new.y"
     {
         if(!isNumeric(datatype_to_int((yyvsp[-2].expr)->get_data_type())) || 
            !isNumeric(datatype_to_int((yyvsp[0].expr)->get_data_type()))) {
@@ -2058,11 +2078,11 @@ else
         (yyval.expr) = new Binary_Expr_Ast((yyvsp[-2].expr), Binary_Expr_Ast::LT_OP, (yyvsp[0].expr));
         (yyval.expr)->set_data_type(BOOL_DATA_TYPE);
     }
-#line 2062 "parser_new.tab.cpp"
+#line 2082 "parser_new.tab.cpp"
     break;
 
   case 62: /* expr: expr GREATER_THAN_EQUAL expr  */
-#line 757 "parser_new.y"
+#line 777 "parser_new.y"
     {
         if(!isNumeric(datatype_to_int((yyvsp[-2].expr)->get_data_type())) || 
            !isNumeric(datatype_to_int((yyvsp[0].expr)->get_data_type()))) {
@@ -2078,11 +2098,11 @@ else
         (yyval.expr) = new Binary_Expr_Ast((yyvsp[-2].expr), Binary_Expr_Ast::GE_OP, (yyvsp[0].expr));
         (yyval.expr)->set_data_type(BOOL_DATA_TYPE);
     }
-#line 2082 "parser_new.tab.cpp"
+#line 2102 "parser_new.tab.cpp"
     break;
 
   case 63: /* expr: expr LESS_THAN_EQUAL expr  */
-#line 773 "parser_new.y"
+#line 793 "parser_new.y"
     {
         if(!isNumeric(datatype_to_int((yyvsp[-2].expr)->get_data_type())) || 
            !isNumeric(datatype_to_int((yyvsp[0].expr)->get_data_type()))) {
@@ -2098,11 +2118,11 @@ else
         (yyval.expr) = new Binary_Expr_Ast((yyvsp[-2].expr), Binary_Expr_Ast::LE_OP, (yyvsp[0].expr));
         (yyval.expr)->set_data_type(BOOL_DATA_TYPE);
     }
-#line 2102 "parser_new.tab.cpp"
+#line 2122 "parser_new.tab.cpp"
     break;
 
   case 64: /* expr: expr EQUAL expr  */
-#line 789 "parser_new.y"
+#line 809 "parser_new.y"
     {
         if(!isNumeric(datatype_to_int((yyvsp[-2].expr)->get_data_type())) || 
            !isNumeric(datatype_to_int((yyvsp[0].expr)->get_data_type()))) {
@@ -2118,11 +2138,11 @@ else
         (yyval.expr) = new Binary_Expr_Ast((yyvsp[-2].expr), Binary_Expr_Ast::EQ_OP, (yyvsp[0].expr));
         (yyval.expr)->set_data_type(BOOL_DATA_TYPE);
     }
-#line 2122 "parser_new.tab.cpp"
+#line 2142 "parser_new.tab.cpp"
     break;
 
   case 65: /* expr: expr NOT_EQUAL expr  */
-#line 805 "parser_new.y"
+#line 825 "parser_new.y"
     {
         if(!isNumeric(datatype_to_int((yyvsp[-2].expr)->get_data_type())) || 
            !isNumeric(datatype_to_int((yyvsp[0].expr)->get_data_type()))) {
@@ -2138,11 +2158,11 @@ else
         (yyval.expr) = new Binary_Expr_Ast((yyvsp[-2].expr), Binary_Expr_Ast::NE_OP, (yyvsp[0].expr));
         (yyval.expr)->set_data_type(BOOL_DATA_TYPE);
     }
-#line 2142 "parser_new.tab.cpp"
+#line 2162 "parser_new.tab.cpp"
     break;
 
   case 66: /* expr: expr AND expr  */
-#line 821 "parser_new.y"
+#line 841 "parser_new.y"
     {
         if(datatype_to_int((yyvsp[-2].expr)->get_data_type()) != TYPE_BOOL || 
            datatype_to_int((yyvsp[0].expr)->get_data_type()) != TYPE_BOOL) {
@@ -2153,11 +2173,11 @@ else
         (yyval.expr) = new Binary_Expr_Ast((yyvsp[-2].expr), Binary_Expr_Ast::AND_OP, (yyvsp[0].expr));
         (yyval.expr)->set_data_type(BOOL_DATA_TYPE);
     }
-#line 2157 "parser_new.tab.cpp"
+#line 2177 "parser_new.tab.cpp"
     break;
 
   case 67: /* expr: expr OR expr  */
-#line 832 "parser_new.y"
+#line 852 "parser_new.y"
     {
         if(datatype_to_int((yyvsp[-2].expr)->get_data_type()) != TYPE_BOOL || 
            datatype_to_int((yyvsp[0].expr)->get_data_type()) != TYPE_BOOL) {
@@ -2168,11 +2188,11 @@ else
         (yyval.expr) = new Binary_Expr_Ast((yyvsp[-2].expr), Binary_Expr_Ast::OR_OP, (yyvsp[0].expr));
         (yyval.expr)->set_data_type(BOOL_DATA_TYPE);
     }
-#line 2172 "parser_new.tab.cpp"
+#line 2192 "parser_new.tab.cpp"
     break;
 
   case 68: /* expr: NOT expr  */
-#line 843 "parser_new.y"
+#line 863 "parser_new.y"
     {
         if(datatype_to_int((yyvsp[0].expr)->get_data_type()) != TYPE_BOOL) {
             cout << "Semantic error: logical NOT requires bool operand" << endl;
@@ -2182,11 +2202,11 @@ else
         (yyval.expr) = new Unary_Expr_Ast(Unary_Expr_Ast::NOT_OP, (yyvsp[0].expr));
         (yyval.expr)->set_data_type(BOOL_DATA_TYPE);
     }
-#line 2186 "parser_new.tab.cpp"
+#line 2206 "parser_new.tab.cpp"
     break;
 
   case 69: /* expr: MINUS expr  */
-#line 853 "parser_new.y"
+#line 873 "parser_new.y"
     {
         if(!isNumeric(datatype_to_int((yyvsp[0].expr)->get_data_type()))) {
             cout << "Semantic error: unary minus requires numeric operand" << endl;
@@ -2196,11 +2216,11 @@ else
         (yyval.expr) = new Unary_Expr_Ast(Unary_Expr_Ast::UMINUS_OP, (yyvsp[0].expr));
         (yyval.expr)->set_data_type((yyvsp[0].expr)->get_data_type());
     }
-#line 2200 "parser_new.tab.cpp"
+#line 2220 "parser_new.tab.cpp"
     break;
 
   case 70: /* expr: expr QUESTION_MARK expr COLON expr  */
-#line 863 "parser_new.y"
+#line 883 "parser_new.y"
     {
         if(datatype_to_int((yyvsp[-4].expr)->get_data_type()) != TYPE_BOOL) {
             cout << "Semantic error: ternary condition must be bool" << endl;
@@ -2215,19 +2235,19 @@ else
         (yyval.expr) = new Ternary_Expr_Ast((yyvsp[-4].expr), (yyvsp[-2].expr), (yyvsp[0].expr));
         (yyval.expr)->set_data_type((yyvsp[-2].expr)->get_data_type());
     }
-#line 2219 "parser_new.tab.cpp"
+#line 2239 "parser_new.tab.cpp"
     break;
 
   case 71: /* expr: LEFT_ROUND_BRACKET expr RIGHT_ROUND_BRACKET  */
-#line 878 "parser_new.y"
+#line 898 "parser_new.y"
     {
         (yyval.expr) = (yyvsp[-1].expr);
     }
-#line 2227 "parser_new.tab.cpp"
+#line 2247 "parser_new.tab.cpp"
     break;
 
   case 72: /* expr: NAME LEFT_ROUND_BRACKET arg_list_opt RIGHT_ROUND_BRACKET  */
-#line 882 "parser_new.y"
+#line 902 "parser_new.y"
     {
         FunctionCall_Expr_Ast *call = new FunctionCall_Expr_Ast((yyvsp[-3].name));
 
@@ -2262,22 +2282,22 @@ else
         (yyval.expr) = call;
         (yyval.expr)->set_data_type(int_to_datatype(ret_type));
     }
-#line 2266 "parser_new.tab.cpp"
+#line 2286 "parser_new.tab.cpp"
     break;
 
   case 73: /* expr: NAME  */
-#line 918 "parser_new.y"
+#line 938 "parser_new.y"
     {
         int var_type = lookup((yyvsp[0].name));
         string name_with_underscore = string((yyvsp[0].name)) + "_";
         (yyval.expr) = new Name_Expr_Ast(name_with_underscore);
         (yyval.expr)->set_data_type(int_to_datatype(var_type));
     }
-#line 2277 "parser_new.tab.cpp"
+#line 2297 "parser_new.tab.cpp"
     break;
 
   case 74: /* expr: INT_NUM  */
-#line 925 "parser_new.y"
+#line 945 "parser_new.y"
     {
         // Handle integer overflow with signed wrapping
         long long val = strtoll((yyvsp[0].str), NULL, 10);
@@ -2286,27 +2306,27 @@ else
         snprintf(buf, sizeof(buf), "%d", adjusted);
         (yyval.expr) = new Const_Expr_Ast(string(buf), INT_DATA_TYPE);
     }
-#line 2290 "parser_new.tab.cpp"
+#line 2310 "parser_new.tab.cpp"
     break;
 
   case 75: /* expr: FLOAT_NUM  */
-#line 934 "parser_new.y"
+#line 954 "parser_new.y"
     {
         (yyval.expr) = new Const_Expr_Ast((yyvsp[0].str), FLOAT_DATA_TYPE);
     }
-#line 2298 "parser_new.tab.cpp"
+#line 2318 "parser_new.tab.cpp"
     break;
 
   case 76: /* expr: STR_CONST  */
-#line 938 "parser_new.y"
+#line 958 "parser_new.y"
     {
         (yyval.expr) = new Const_Expr_Ast((yyvsp[0].str), STRING_DATA_TYPE);
     }
-#line 2306 "parser_new.tab.cpp"
+#line 2326 "parser_new.tab.cpp"
     break;
 
 
-#line 2310 "parser_new.tab.cpp"
+#line 2330 "parser_new.tab.cpp"
 
       default: break;
     }
@@ -2499,5 +2519,5 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 943 "parser_new.y"
+#line 963 "parser_new.y"
 
