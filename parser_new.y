@@ -397,10 +397,30 @@ else
     list<TAC_Stmt*> tac_stmts;
     if(show_tac || show_rtl) {
     TAC_Generator::get_instance()->reset_counters();
+    FILE *pf = fopen("/tmp/parser.log", "a");
+    if(pf) {
+        fprintf(pf, "DEBUG: Calling pre_allocate_temps\n");
+        fflush(pf);
+        fclose(pf);
+    }
     $3->pre_allocate_temps();
 }
 
+FILE *pf = fopen("/tmp/parser.log", "a");
+if(pf) {
+    fprintf(pf, "DEBUG: Calling generate_tac, show_tac=%d\n", show_tac);
+    fprintf(pf, "DEBUG: about to call $3->generate_tac with function %s\n", current_function_name.c_str());
+    fflush(pf);
+    fclose(pf);
+}
+// Generate TAC for the function body
 $3->generate_tac(tac_stmts);
+pf = fopen("/tmp/parser.log", "a");
+if(pf) {
+    fprintf(pf, "DEBUG: generate_tac done, got %zu statements\n", tac_stmts.size());
+    fflush(pf);
+    fclose(pf);
+}
     
     if(show_tac && tac_file && !tac_stmts.empty()) {
         if(strcmp(current_function_name.c_str(), "main") == 0) {

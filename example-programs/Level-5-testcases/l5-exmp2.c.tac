@@ -18,9 +18,6 @@ return stemp0
 **PROCEDURE: main
 **BEGIN: Three Address Code Statements
 a_ = 3
-param a_
-param a_
-f1_()
-a_ = temp0
+a_ = f1_(a_, a_)
 write a_
 **END: Three Address Code Statements

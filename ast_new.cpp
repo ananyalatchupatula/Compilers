@@ -552,11 +552,33 @@ void Assignment_Stmt::print_no_trailing_newline(int indent) {
 }
 
 TAC_Opd* Assignment_Stmt::generate_tac(list<TAC_Stmt*>& statements) {
-    TAC_Opd* rhs_tac = rhs->generate_tac(statements);
-    Var_TAC_Opd* lhs_tac = new Var_TAC_Opd(lhs_name, rhs->get_data_type());
+    FunctionCall_Expr_Ast* func_call = dynamic_cast<FunctionCall_Expr_Ast*>(rhs);
     
-    statements.push_back(new Assign_TAC_Stmt(lhs_tac, rhs_tac));
-    
+    if(func_call && func_call->node_data_type != VOID_DATA_TYPE) {
+        // Function call assignment: a = f(args)
+        string func_name = func_call->get_function_name();
+        if(func_name.empty() || func_name.back() != '_') {
+            func_name += "_";
+        }
+        
+        AssignCall_TAC_Stmt* assign_call = new AssignCall_TAC_Stmt(
+            new Var_TAC_Opd(lhs_name, rhs->get_data_type()),
+            new Var_TAC_Opd(func_name)
+        );
+        
+        for(auto arg : func_call->get_arguments()) {
+            if(arg) {
+                TAC_Opd* arg_tac = arg->generate_tac(statements);
+                assign_call->add_argument(arg_tac);
+            }
+        }
+        
+        statements.push_back(assign_call);
+    } else {
+        TAC_Opd* rhs_tac = rhs->generate_tac(statements);
+        Var_TAC_Opd* lhs_tac = new Var_TAC_Opd(lhs_name, rhs->get_data_type());
+        statements.push_back(new Assign_TAC_Stmt(lhs_tac, rhs_tac));
+    }
     return NULL;
 }
 
@@ -1017,16 +1039,10 @@ void FunctionCall_Expr_Ast::pre_allocate_temps() {
 }
 
 TAC_Opd* FunctionCall_Expr_Ast::generate_tac(list<TAC_Stmt*>& statements) {
-    // Generate TAC for all arguments first
-    for(auto arg : arguments) {
-        TAC_Opd* arg_tac = arg->generate_tac(statements);
-        statements.push_back(new Param_TAC_Stmt(arg_tac));
-    }
+    // This method should only return the temp operand for the result.
+    // The caller (Assignment_Stmt or FunctionCall_Stmt) is responsible for
+    // generating param statements and the call statement.
     
-    // Call the function
-    statements.push_back(new Call_TAC_Stmt(new Var_TAC_Opd(function_name, node_data_type)));
-    
-    // If the function returns a value, assign it to a temp
     TAC_Opd* result = nullptr;
     if(node_data_type != VOID_DATA_TYPE) {
         if(temp_id != -1) {
