@@ -1,24 +1,24 @@
-**PROCEDURE: f1_
+**PROCEDURE: f2_
 **BEGIN: Three Address Code Statements
-temp0 = b_ + c_
-d_ = temp0
-temp1 = d_ + 2
-stemp0 = temp1
-goto Label1
-Label1:
-return stemp0
-**END: Three Address Code Statements
-**PROCEDURE: g_
-**BEGIN: Three Address Code Statements
-stemp0 = b_
+stemp0 = p_
 goto Label3
 Label3:
 return stemp0
 **END: Three Address Code Statements
+**PROCEDURE: f_
+**BEGIN: Three Address Code Statements
+stemp0 = p_
+goto Label1
+Label1:
+return stemp0
+**END: Three Address Code Statements
 **PROCEDURE: main
 **BEGIN: Three Address Code Statements
-a_ = 3
-temp1 = f1_(a_, a_)
-a_ = temp1
-write a_
+r_ = 2.00
+temp0 = 2.00 + 3.00
+temp1 = r_ * temp0
+r_ = temp1
+temp2 = r_ * 2.00
+ftemp4 = f_(temp2, 3)
+r_ = ftemp4
 **END: Three Address Code Statements

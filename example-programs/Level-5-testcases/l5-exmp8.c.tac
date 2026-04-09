@@ -1,13 +1,14 @@
-**PROCEDURE: f_
+**PROCEDURE: f1_
 **BEGIN: Three Address Code Statements
-stemp0 = 3.50
+stemp0 = s_
 goto Label1
 Label1:
 return stemp0
 **END: Three Address Code Statements
 **PROCEDURE: main
 **BEGIN: Three Address Code Statements
-r_ = 2.00
-ftemp1 = f_(2, 3)
-r_ = ftemp1
+s1_ = "Hello"
+temp1 = f1_(s1_)
+s2_ = temp1
+write s1_
 **END: Three Address Code Statements
