@@ -12,7 +12,8 @@ goto Label1
 Label1:
 temp2 = n_ - 1
 k_ = temp2
-ret_ = f_(k_)
+temp5 = f_(k_)
+ret_ = temp5
 temp4 = n_ * ret_
 ret_ = temp4
 stemp1 = ret_
@@ -23,7 +24,8 @@ return stemp1
 **PROCEDURE: main
 **BEGIN: Three Address Code Statements
 b_ = 5
-a_ = f_(b_)
+temp1 = f_(b_)
+a_ = temp1
 write a_
 m_ = 2
 write m_

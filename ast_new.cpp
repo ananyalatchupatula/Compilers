@@ -556,13 +556,19 @@ TAC_Opd* Assignment_Stmt::generate_tac(list<TAC_Stmt*>& statements) {
     
     if(func_call && func_call->node_data_type != VOID_DATA_TYPE) {
         // Function call assignment: a = f(args)
+        // Create temp for function result
+        TAC_Opd* result_temp = TAC_Generator::get_instance()->create_new_temp(
+            func_call->node_data_type == FLOAT_DATA_TYPE
+        );
+        
         string func_name = func_call->get_function_name();
         if(func_name.empty() || func_name.back() != '_') {
             func_name += "_";
         }
         
+        // Create AssignCall: temp0 = f(args)
         AssignCall_TAC_Stmt* assign_call = new AssignCall_TAC_Stmt(
-            new Var_TAC_Opd(lhs_name, rhs->get_data_type()),
+            result_temp,
             new Var_TAC_Opd(func_name)
         );
         
@@ -574,6 +580,10 @@ TAC_Opd* Assignment_Stmt::generate_tac(list<TAC_Stmt*>& statements) {
         }
         
         statements.push_back(assign_call);
+        
+        // Create assignment: lhs = temp0
+        Var_TAC_Opd* lhs_tac = new Var_TAC_Opd(lhs_name, rhs->get_data_type());
+        statements.push_back(new Assign_TAC_Stmt(lhs_tac, result_temp));
     } else {
         TAC_Opd* rhs_tac = rhs->generate_tac(statements);
         Var_TAC_Opd* lhs_tac = new Var_TAC_Opd(lhs_name, rhs->get_data_type());
