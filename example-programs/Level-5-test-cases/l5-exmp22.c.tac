@@ -20,18 +20,18 @@ Label3:
     temp2 = x_ > 0
     temp5 = ! temp2
     if(temp5) goto Label5
-    temp3 = e_ - 1
-temp4 = q_(temp3)
-    x_ = temp4
+    temp4 = e_ - 1
+temp3 = q_(temp4)
+    x_ = temp3
     goto Label4
 Label5:
 Label6:
     temp6 = a_ > b_
     temp10 = ! temp6
     if(temp10) goto Label7
-    temp7 = e_ - 1
-temp8 = p_(temp7)
-    a_ = temp8
+    temp8 = e_ - 1
+temp7 = p_(temp8)
+    a_ = temp7
     temp9 = c_ + 1
     x_ = temp9
     goto Label6
@@ -54,9 +54,9 @@ Label2:
     goto Label0
     goto Label1
 Label1:
-    temp2 = d_ - 1
-temp3 = q_(temp2)
-    a_ = temp3
+    temp3 = d_ - 1
+temp2 = q_(temp3)
+    a_ = temp2
     temp4 = a_ + 1
     a_ = temp4
     stemp0 = 1
