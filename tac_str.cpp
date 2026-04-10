@@ -189,7 +189,7 @@ Assign_TAC_Stmt::~Assign_TAC_Stmt() {
 }
 
 void Assign_TAC_Stmt::print(FILE *file) {
-    fprintf(file, "%s\n", to_string().c_str());
+    fprintf(file, "    %s\n", to_string().c_str());
 }
 
 string Assign_TAC_Stmt::to_string() {
@@ -221,7 +221,7 @@ Compute_TAC_Stmt::~Compute_TAC_Stmt() {
 }
 
 void Compute_TAC_Stmt::print(FILE *file) {
-    fprintf(file, "%s\n", to_string().c_str());
+    fprintf(file, "    %s\n", to_string().c_str());
 }
 
 string Compute_TAC_Stmt::to_string() {
@@ -290,7 +290,7 @@ Goto_TAC_Stmt::~Goto_TAC_Stmt() {
 }
 
 void Goto_TAC_Stmt::print(FILE *file) {
-    fprintf(file, "%s\n", to_string().c_str());
+    fprintf(file, "    %s\n", to_string().c_str());
 }
 
 string Goto_TAC_Stmt::to_string() {
@@ -310,7 +310,7 @@ Cond_Goto_TAC_Stmt::~Cond_Goto_TAC_Stmt() {
 }
 
 void Cond_Goto_TAC_Stmt::print(FILE *file) {
-    fprintf(file, "%s\n", to_string().c_str());
+    fprintf(file, "    %s\n", to_string().c_str());
 }
 
 string Cond_Goto_TAC_Stmt::to_string() {
@@ -331,7 +331,7 @@ Print_TAC_Stmt::~Print_TAC_Stmt() {
 }
 
 void Print_TAC_Stmt::print(FILE *file) {
-    fprintf(file, "%s\n", to_string().c_str());
+    fprintf(file, "    %s\n", to_string().c_str());
 }
 
 string Print_TAC_Stmt::to_string() {
@@ -397,7 +397,8 @@ void Call_TAC_Stmt::print(FILE *file) {
 }
 
 string Call_TAC_Stmt::to_string() {
-    string result = func_name->to_string() + "_(";
+    // func_name already includes the trailing underscore from parser
+    string result = func_name->to_string() + "(";
     
     // Add arguments
     bool first = true;
@@ -466,7 +467,7 @@ Return_TAC_Stmt::~Return_TAC_Stmt() {
 }
 
 void Return_TAC_Stmt::print(FILE *file) {
-    fprintf(file, "%s\n", to_string().c_str());
+    fprintf(file, "    %s\n", to_string().c_str());
 }
 
 string Return_TAC_Stmt::to_string() {

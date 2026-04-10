@@ -273,6 +273,9 @@ public:
     If_Stmt(Expression_Ast* cond, Statement_Ast* then_s, Statement_Ast* else_s = NULL);
     ~If_Stmt();
     
+    Statement_Ast* get_then_stmt() { return then_stmt; }
+    Statement_Ast* get_else_stmt() { return else_stmt; }
+    
     void pre_allocate_temps();
     void print(int indent = 0);
     TAC_Opd* generate_tac(list<TAC_Stmt*>& statements);
@@ -290,6 +293,8 @@ private:
 public:
     While_Stmt(Expression_Ast* cond, Statement_Ast* body_stmt);
     ~While_Stmt();
+    
+    Statement_Ast* get_body() { return body; }
     
     void pre_allocate_temps();
     void print(int indent = 0);
@@ -316,6 +321,8 @@ public:
 class Compound_Stmt : public Statement_Ast {
 private:
     list<Statement_Ast*> statements;
+    int return_stemp_id = -1;  // For tracking shared return stemp in functions
+    int return_label_id = -1;  // For tracking return label in functions (-1 = not set)
     
 public:
     Compound_Stmt();
@@ -323,6 +330,17 @@ public:
     
     void add_stmt(Statement_Ast* stmt);
     list<Statement_Ast*>& get_statements() { return statements; }
+    
+    void set_return_stemp_id(int id) { return_stemp_id = id; }
+    int get_return_stemp_id() { return return_stemp_id; }
+    void set_return_label_id(int id);  // Defined in ast_new.cpp
+    int get_return_label_id() { return return_label_id; }
+    
+    // Helper to propagate return stemp ID to all Return_Stmt nodes recursively
+    void propagate_return_stemp_to_all_returns(Statement_Ast* stmt, int stemp_id);
+    // Helper to propagate return label ID to all Return_Stmt nodes recursively
+    void propagate_return_label_to_all_returns(Statement_Ast* stmt, int label_id);
+    
     void pre_allocate_temps();
     void print(int indent = 0);
     void print_inline_if_single_print(int indent);  // Print inline if single Print_Stmt
@@ -334,15 +352,19 @@ public:
 class Return_Stmt : public Statement_Ast {
 private:
     Expression_Ast* return_expr;  // NULL if returning void
-    uint32_t return_label_id = 0;  // Label to jump to for return
+    int return_label_id = -1;  // Label to jump to for return (-1 = not set)
+    int return_stemp_id = -1;  // Shared stemp ID from function (-1 = not allocated)
     
 public:
     Return_Stmt(Expression_Ast* expr = NULL);
     ~Return_Stmt();
     
     Expression_Ast* get_return_expr() { return return_expr; }
-    void set_return_label_id(uint32_t label_id) { return_label_id = label_id; }
-    uint32_t get_return_label_id() { return return_label_id; }
+    void set_return_label_id(int label_id) { return_label_id = label_id; }
+    int get_return_label_id() { return return_label_id; }
+    
+    void set_return_stemp_id(int id) { return_stemp_id = id; }
+    int get_return_stemp_id() { return return_stemp_id; }
     
     void pre_allocate_temps();
     void print(int indent = 0);
@@ -375,6 +397,7 @@ private:
     list<std::pair<string, DataType>> parameters;  // (param_name, param_type)
     Compound_Stmt* body;
     uint32_t return_label_id = 0;  // Label for the return point
+    int return_stemp_id = -1;  // Shared stemp for all returns (-1 = not allocated)
     
 public:
     FunctionDef_Stmt(string fn_name, DataType ret_type);
@@ -386,8 +409,14 @@ public:
     void set_body(Compound_Stmt* function_body);
     Compound_Stmt* get_body() { return body; }
     
-    void set_return_label_id(uint32_t label_id) { return_label_id = label_id; }
-    uint32_t get_return_label_id() { return return_label_id; }
+    void set_return_label_id(int label_id) { return_label_id = label_id; }
+    int get_return_label_id() { return return_label_id; }
+    
+    void set_return_stemp_id(int id) { return_stemp_id = id; }
+    int get_return_stemp_id() { return return_stemp_id; }
+    
+    // Helper method to set return stemp ID in all Return_Stmt nodes in the body
+    void propagate_return_stemp_id(Statement_Ast* stmt);
     
     void pre_allocate_temps();
     void print(int indent = 0);

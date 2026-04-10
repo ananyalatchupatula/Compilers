@@ -287,12 +287,14 @@ void FCall_TAC_Stmt::add_argument(TAC_Opd *arg) {
 }
 
 void FCall_TAC_Stmt::print() {
-    fprintf(stdout, "%s_()", func_name.c_str());
+    // func_name already includes the trailing underscore from parser
+    fprintf(stdout, "%s()", func_name.c_str());
     fprintf(stdout, "\n");
 }
 
 void FCall_TAC_Stmt::print(FILE *file) {
-    fprintf(file, "%s_()", func_name.c_str());
+    // func_name already includes the trailing underscore from parser
+    fprintf(file, "%s()", func_name.c_str());
     fprintf(file, "\n");
 }
 

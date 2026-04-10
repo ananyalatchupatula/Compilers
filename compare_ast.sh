@@ -4,8 +4,8 @@
 # Tests all Level-4 test cases
 
 COMPILER="./new-compiler"
-TESTDIR="example-programs/Level-4-test-cases"
-VALIDDIR="example-programs/Level-4-valid-ast"
+TESTDIR="example-programs/Level-5-test-cases"
+VALIDDIR="example-programs/Level-5-valid-ast"
 
 # Color codes
 RED='\033[0;31m'
@@ -55,7 +55,7 @@ for testfile in "$TESTDIR"/*.c; do
     fi
     
     # 3. Compare with the valid reference
-    if diff -w "$generatedfile" "$validfile" > /dev/null 2>&1; then
+    if diff -Bw "$generatedfile" "$validfile" > /dev/null 2>&1; then
         echo -e "${GREEN}$base${NC}: OK"
         ((PASSED++))
         # Optional: Clean up the generated file after a pass to keep the folder clean
@@ -65,7 +65,7 @@ for testfile in "$TESTDIR"/*.c; do
         ((FAILED++))
         echo "--- Difference in $base ---"
         # Standard diff output
-        diff -w "$generatedfile" "$validfile"
+        diff -Bw "$generatedfile" "$validfile"
         echo -e "${BLUE}----------------------------------------${NC}"
         # Optional: Keep the failed .ast files for debugging, or rm them here too
     fi

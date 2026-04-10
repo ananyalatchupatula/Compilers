@@ -552,44 +552,45 @@ void Assignment_Stmt::print_no_trailing_newline(int indent) {
 }
 
 TAC_Opd* Assignment_Stmt::generate_tac(list<TAC_Stmt*>& statements) {
+    // Generate TAC for assignment statement
+    // Check if RHS is a function call with return value
     FunctionCall_Expr_Ast* func_call = dynamic_cast<FunctionCall_Expr_Ast*>(rhs);
     
-    if(func_call && func_call->node_data_type != VOID_DATA_TYPE) {
-        // Function call assignment: a = f(args)
-        // Create temp for function result
-        TAC_Opd* result_temp = TAC_Generator::get_instance()->create_new_temp(
-            func_call->node_data_type == FLOAT_DATA_TYPE
-        );
+    if(func_call != nullptr && func_call->node_data_type != VOID_DATA_TYPE) {
+        // Create AssignCall statement: temp = f(arg1, arg2, ...)
+        // Use the pre-allocated temp for the result
+        TAC_Opd* result_temp = new Temp_TAC_Opd(func_call->get_temp_id(), func_call->node_data_type);
         
-        string func_name = func_call->get_function_name();
-        if(func_name.empty() || func_name.back() != '_') {
-            func_name += "_";
-        }
+        // Add underscore suffix to function name for TAC output
+        string func_name_with_underscore = func_call->get_function_name() + "_";
         
-        // Create AssignCall: temp0 = f(args)
         AssignCall_TAC_Stmt* assign_call = new AssignCall_TAC_Stmt(
             result_temp,
-            new Var_TAC_Opd(func_name)
+            new Var_TAC_Opd(func_name_with_underscore)
         );
         
+        // Generate TAC for each argument and add to call
         for(auto arg : func_call->get_arguments()) {
-            if(arg) {
-                TAC_Opd* arg_tac = arg->generate_tac(statements);
-                assign_call->add_argument(arg_tac);
-            }
+            TAC_Opd* arg_tac = arg->generate_tac(statements);
+            assign_call->add_argument(arg_tac);
         }
         
+        // Add the assignment-call statement
         statements.push_back(assign_call);
         
-        // Create assignment: lhs = temp0
+        // Create assignment: lhs = result_temp
         Var_TAC_Opd* lhs_tac = new Var_TAC_Opd(lhs_name, rhs->get_data_type());
         statements.push_back(new Assign_TAC_Stmt(lhs_tac, result_temp));
+        
+        return NULL;
     } else {
+        // Normal assignment: lhs = rhs_expr
         TAC_Opd* rhs_tac = rhs->generate_tac(statements);
         Var_TAC_Opd* lhs_tac = new Var_TAC_Opd(lhs_name, rhs->get_data_type());
         statements.push_back(new Assign_TAC_Stmt(lhs_tac, rhs_tac));
+        
+        return NULL;
     }
-    return NULL;
 }
 
 /* --- READ STATEMENT --- */
@@ -948,9 +949,113 @@ void Compound_Stmt::pre_allocate_temps() {
     for(auto stmt : statements) {
         stmt->pre_allocate_temps();
     }
+    
+    // For non-void functions, allocate shared return stemp and propagate to all returns
+    // Only do this if we're the top-level function body (return_label_id >= 0 means we're a non-void function body)
+    if(return_label_id >= 0 && return_stemp_id == -1) {
+        // Allocate a shared return stemp
+        TAC_Opd* stemp = TAC_Generator::get_instance()->create_new_stemp();
+        Temp_TAC_Opd* temp = dynamic_cast<Temp_TAC_Opd*>(stemp);
+        if(temp) {
+            return_stemp_id = temp->get_temp_id();
+        }
+        delete stemp;
+        
+        // Propagate to all Return_Stmts recursively
+        for(auto stmt : statements) {
+            propagate_return_stemp_to_all_returns(stmt, return_stemp_id);
+        }
+    }
+}
+
+void Compound_Stmt::set_return_label_id(int id) {
+    return_label_id = id;
+    // Propagate label ID to all Return_Stmts in the body
+    for(auto stmt : statements) {
+        propagate_return_label_to_all_returns(stmt, id);
+    }
+}
+
+void Compound_Stmt::propagate_return_stemp_to_all_returns(Statement_Ast* stmt, int stemp_id) {
+    if(!stmt) return;
+    
+    // If this is a Return_Stmt, set its stemp ID
+    Return_Stmt* ret = dynamic_cast<Return_Stmt*>(stmt);
+    if(ret) {
+        ret->set_return_stemp_id(stemp_id);
+        return;
+    }
+    
+    // If this is an If_Stmt, propagate to both branches
+    If_Stmt* if_stmt = dynamic_cast<If_Stmt*>(stmt);
+    if(if_stmt) {
+        propagate_return_stemp_to_all_returns(if_stmt->get_then_stmt(), stemp_id);
+        if(if_stmt->get_else_stmt()) {
+            propagate_return_stemp_to_all_returns(if_stmt->get_else_stmt(), stemp_id);
+        }
+        return;
+    }
+    
+    // If this is a While_Stmt, propagate to body
+    While_Stmt* while_stmt = dynamic_cast<While_Stmt*>(stmt);
+    if(while_stmt) {
+        propagate_return_stemp_to_all_returns(while_stmt->get_body(), stemp_id);
+        return;
+    }
+    
+    // If this is a Compound_Stmt, propagate to all statements
+    Compound_Stmt* compound = dynamic_cast<Compound_Stmt*>(stmt);
+    if(compound) {
+        for(auto s : compound->get_statements()) {
+            propagate_return_stemp_to_all_returns(s, stemp_id);
+        }
+        return;
+    }
+}
+
+void Compound_Stmt::propagate_return_label_to_all_returns(Statement_Ast* stmt, int label_id) {
+    if(!stmt) return;
+    
+    // If this is a Return_Stmt, set its label ID
+    Return_Stmt* ret = dynamic_cast<Return_Stmt*>(stmt);
+    if(ret) {
+        ret->set_return_label_id(label_id);
+        return;
+    }
+    
+    // If this is an If_Stmt, propagate to both branches
+    If_Stmt* if_stmt = dynamic_cast<If_Stmt*>(stmt);
+    if(if_stmt) {
+        propagate_return_label_to_all_returns(if_stmt->get_then_stmt(), label_id);
+        if(if_stmt->get_else_stmt()) {
+            propagate_return_label_to_all_returns(if_stmt->get_else_stmt(), label_id);
+        }
+        return;
+    }
+    
+    // If this is a While_Stmt, propagate to body
+    While_Stmt* while_stmt = dynamic_cast<While_Stmt*>(stmt);
+    if(while_stmt) {
+        propagate_return_label_to_all_returns(while_stmt->get_body(), label_id);
+        return;
+    }
+    
+    // If this is a Compound_Stmt, propagate to all statements
+    Compound_Stmt* compound = dynamic_cast<Compound_Stmt*>(stmt);
+    if(compound) {
+        for(auto s : compound->get_statements()) {
+            propagate_return_label_to_all_returns(s, label_id);
+        }
+        return;
+    }
 }
 
 TAC_Opd* Compound_Stmt::generate_tac(list<TAC_Stmt*>& statements_list) {
+    // Create a file to prove this method was called
+    FILE *proof = fopen("/tmp/COMPOUND_WAS_CALLED.txt", "w");
+    fprintf(proof, "Compound_Stmt::generate_tac WAS CALLED\n");
+    fclose(proof);
+    
     for(auto stmt : statements) {
         stmt->generate_tac(statements_list);
     }
@@ -1049,9 +1154,10 @@ void FunctionCall_Expr_Ast::pre_allocate_temps() {
 }
 
 TAC_Opd* FunctionCall_Expr_Ast::generate_tac(list<TAC_Stmt*>& statements) {
-    // This method should only return the temp operand for the result.
-    // The caller (Assignment_Stmt or FunctionCall_Stmt) is responsible for
-    // generating param statements and the call statement.
+    // IMPORTANT: This method should NOT add Call_TAC_Stmt to statements.
+    // That should be done by the caller (either Assignment_Stmt for assignments,
+    // or FunctionCall_Stmt for standalone calls).
+    // We just return the temp ID for the result if it has one.
     
     TAC_Opd* result = nullptr;
     if(node_data_type != VOID_DATA_TYPE) {
@@ -1101,8 +1207,8 @@ void Return_Stmt::pre_allocate_temps() {
         return_expr->pre_allocate_temps();
     }
     
-    // Allocate return label if not already done
-    if(return_label_id == 0) {
+    // Allocate return label if not already done (-1 means not initialized)
+    if(return_label_id == -1) {
         Label_TAC_Opd* ret_lbl = TAC_Generator::get_instance()->create_new_label();
         return_label_id = ret_lbl->get_label_id();
         delete ret_lbl;
@@ -1113,28 +1219,31 @@ TAC_Opd* Return_Stmt::generate_tac(list<TAC_Stmt*>& statements) {
     if(return_expr) {
         TAC_Opd* ret_val = return_expr->generate_tac(statements);
         
-        // Create stemp for return value using TACGenerator
-        TAC_Opd* stemp = TAC_Generator::get_instance()->create_new_stemp();
+        // Use the shared stemp from the function
+        TAC_Opd* stemp;
+        if(return_stemp_id >= 0) {
+            // Use pre-allocated shared stemp (Temp_TAC_Opd with stemp prefix)
+            stemp = new Temp_TAC_Opd(return_stemp_id, INT_DATA_TYPE, "stemp");
+        } else {
+            // Fallback: create a new stemp (shouldn't happen in proper setup)
+            stemp = TAC_Generator::get_instance()->create_new_stemp();
+        }
         
         // Create assignment: stemp = ret_val
         Assign_TAC_Stmt* assign = new Assign_TAC_Stmt(stemp, ret_val);
         statements.push_back(assign);
         
-        // Create label for return using TACGenerator
-        Label_TAC_Opd* ret_label = TAC_Generator::get_instance()->create_new_label();
-        
-        // Create goto label
+        // Goto return label (defer actual label/return to end of function)
+        Label_TAC_Opd* ret_label = new Label_TAC_Opd(return_label_id);
         Goto_TAC_Stmt* goto_stmt = new Goto_TAC_Stmt(ret_label);
         statements.push_back(goto_stmt);
         
-        // Create label statement
-        Label_TAC_Stmt* label_stmt = new Label_TAC_Stmt(ret_label);
-        statements.push_back(label_stmt);
-        
-        // Return stemp
-        statements.push_back(new Return_TAC_Stmt(stemp));
+        // NOTE: Label and return statement are added by FunctionDef_Stmt at the end
     } else {
-        statements.push_back(new Return_TAC_Stmt(nullptr));
+        // Void return - just goto return label
+        Label_TAC_Opd* ret_label = new Label_TAC_Opd(return_label_id);
+        Goto_TAC_Stmt* goto_stmt = new Goto_TAC_Stmt(ret_label);
+        statements.push_back(goto_stmt);
     }
     
     return NULL;
@@ -1169,20 +1278,27 @@ void FunctionCall_Stmt::pre_allocate_temps() {
 
 TAC_Opd* FunctionCall_Stmt::generate_tac(list<TAC_Stmt*>& statements) {
     // Generate TAC for function call statement
-    // Push arguments
+    // Create a TAC operand for the function name
+    // Note: function_name may or may not have underscore already
+    string func_name_with_underscore = function_name;
+    if (!function_name.empty() && function_name.back() != '_' && function_name != "main") {
+        func_name_with_underscore = function_name + "_";
+    }
+    
+    Var_TAC_Opd* func_opd = new Var_TAC_Opd(func_name_with_underscore);
+    
+    // Create Call_TAC_Stmt with arguments
+    Call_TAC_Stmt* call_stmt = new Call_TAC_Stmt(func_opd);
+    
+    // Add arguments to the call statement (don't create param statements)
     for(auto arg : arguments) {
         if(arg) {
             TAC_Opd* arg_opd = arg->generate_tac(statements);
-            Param_TAC_Stmt* param_stmt = new Param_TAC_Stmt(arg_opd);
-            statements.push_back(param_stmt);
+            call_stmt->add_argument(arg_opd);
         }
     }
     
-    // Create a TAC operand for the function name
-    Var_TAC_Opd* func_opd = new Var_TAC_Opd(function_name);
-    
-    // Call function
-    Call_TAC_Stmt* call_stmt = new Call_TAC_Stmt(func_opd);
+    // Add the call statement to statements
     statements.push_back(call_stmt);
     
     return NULL;  // Function call statements don't return a value
@@ -1240,21 +1356,74 @@ void FunctionDef_Stmt::pre_allocate_temps() {
         return_label_id = ret_lbl->get_label_id();
         delete ret_lbl;
     }
+    
+    // For non-void functions, allocate shared return stemp and propagate to all returns
+    if(node_data_type != VOID_DATA_TYPE && return_stemp_id == -1) {
+        TAC_Opd* stemp = TAC_Generator::get_instance()->create_new_stemp();
+        Temp_TAC_Opd* temp = dynamic_cast<Temp_TAC_Opd*>(stemp);
+        if(temp) {
+            return_stemp_id = temp->get_temp_id();
+        }
+        delete stemp;
+        
+        // Propagate stemp ID to all Return_Stmt nodes in the body
+        if(body) {
+            propagate_return_stemp_id(body);
+        }
+    }
+}
+
+void FunctionDef_Stmt::propagate_return_stemp_id(Statement_Ast* stmt) {
+    if(!stmt) return;
+    
+    // Check if this is a Return_Stmt
+    Return_Stmt* ret_stmt = dynamic_cast<Return_Stmt*>(stmt);
+    if(ret_stmt) {
+        ret_stmt->set_return_stemp_id(return_stemp_id);
+        ret_stmt->set_return_label_id(return_label_id);
+        return;
+    }
+    
+    // Check if this is a Compound_Stmt with multiple statements
+    Compound_Stmt* compound = dynamic_cast<Compound_Stmt*>(stmt);
+    if(compound) {
+        for(auto s : compound->get_statements()) {
+            propagate_return_stemp_id(s);
+        }
+        return;
+    }
+    
+    // For If_Stmt and While_Stmt, we'd need public getters
+    // For now, just return - these will be handled if accessed directly from body
 }
 
 TAC_Opd* FunctionDef_Stmt::generate_tac(list<TAC_Stmt*>& statements) {
-    // Create function label using the function name
-    Label_TAC_Opd* func_label = TAC_Generator::get_instance()->create_new_label();
-    statements.push_back(new Label_TAC_Stmt(func_label));
-    
     // Generate TAC for function body
     if(body) {
         body->generate_tac(statements);
     }
     
-    // Add return label at end (for any implicit return paths)
-    Label_TAC_Opd* ret_label = new Label_TAC_Opd(return_label_id);
-    statements.push_back(new Label_TAC_Stmt(ret_label));
+    // For non-void functions, add return label and return statement at the end
+    if(node_data_type != VOID_DATA_TYPE && return_stemp_id >= 0) {
+        // Add return label
+        Label_TAC_Opd* ret_label = new Label_TAC_Opd(return_label_id);
+        Label_TAC_Stmt* label_stmt = new Label_TAC_Stmt(ret_label);
+        statements.push_back(label_stmt);
+        
+        // Add return stemp statement
+        TAC_Opd* stemp = new Temp_TAC_Opd(return_stemp_id, INT_DATA_TYPE, "stemp");
+        statements.push_back(new Return_TAC_Stmt(stemp));
+    } else if(node_data_type == VOID_DATA_TYPE && return_label_id > 0) {
+        // For void functions, still add the return label
+        Label_TAC_Opd* ret_label = new Label_TAC_Opd(return_label_id);
+        Label_TAC_Stmt* label_stmt = new Label_TAC_Stmt(ret_label);
+        statements.push_back(label_stmt);
+        
+        statements.push_back(new Return_TAC_Stmt(nullptr));
+    } else {
+        // Implicit return for void functions (shouldn't happen with proper setup)
+        statements.push_back(new Return_TAC_Stmt(nullptr));
+    }
     
     return NULL;
 }

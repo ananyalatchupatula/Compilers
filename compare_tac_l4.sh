@@ -4,8 +4,8 @@
 # Tests all Level-4 test cases
 
 COMPILER="./new-compiler"
-TESTDIR="example-programs/Level-5-test-cases"
-VALIDDIR="example-programs/Level-5-valid-tac"
+TESTDIR="example-programs/Level-4-test-cases"
+VALIDDIR="example-programs/Level-4-valid-tac"
 
 # Color codes
 RED='\033[0;31m'
@@ -14,7 +14,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-echo -e "${BLUE}==================== tac COMPARISON ====================${NC}"
+echo -e "${BLUE}==================== tac COMPARISON (Level-4) ====================${NC}"
 echo -e "${BLUE}Compiler: ${COMPILER}${NC}"
 echo -e "${BLUE}Test Dir: ${TESTDIR}${NC}"
 echo -e "${BLUE}Valid Dir: ${VALIDDIR}${NC}"
@@ -36,7 +36,6 @@ for testfile in "$TESTDIR"/*.c; do
     base=$(basename "$testfile")
     validfile="$VALIDDIR/$base.correct.tac"
     
-    # Per your info, the compiler creates this file automatically
     generatedfile="${testfile}.tac"
     
     if [ ! -f "$validfile" ]; then
@@ -58,16 +57,13 @@ for testfile in "$TESTDIR"/*.c; do
     if diff -Bw "$generatedfile" "$validfile" > /dev/null 2>&1; then
         echo -e "${GREEN}$base${NC}: OK"
         ((PASSED++))
-        # Optional: Clean up the generated file after a pass to keep the folder clean
         rm "$generatedfile"
     else
         echo -e "${RED}$base${NC}: DIFFER"
         ((FAILED++))
         echo "--- Difference in $base ---"
-        # Standard diff output
         diff -Bw "$generatedfile" "$validfile"
         echo -e "${BLUE}----------------------------------------${NC}"
-        # Optional: Keep the failed .tac files for debugging, or rm them here too
     fi
 done
 
