@@ -1139,17 +1139,18 @@ void FunctionCall_Expr_Ast::print(int indent) {
 }
 
 void FunctionCall_Expr_Ast::pre_allocate_temps() {
-    // Pre-allocate temps for all arguments first
-    for(auto arg : arguments) {
-        arg->pre_allocate_temps();
-    }
-    
-    // Then allocate temp for return value if needed
+    // Allocate temp for return value FIRST (before processing arguments)
+    // This ensures the function return temp gets a lower ID than expression temps
     if(node_data_type != VOID_DATA_TYPE && temp_id == -1) {
         temp_id = TAC_Generator::get_instance()->get_temp_counter();
         TAC_Generator::get_instance()->create_new_temp(
             node_data_type == FLOAT_DATA_TYPE
         );
+    }
+    
+    // Then pre-allocate temps for all arguments
+    for(auto arg : arguments) {
+        arg->pre_allocate_temps();
     }
 }
 

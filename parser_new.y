@@ -54,9 +54,10 @@ public:
     string name;
     int return_type;
     bool is_defined;
+    int return_label_id;  // Pre-allocated label ID (-1 if void or not allocated)
 
     FunctionInfo(string n, int rt, bool def=false)
-        : name(n), return_type(rt), is_defined(def) {}
+        : name(n), return_type(rt), is_defined(def), return_label_id(-1) {}
 };
 
 vector<FunctionInfo> function_table;
@@ -324,7 +325,17 @@ func_decl
             }
         }
 
-        function_table.push_back(FunctionInfo(fname, $1, false));
+        FunctionInfo func_info(fname, $1, false);
+        
+        // Pre-allocate return label for non-void functions at declaration time
+        // This ensures labels are allocated in declaration order
+        if($1 != TYPE_VOID && (show_tac || show_rtl)) {
+            Label_TAC_Opd* ret_label = TAC_Generator::get_instance()->create_new_label();
+            func_info.return_label_id = ret_label->get_label_id();
+            delete ret_label;
+        }
+        
+        function_table.push_back(func_info);
 
         if(fname == "main"){
             main_seen = true;
@@ -401,13 +412,23 @@ else
         TAC_Generator::get_instance()->reset_counters();
     }
     
-    // For non-void functions, allocate return label FIRST (before pre_allocate_temps)
-    // This ensures return label is Label0
+    // For non-void functions, use pre-allocated return label from declaration
     if(ret_data_type != VOID_DATA_TYPE) {
-        // Create a return label
-        Label_TAC_Opd* ret_label = TAC_Generator::get_instance()->create_new_label();
-        int ret_label_id = ret_label->get_label_id();
-        delete ret_label;
+        // Find the pre-allocated label ID from function_table
+        int ret_label_id = -1;
+        for(auto &f : function_table) {
+            if(f.name == current_function_name) {
+                ret_label_id = f.return_label_id;
+                break;
+            }
+        }
+        
+        // If no pre-allocated label (shouldn't happen), allocate new one
+        if(ret_label_id == -1) {
+            Label_TAC_Opd* ret_label = TAC_Generator::get_instance()->create_new_label();
+            ret_label_id = ret_label->get_label_id();
+            delete ret_label;
+        }
         
         // Set the label ID on the compound statement
         $3->set_return_label_id(ret_label_id);
