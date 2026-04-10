@@ -315,7 +315,6 @@ func_decl
     : func_header SEMICOLON
     {
         string fname = current_function_name;
-        bool found = false;
 
         for(auto &f : function_table){
             if(f.name == fname){
@@ -395,36 +394,57 @@ else
         /* Generate  for the function body */
         if($3) {
     list<TAC_Stmt*> tac_stmts;
+    int ret_type = $1;
+    DataType ret_data_type = int_to_datatype(ret_type);
+    
     if(show_tac || show_rtl) {
-    TAC_Generator::get_instance()->reset_counters();
-    FILE *pf = fopen("/tmp/parser.log", "a");
-    if(pf) {
-        fprintf(pf, "DEBUG: Calling pre_allocate_temps\n");
-        fflush(pf);
-        fclose(pf);
+        TAC_Generator::get_instance()->reset_counters();
     }
+    
+    // For non-void functions, allocate return label FIRST (before pre_allocate_temps)
+    // This ensures return label is Label0
+    if(ret_data_type != VOID_DATA_TYPE) {
+        // Create a return label
+        Label_TAC_Opd* ret_label = TAC_Generator::get_instance()->create_new_label();
+        int ret_label_id = ret_label->get_label_id();
+        delete ret_label;
+        
+        // Set the label ID on the compound statement
+        $3->set_return_label_id(ret_label_id);
+    }
+    
+    if(show_tac || show_rtl) {
+    
     $3->pre_allocate_temps();
 }
 
-FILE *pf = fopen("/tmp/parser.log", "a");
-if(pf) {
-    fprintf(pf, "DEBUG: Calling generate_tac, show_tac=%d\n", show_tac);
-    fprintf(pf, "DEBUG: about to call $3->generate_tac with function %s\n", current_function_name.c_str());
-    fflush(pf);
-    fclose(pf);
-}
 // Generate TAC for the function body
 $3->generate_tac(tac_stmts);
-pf = fopen("/tmp/parser.log", "a");
-if(pf) {
-    fprintf(pf, "DEBUG: generate_tac done, got %zu statements\n", tac_stmts.size());
-    fflush(pf);
-    fclose(pf);
+
+// For non-void functions, add the return label and return statement at the end
+if(ret_data_type != VOID_DATA_TYPE) {
+    // Get the stemp ID that was allocated for returns
+    int return_stemp_id = $3->get_return_stemp_id();
+    int ret_label_id = $3->get_return_label_id();
+    
+    // Create stemp with the allocated ID (if it was allocated)
+    TAC_Opd* ret_stemp;
+    if(return_stemp_id >= 0) {
+        ret_stemp = new Temp_TAC_Opd(return_stemp_id, ret_data_type, "stemp");
+    } else {
+        // Fallback: use stemp0
+        ret_stemp = new Temp_TAC_Opd(0, ret_data_type, "stemp");
+    }
+    
+    // Add the return label and statement (use pre-allocated label ID)
+    Label_TAC_Opd* ret_label = new Label_TAC_Opd(ret_label_id);
+    tac_stmts.push_back(new Label_TAC_Stmt(ret_label));
+    tac_stmts.push_back(new Return_TAC_Stmt(ret_stemp));
 }
     
     if(show_tac && tac_file && !tac_stmts.empty()) {
         if(strcmp(current_function_name.c_str(), "main") == 0) {
-            fprintf(tac_file, "**PROCEDURE: main\n", current_function_name.c_str());
+            fprintf(tac_file, "**PROCEDURE: main\n");
         } else {
             fprintf(tac_file, "**PROCEDURE: %s_\n", current_function_name.c_str());
         }
