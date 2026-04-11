@@ -35,8 +35,8 @@
    especially those whose name start with YY_ or yy_.  They are
    private implementation details that can be changed or removed.  */
 
-#ifndef YY_YY_PARSER_NEW_TAB_HPP_INCLUDED
-# define YY_YY_PARSER_NEW_TAB_HPP_INCLUDED
+#ifndef YY_YY_PARSER_TAB_HPP_INCLUDED
+# define YY_YY_PARSER_TAB_HPP_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -62,38 +62,33 @@ extern int yydebug;
     BOOL = 263,                    /* BOOL  */
     FLOAT = 264,                   /* FLOAT  */
     CHAR = 265,                    /* CHAR  */
-    IF = 266,                      /* IF  */
-    ELSE = 267,                    /* ELSE  */
-    WHILE = 268,                   /* WHILE  */
-    DO = 269,                      /* DO  */
-    RETURN = 270,                  /* RETURN  */
-    NAME = 271,                    /* NAME  */
-    INT_NUM = 272,                 /* INT_NUM  */
-    FLOAT_NUM = 273,               /* FLOAT_NUM  */
-    STR_CONST = 274,               /* STR_CONST  */
-    ASSIGN_OP = 275,               /* ASSIGN_OP  */
-    COMMA = 276,                   /* COMMA  */
-    SEMICOLON = 277,               /* SEMICOLON  */
-    LEFT_ROUND_BRACKET = 278,      /* LEFT_ROUND_BRACKET  */
-    RIGHT_ROUND_BRACKET = 279,     /* RIGHT_ROUND_BRACKET  */
-    LEFT_CURLY_BRACKET = 280,      /* LEFT_CURLY_BRACKET  */
-    RIGHT_CURLY_BRACKET = 281,     /* RIGHT_CURLY_BRACKET  */
-    PLUS = 282,                    /* PLUS  */
-    MINUS = 283,                   /* MINUS  */
-    MULT = 284,                    /* MULT  */
-    DIV = 285,                     /* DIV  */
-    GREATER_THAN = 286,            /* GREATER_THAN  */
-    LESS_THAN = 287,               /* LESS_THAN  */
-    GREATER_THAN_EQUAL = 288,      /* GREATER_THAN_EQUAL  */
-    LESS_THAN_EQUAL = 289,         /* LESS_THAN_EQUAL  */
-    EQUAL = 290,                   /* EQUAL  */
-    NOT_EQUAL = 291,               /* NOT_EQUAL  */
-    AND = 292,                     /* AND  */
-    OR = 293,                      /* OR  */
-    QUESTION_MARK = 294,           /* QUESTION_MARK  */
-    COLON = 295,                   /* COLON  */
-    NOT = 296,                     /* NOT  */
-    UMINUS = 297                   /* UMINUS  */
+    NAME = 266,                    /* NAME  */
+    INT_NUM = 267,                 /* INT_NUM  */
+    FLOAT_NUM = 268,               /* FLOAT_NUM  */
+    STR_CONST = 269,               /* STR_CONST  */
+    ASSIGN_OP = 270,               /* ASSIGN_OP  */
+    COMMA = 271,                   /* COMMA  */
+    SEMICOLON = 272,               /* SEMICOLON  */
+    LEFT_ROUND_BRACKET = 273,      /* LEFT_ROUND_BRACKET  */
+    RIGHT_ROUND_BRACKET = 274,     /* RIGHT_ROUND_BRACKET  */
+    LEFT_CURLY_BRACKET = 275,      /* LEFT_CURLY_BRACKET  */
+    RIGHT_CURLY_BRACKET = 276,     /* RIGHT_CURLY_BRACKET  */
+    PLUS = 277,                    /* PLUS  */
+    MINUS = 278,                   /* MINUS  */
+    MULT = 279,                    /* MULT  */
+    DIV = 280,                     /* DIV  */
+    GREATER_THAN = 281,            /* GREATER_THAN  */
+    LESS_THAN = 282,               /* LESS_THAN  */
+    GREATER_THAN_EQUAL = 283,      /* GREATER_THAN_EQUAL  */
+    LESS_THAN_EQUAL = 284,         /* LESS_THAN_EQUAL  */
+    EQUAL = 285,                   /* EQUAL  */
+    NOT_EQUAL = 286,               /* NOT_EQUAL  */
+    AND = 287,                     /* AND  */
+    OR = 288,                      /* OR  */
+    QUESTION_MARK = 289,           /* QUESTION_MARK  */
+    COLON = 290,                   /* COLON  */
+    NOT = 291,                     /* NOT  */
+    UMINUS = 292                   /* UMINUS  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -102,17 +97,14 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 189 "parser_new.y"
+#line 150 "parser.y"
 
     int type;
     char* name;
     char* str;
-    Ast* ast;
-    Expression_Ast* expr;
-    Statement_Ast* stmt;
-    Compound_Stmt* block;
+    ASTNode* node;
 
-#line 116 "parser_new.tab.hpp"
+#line 108 "parser.tab.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -127,4 +119,4 @@ extern YYSTYPE yylval;
 int yyparse (void);
 
 
-#endif /* !YY_YY_PARSER_NEW_TAB_HPP_INCLUDED  */
+#endif /* !YY_YY_PARSER_TAB_HPP_INCLUDED  */

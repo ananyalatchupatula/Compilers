@@ -1,13 +1,56 @@
 #include "ast_new.h"
 #include "rtl_new.h"
 #include "rtl_generator.h"
+#include "tac_generator.h"
+#include "tac_str.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <vector>
+#include <string>
+#include <list>
+#include <algorithm>
+
+using std::vector;
+using std::string;
+using std::list;
+using std::sort;
 
 extern int yylex(void);
 extern int yyparse(void);
 extern FILE *yyin;
+
+/* Struct for deferred TAC generation */
+struct DeferredFunction {
+    string name;
+    int return_type;
+    Statement_Ast* body;
+};
+
+extern vector<DeferredFunction> deferred_functions;
+
+/* Define TYPE constants from parser */
+#define TYPE_INT    1
+#define TYPE_FLOAT  2
+#define TYPE_STRING 3
+#define TYPE_BOOL   4
+#define TYPE_CHAR   5
+#define TYPE_VOID   6
+#define TYPE_ERROR -1
+
+static DataType int_to_datatype(int t)
+{
+    switch(t) {
+        case TYPE_INT:    return INT_DATA_TYPE;
+        case TYPE_FLOAT:  return FLOAT_DATA_TYPE;
+        case TYPE_BOOL:   return BOOL_DATA_TYPE;
+        case TYPE_STRING: return STRING_DATA_TYPE;
+        case TYPE_CHAR:   return CHAR_DATA_TYPE;
+        case TYPE_VOID:   return VOID_DATA_TYPE;
+        default:          return ERROR_DATA_TYPE;
+    }
+}
+
 
 extern FILE *ast_file;
 extern FILE *tac_file;
@@ -27,6 +70,106 @@ int sa_ast = 0;
 int sa_tac = 0;
 
 extern int lex_error;
+
+/* Process deferred functions: pre_allocate_temps for all, then generate_tac for all */
+void process_deferred_functions()
+{
+    // Find main's index
+    int main_index = -1;
+    for (int i = 0; i < deferred_functions.size(); i++) {
+        if (deferred_functions[i].name == "main") {
+            main_index = i;
+            break;
+        }
+    }
+    
+    // Create a sorted list of non-main functions
+    // Reorder_tac.py sorts functions lexicographically, with main first
+    // So we process main first, then others in alphabetical order
+    
+    // Process main first (if it exists)
+    if (main_index >= 0) {
+        TAC_Generator::get_instance()->reset_counters();
+        deferred_functions[main_index].body->pre_allocate_temps();
+    }
+    
+    // Collect non-main functions and sort them alphabetically
+    vector<pair<string, int>> others;  // (name, index)
+    for (int i = 0; i < deferred_functions.size(); i++) {
+        if (i != main_index) {
+            others.push_back({deferred_functions[i].name, i});
+        }
+    }
+    sort(others.begin(), others.end());  // Sort by name
+    
+    // Process non-main functions in alphabetical order
+    for (auto& [name, idx] : others) {
+        TAC_Generator::get_instance()->reset_counters();
+        deferred_functions[idx].body->pre_allocate_temps();
+    }
+    
+    // Generate TAC in declaration order (as stored in deferred_functions)
+    for (auto& df : deferred_functions) {
+        list<TAC_Stmt*> tac_stmts;
+        DataType ret_data_type = int_to_datatype(df.return_type);
+        
+        TAC_Generator::get_instance()->reset_counters();
+        df.body->generate_tac(tac_stmts);
+        
+        // Cast body to Compound_Stmt for access to return methods
+        Compound_Stmt* compound = dynamic_cast<Compound_Stmt*>(df.body);
+        if (!compound) {
+            fprintf(stderr, "Error: Function body is not a Compound_Stmt\n");
+            continue;
+        }
+        
+        // Add return label and statement if not void
+        if (ret_data_type != VOID_DATA_TYPE) {
+            int ret_label_id = compound->get_return_label_id();
+            int return_stemp_id = compound->get_return_stemp_id();
+            
+            TAC_Opd* ret_stemp;
+            if (return_stemp_id >= 0) {
+                ret_stemp = new Temp_TAC_Opd(return_stemp_id, ret_data_type, "stemp");
+            } else {
+                ret_stemp = new Temp_TAC_Opd(0, ret_data_type, "stemp");
+            }
+            
+            Label_TAC_Opd* ret_label = new Label_TAC_Opd(ret_label_id);
+            tac_stmts.push_back(new Label_TAC_Stmt(ret_label));
+            tac_stmts.push_back(new Return_TAC_Stmt(ret_stemp));
+        }
+        
+        // Print TAC
+        if (show_tac && tac_file && !tac_stmts.empty()) {
+            if (df.name == "main") {
+                fprintf(tac_file, "**PROCEDURE: main\n");
+            } else {
+                fprintf(tac_file, "**PROCEDURE: %s_\n", df.name.c_str());
+            }
+            fprintf(tac_file, "**BEGIN: Three Address Code Statements\n");
+            for (auto stmt : tac_stmts) {
+                stmt->print(tac_file);
+            }
+            fprintf(tac_file, "**END: Three Address Code Statements\n");
+        }
+        
+        // Generate RTL
+        if (show_rtl && rtl_file && !tac_stmts.empty()) {
+            RTL_Generator::get_instance()->reset();
+            list<RTL_Stmt*> rtl_stmts =
+                RTL_Generator::get_instance()->generate_rtl(tac_stmts);
+            
+            fprintf(rtl_file, "**PROCEDURE: %s\n", df.name.c_str());
+            fprintf(rtl_file, "**BEGIN: RTL Statements\n");
+            for (auto stmt : rtl_stmts) {
+                stmt->print(rtl_file);
+            }
+            fprintf(rtl_file, "**END: RTL Statements\n");
+        }
+    }
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -151,6 +294,9 @@ int main(int argc, char *argv[])
     }
 
     yyparse();
+    
+    // Process deferred TAC generation with proper label allocation order
+    process_deferred_functions();
 
     if (sa_ast)
     {

@@ -66,6 +66,14 @@ vector<MainParam> main_decl_params;
 vector<MainParam> main_def_params;
 bool parsing_main_declaration = false;
 
+/* Store function bodies for deferred TAC generation */
+struct DeferredFunction {
+    string name;
+    int return_type;
+    Statement_Ast* body;
+};
+vector<DeferredFunction> deferred_functions;
+
 /* TYPE DEFINITIONS */
 #define TYPE_INT    1
 #define TYPE_FLOAT  2
@@ -404,94 +412,49 @@ else
 
         /* Generate  for the function body */
         if($3) {
-    list<TAC_Stmt*> tac_stmts;
-    int ret_type = $1;
-    DataType ret_data_type = int_to_datatype(ret_type);
-    
-    if(show_tac || show_rtl) {
-        TAC_Generator::get_instance()->reset_counters();
-    }
-    
-    // For non-void functions, use pre-allocated return label from declaration
-    if(ret_data_type != VOID_DATA_TYPE) {
-        // Find the pre-allocated label ID from function_table
-        int ret_label_id = -1;
-        for(auto &f : function_table) {
-            if(f.name == current_function_name) {
-                ret_label_id = f.return_label_id;
-                break;
+            list<TAC_Stmt*> tac_stmts;
+            int ret_type = $1;
+            DataType ret_data_type = int_to_datatype(ret_type);
+            
+            if(show_tac || show_rtl) {
+                TAC_Generator::get_instance()->reset_counters();
+            }
+            
+            // For non-void functions, use pre-allocated return label from declaration
+            if(ret_data_type != VOID_DATA_TYPE) {
+                // Find the pre-allocated label ID from function_table
+                int ret_label_id = -1;
+                for(auto &f : function_table) {
+                    if(f.name == current_function_name) {
+                        ret_label_id = f.return_label_id;
+                        break;
+                    }
+                }
+                
+                // If no pre-allocated label (shouldn't happen), allocate new one
+                if(ret_label_id == -1) {
+                    Label_TAC_Opd* ret_label = TAC_Generator::get_instance()->create_new_label();
+                    ret_label_id = ret_label->get_label_id();
+                    delete ret_label;
+                }
+                
+                // Set the label ID on the compound statement
+                $3->set_return_label_id(ret_label_id);
+            }
+            
+            if(show_tac || show_rtl) {
+                // Store function body for deferred TAC generation (after all pre_allocate_temps)
+                DeferredFunction df;
+                df.name = current_function_name;
+                df.return_type = ret_type;
+                df.body = $3;
+                deferred_functions.push_back(df);
+            } else {
+                delete $3;
             }
         }
-        
-        // If no pre-allocated label (shouldn't happen), allocate new one
-        if(ret_label_id == -1) {
-            Label_TAC_Opd* ret_label = TAC_Generator::get_instance()->create_new_label();
-            ret_label_id = ret_label->get_label_id();
-            delete ret_label;
-        }
-        
-        // Set the label ID on the compound statement
-        $3->set_return_label_id(ret_label_id);
-    }
-    
-    if(show_tac || show_rtl) {
-    
-    $3->pre_allocate_temps();
-}
-
-// Generate TAC for the function body
-$3->generate_tac(tac_stmts);
-
-// For non-void functions, add the return label and return statement at the end
-if(ret_data_type != VOID_DATA_TYPE) {
-    // Get the stemp ID that was allocated for returns
-    int return_stemp_id = $3->get_return_stemp_id();
-    int ret_label_id = $3->get_return_label_id();
-    
-    // Create stemp with the allocated ID (if it was allocated)
-    TAC_Opd* ret_stemp;
-    if(return_stemp_id >= 0) {
-        ret_stemp = new Temp_TAC_Opd(return_stemp_id, ret_data_type, "stemp");
-    } else {
-        // Fallback: use stemp0
-        ret_stemp = new Temp_TAC_Opd(0, ret_data_type, "stemp");
-    }
-    
-    // Add the return label and statement (use pre-allocated label ID)
-    Label_TAC_Opd* ret_label = new Label_TAC_Opd(ret_label_id);
-    tac_stmts.push_back(new Label_TAC_Stmt(ret_label));
-    tac_stmts.push_back(new Return_TAC_Stmt(ret_stemp));
-}
-    
-    if(show_tac && tac_file && !tac_stmts.empty()) {
-        if(strcmp(current_function_name.c_str(), "main") == 0) {
-            fprintf(tac_file, "**PROCEDURE: main\n");
-        } else {
-            fprintf(tac_file, "**PROCEDURE: %s_\n", current_function_name.c_str());
-        }
-        fprintf(tac_file, "**BEGIN: Three Address Code Statements\n");
-        for(auto stmt : tac_stmts) {
-            stmt->print(tac_file);
-        }
-        fprintf(tac_file, "**END: Three Address Code Statements\n");
-    }
-    
-    if(show_rtl && rtl_file && !tac_stmts.empty()) {
-        RTL_Generator::get_instance()->reset();
-        list<RTL_Stmt*> rtl_stmts =
-            RTL_Generator::get_instance()->generate_rtl(tac_stmts);
-
-        fprintf(rtl_file, "**PROCEDURE: %s\n", current_function_name.c_str());
-        fprintf(rtl_file, "**BEGIN: RTL Statements\n");
-        for(auto stmt : rtl_stmts) {
-            stmt->print(rtl_file);
-        }
-        fprintf(rtl_file, "**END: RTL Statements\n");
-    }
-}
 
         in_function = false;
-        delete $3;
     }
     ;
 
