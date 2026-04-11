@@ -393,7 +393,7 @@ Call_TAC_Stmt::~Call_TAC_Stmt() {
 }
 
 void Call_TAC_Stmt::print(FILE *file) {
-    fprintf(file, "%s\n", to_string().c_str());
+    fprintf(file, "    %s\n", to_string().c_str());
 }
 
 string Call_TAC_Stmt::to_string() {
@@ -437,7 +437,7 @@ void AssignCall_TAC_Stmt::add_argument(TAC_Opd *arg) {
 }
 
 void AssignCall_TAC_Stmt::print(FILE *file) {
-    fprintf(file, "%s\n", to_string().c_str());
+    fprintf(file, "    %s\n", to_string().c_str());
 }
 
 string AssignCall_TAC_Stmt::to_string() {
