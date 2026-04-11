@@ -3,8 +3,8 @@
 MY=./old-compiler
 REF=./new-compiler
 TESTDIR=example-programs/Level-1-test-cases
-MY_OUT=/tmp/my_ast
-REF_OUT=/tmp/ref_ast
+MY_OUT=/tmp/my_tac
+REF_OUT=/tmp/ref_tac
 
 rm -rf $MY_OUT $REF_OUT
 mkdir -p $MY_OUT $REF_OUT
@@ -16,18 +16,18 @@ for f in $TESTDIR/*.c; do
     base=$(basename "$f" .c)
 
     #run my compiler
-    $MY --show-ast "$f" > /dev/null
-    mv "$f.ast" "$MY_OUT/$base.ast"
+    $MY --show-tac "$f" > /dev/null
+    mv "$f.tac" "$MY_OUT/$base.tac"
 
     #run reference
-    $REF --show-ast "$f" > /dev/null
-    mv "$f.ast" "$REF_OUT/$base.ast"
+    $REF --show-tac "$f" > /dev/null
+    mv "$f.tac" "$REF_OUT/$base.tac"
 
-    if diff -Bw "$MY_OUT/$base.ast" "$REF_OUT/$base.ast" > /dev/null; then
+    if diff -Bw "$MY_OUT/$base.tac" "$REF_OUT/$base.tac" > /dev/null; then
         echo "$base : OK"
     else
         echo "$base : DIFFER"
-        diff -Bw "$MY_OUT/$base.ast" "$REF_OUT/$base.ast"
+        diff -Bw "$MY_OUT/$base.tac" "$REF_OUT/$base.tac"
         echo "----------------------------------------"
     fi
 done

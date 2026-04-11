@@ -83,11 +83,9 @@ void process_deferred_functions()
         }
     }
     
-    // Create a sorted list of non-main functions
-    // Reorder_tac.py sorts functions lexicographically, with main first
-    // So we process main first, then others in alphabetical order
+    // For each function: pre_allocate, then generate TAC
+    // Process main first, then others in alphabetical order
     
-    // Process main first (if it exists)
     if (main_index >= 0) {
         TAC_Generator::get_instance()->reset_counters();
         deferred_functions[main_index].body->pre_allocate_temps();
@@ -102,18 +100,18 @@ void process_deferred_functions()
     }
     sort(others.begin(), others.end());  // Sort by name
     
-    // Process non-main functions in alphabetical order
     for (auto& [name, idx] : others) {
         TAC_Generator::get_instance()->reset_counters();
         deferred_functions[idx].body->pre_allocate_temps();
     }
     
-    // Generate TAC in declaration order (as stored in deferred_functions)
+    // Now generate TAC in declaration order
+    // NOTE: Don't reset counters here - temps should continue from where pre_allocate left off
     for (auto& df : deferred_functions) {
         list<TAC_Stmt*> tac_stmts;
         DataType ret_data_type = int_to_datatype(df.return_type);
         
-        TAC_Generator::get_instance()->reset_counters();
+        // Generate TAC without resetting counters - temps should accumulate from pre_allocate
         df.body->generate_tac(tac_stmts);
         
         // Cast body to Compound_Stmt for access to return methods
