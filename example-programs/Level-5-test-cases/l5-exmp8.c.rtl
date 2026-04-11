@@ -1,0 +1,17 @@
+**PROCEDURE: f1
+**BEGIN: RTL Statements
+    load:	v0 <- s_			;; Loading variable s_ into register
+    store:	stemp0 <- v0
+    goto:		Label0
+Label0:
+**END: RTL Statements
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    load_addr:	v0 <- _str_0
+    store:	s1_ <- v0
+    load:	v0 <- temp0			;; Loading variable temp0 into register
+    store:	s2_ <- v0
+    iLoad:	v0 <- 4			;; Loading integer number 4
+    load:	a0 <- s1_			;; Moving the value to be printed into register a0
+    write				;; This is where syscall will be made
+**END: RTL Statements

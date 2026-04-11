@@ -1,0 +1,16 @@
+**PROCEDURE: f1
+**BEGIN: RTL Statements
+    load:	v0 <- p_			;; Loading variable p_ into register
+    store:	stemp0 <- v0
+    goto:		Label0
+Label0:
+**END: RTL Statements
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 10			;; Loading integer number 10
+    iLoad:	t1 <- 5			;; Loading integer number 5
+    sgt:	t0 <- v0 , t1
+    store:	x_ <- t0
+    load:	v0 <- temp1			;; Loading variable temp1 into register
+    store:	x_ <- v0
+**END: RTL Statements

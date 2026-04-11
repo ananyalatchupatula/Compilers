@@ -1,0 +1,30 @@
+**PROCEDURE: f
+**BEGIN: RTL Statements
+    load.d:	f2 <- p_			;; Loading variable p_ into register
+    store.d:	stemp0 <- f2
+    goto:		Label0
+Label0:
+**END: RTL Statements
+**PROCEDURE: f2
+**BEGIN: RTL Statements
+    load.d:	f2 <- p_			;; Loading variable p_ into register
+    store.d:	stemp0 <- f2
+    goto:		Label1
+Label1:
+**END: RTL Statements
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad.d:	f2 <- 2.00			;; Loading integer number 2.00
+    store.d:	r_ <- f2
+    iLoad.d:	f2 <- 2.00			;; Loading integer number 2.00
+    iLoad.d:	f6 <- 3.00			;; Loading integer number 3.00
+    add.d:	f4 <- f2 , f6
+    load.d:	f2 <- r_			;; Loading variable r_ into register
+    mul.d:	f6 <- f2 , f4
+    store.d:	r_ <- f6
+    load.d:	f2 <- r_			;; Loading variable r_ into register
+    iLoad.d:	f6 <- 2.00			;; Loading integer number 2.00
+    mul.d:	f4 <- f2 , f6
+    load.d:	f2 <- temp2			;; Loading variable temp2 into register
+    store.d:	r_ <- f2
+**END: RTL Statements
