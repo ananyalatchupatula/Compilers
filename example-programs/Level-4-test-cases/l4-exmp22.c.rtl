@@ -8,8 +8,8 @@
     load.d:	f6 <- b_			;; Loading variable b_ into register
     add.d:	f4 <- f2 , f6
     load.d:	f2 <- a_			;; Loading variable a_ into register
-    load.d:	f7 <- b_			;; Loading variable b_ into register
-    sub.d:	f6 <- f2 , f7
+    load.d:	f8 <- b_			;; Loading variable b_ into register
+    sub.d:	f6 <- f2 , f8
     slt.d:	f4 , f6
     iLoad:	v0 <- 1			;; Loading integer number 1
     move:	t0 <- zero

@@ -15,13 +15,13 @@ void RTL_Generator::reset() {
     rtl_list.clear();
     active_temp_map.clear();
     free_pool = {"v0", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9"};
-    float_pool = {"f2", "f4", "f6", "f8", "f7"};
+    float_pool = {"f2", "f4", "f6", "f8"};  // f7 is reserved for comparison temporaries
 }
 
 void RTL_Generator::reset_block_allocator() {
     active_temp_map.clear();
     free_pool = {"v0","t0","t1","t2","t3","t4","t5","t6","t7","t8","t9"};
-    float_pool = {"f2","f4","f6","f8","f7"};
+    float_pool = {"f2","f4","f6","f8"};  // f7 is reserved for comparison temporaries
 }
 
 string RTL_Generator::allocate_float_reg() {

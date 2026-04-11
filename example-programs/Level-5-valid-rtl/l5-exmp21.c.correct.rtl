@@ -17,7 +17,7 @@
 Label1:
     load:    v0 <- i_             ;; Loading variable i_ into register
     iLoad:   t1 <- 1              ;; Loading integer number 1
-    sub:     v0 <- v0 , t1
+    sub:     t0 <- v0 , t1
     load:    v0 <- j_             ;; Loading variable j_ into register
     push:    v0                   ;; Push parameter onto stack
     push:    t0                   ;; Push parameter onto stack
