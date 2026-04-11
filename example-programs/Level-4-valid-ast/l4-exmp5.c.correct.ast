@@ -1,0 +1,62 @@
+**PROCEDURE: main
+  Return Type: <void>
+  Formal Parameters:
+**BEGIN: Abstract Syntax Tree
+  Read: Name : local_<int>
+  Asgn:
+    LHS (Name : global2_<int>)
+    RHS (Name : local_<int>)
+  Asgn:
+    LHS (Name : global1_<int>)
+    RHS (Num : 5<int>)
+  Asgn:
+    LHS (Name : ans_<int>)
+    RHS (
+      Condition: AND<bool>
+        L_Opd (
+          Condition: GT<bool>
+            L_Opd (Name : global2_<int>)
+            R_Opd (Name : global1_<int>))
+        R_Opd (
+          Condition: NE<bool>
+            L_Opd (
+              Arith: Minus<int>
+                L_Opd (Name : local_<int>)
+                R_Opd (Num : 2<int>))
+            R_Opd (Num : 0<int>))
+      True_Part (Num : 1<int>)
+      False_Part (Num : 0<int>))
+  If:
+    Condition (
+      Condition: EQ<bool>
+        L_Opd (Name : ans_<int>)
+        R_Opd (Num : 1<int>))
+    Then (
+      While:
+        Condition (
+          Condition: GT<bool>
+            L_Opd (Name : global2_<int>)
+            R_Opd (Num : 0<int>))
+        Body (
+          Write: Name : global2_<int>
+          Asgn:
+            LHS (Name : global2_<int>)
+            RHS (
+              Arith: Minus<int>
+                L_Opd (Name : global2_<int>)
+                R_Opd (Num : 1<int>))))
+    Else (
+      Do:
+        Body (
+          Write: Name : global2_<int>
+          Asgn:
+            LHS (Name : global2_<int>)
+            RHS (
+              Arith: Plus<int>
+                L_Opd (Name : global2_<int>)
+                R_Opd (Num : 1<int>)))
+        While Condition (
+          Condition: LT<bool>
+            L_Opd (Name : global2_<int>)
+            R_Opd (Num : 10<int>)))
+**END: Abstract Syntax Tree

@@ -1,0 +1,8 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    store:	gv_lv_ <- v0
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- gv_lv_			;; Moving the value to be printed into register a0
+    write				;; This is where syscall will be made
+**END: RTL Statements

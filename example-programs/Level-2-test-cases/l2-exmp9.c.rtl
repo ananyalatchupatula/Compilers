@@ -1,0 +1,13 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad.d:	f2 <- 2.30			;; Loading integer number 2.30
+    store.d:	a_ <- f2
+    iLoad.d:	f2 <- 3.40			;; Loading integer number 3.40
+    store.d:	b_ <- f2
+    load.d:	f2 <- a_			;; Loading variable a_ into register
+    load.d:	f6 <- b_			;; Loading variable b_ into register
+    mul.d:	f4 <- f2 , f6
+    load.d:	f6 <- a_			;; Loading variable a_ into register
+    div.d:	f2 <- f4 , f6
+    store.d:	c_ <- f2
+**END: RTL Statements

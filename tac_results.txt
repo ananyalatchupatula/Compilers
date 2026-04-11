@@ -1,0 +1,110 @@
+[0;34m==================== tac COMPARISON ====================[0m
+[0;34mCompiler: ./new-compiler[0m
+[0;34mTest Dir: example-programs/Level-5-test-cases[0m
+[0;34mValid Dir: example-programs/Level-5-valid-tac[0m
+
+[1;33mRunning tac comparisons...[0m
+
+[0;32ml5-exmp1.c[0m: OK
+[0;32ml5-exmp10.c[0m: OK
+[0;32ml5-exmp11.c[0m: OK
+[0;32ml5-exmp12.c[0m: OK
+[0;32ml5-exmp13.c[0m: OK
+[0;32ml5-exmp14.c[0m: OK
+[0;32ml5-exmp15.c[0m: OK
+[0;32ml5-exmp16.c[0m: OK
+[0;32ml5-exmp17.c[0m: OK
+[0;31ml5-exmp18.c[0m: DIFFER
+--- Difference in l5-exmp18.c ---
+5c5
+< Label3:
+---
+> Label1:
+8c8
+<     if(temp3) goto Label4
+---
+>     if(temp3) goto Label2
+11,12c11,12
+<     goto Label3
+< Label4:
+---
+>     goto Label1
+> Label2:
+24c25
+<     if(temp1) goto Label2
+---
+>     if(temp1) goto Label4
+26,27c27,28
+<     goto Label1
+< Label2:
+---
+>     goto Label3
+> Label4:
+29c30
+< Label1:
+---
+> Label3:
+[0;34m----------------------------------------[0m
+[0;32ml5-exmp19.c[0m: OK
+[0;32ml5-exmp2.c[0m: OK
+[0;32ml5-exmp20.c[0m: OK
+[0;32ml5-exmp21.c[0m: OK
+[0;31ml5-exmp22.c[0m: DIFFER
+--- Difference in l5-exmp22.c ---
+15c16
+<     if(temp1) goto Label3
+---
+>     if(temp1) goto Label2
+18,19c19,20
+<     goto Label3
+< Label3:
+---
+>     goto Label2
+> Label2:
+22c23
+<     if(temp5) goto Label5
+---
+>     if(temp5) goto Label4
+26c27,28
+<     goto Label4
+---
+>     goto Label3
+> Label4:
+28d29
+< Label6:
+31c32
+<     if(temp10) goto Label7
+---
+>     if(temp10) goto Label6
+37,39c38,40
+<     goto Label6
+< Label7:
+< Label4:
+---
+>     goto Label5
+> Label6:
+> Label3:
+52c54
+<     if(temp1) goto Label2
+---
+>     if(temp1) goto Label7
+55,56c57,58
+<     goto Label2
+< Label2:
+---
+>     goto Label7
+> Label7:
+[0;34m----------------------------------------[0m
+[0;32ml5-exmp23.c[0m: OK
+[0;32ml5-exmp3.c[0m: OK
+[0;32ml5-exmp4.c[0m: OK
+[0;32ml5-exmp5.c[0m: OK
+[0;32ml5-exmp6.c[0m: OK
+[0;32ml5-exmp7.c[0m: OK
+[0;32ml5-exmp8.c[0m: OK
+[0;32ml5-exmp9.c[0m: OK
+
+[0;34m==================== SUMMARY ====================[0m
+[0;32mPassed: 21[0m
+[0;31mFailed: 2[0m
+[0;34mTotal: 23[0m

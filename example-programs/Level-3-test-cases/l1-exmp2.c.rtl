@@ -1,0 +1,38 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad.d:	f2 <- 8.50			;; Loading integer number 8.50
+    store.d:	averageWorkingHoursPerDay_ <- f2
+    iLoad.d:	f2 <- 10000.00			;; Loading integer number 10000.00
+    store.d:	salary_ <- f2
+    iLoad:	v0 <- 7			;; Loading integer number 7
+    read				;; This is where syscall will be made
+    store.d:	employeeDailyWorkingHours_ <- f0
+    load.d:	f2 <- employeeDailyWorkingHours_			;; Loading variable employeeDailyWorkingHours_ into register
+    load.d:	f4 <- averageWorkingHoursPerDay_			;; Loading variable averageWorkingHoursPerDay_ into register
+    sle.d:	f2 , f4
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    move:	t0 <- zero
+    movf:	t0 <- v0 , 0
+    not:	v0 <- t0
+    bgtz:	v0 , Label0
+    load.d:	f2 <- salary_			;; Loading variable salary_ into register
+    iLoad.d:	f6 <- 0.20			;; Loading integer number 0.20
+    mul.d:	f4 <- f2 , f6
+    store.d:	stemp0 <- f4
+    goto:		Label1
+Label0:
+    load.d:	f2 <- salary_			;; Loading variable salary_ into register
+    iLoad.d:	f6 <- 0.10			;; Loading integer number 0.10
+    mul.d:	f4 <- f2 , f6
+    store.d:	stemp0 <- f4
+Label1:
+    load.d:	f2 <- stemp0			;; Loading variable stemp0 into register
+    store.d:	bonus_ <- f2
+    load.d:	f2 <- salary_			;; Loading variable salary_ into register
+    load.d:	f6 <- bonus_			;; Loading variable bonus_ into register
+    add.d:	f4 <- f2 , f6
+    store.d:	salary_ <- f4
+    iLoad:	v0 <- 3			;; Loading integer number 3
+    load.d:	f12 <- salary_			;; Loading variable salary_ into register
+    write				;; This is where syscall will be made
+**END: RTL Statements

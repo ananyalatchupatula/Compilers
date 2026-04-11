@@ -1,0 +1,27 @@
+**PROCEDURE: main
+  Return Type: <void>
+  Formal Parameters:
+**BEGIN: Abstract Syntax Tree
+  Read: Name : a_<int>
+  Read: Name : b_<int>
+  If:
+    Condition (
+      Condition: GT<bool>
+        L_Opd (Name : a_<int>)
+        R_Opd (Name : b_<int>))
+    Then (
+      Asgn:
+        LHS (Name : n_<int>)
+        RHS (
+          Arith: Plus<int>
+            L_Opd (Name : a_<int>)
+            R_Opd (Name : b_<int>)))
+    Else (
+      Asgn:
+        LHS (Name : n_<int>)
+        RHS (
+          Arith: Minus<int>
+            L_Opd (Name : a_<int>)
+            R_Opd (Name : b_<int>)))
+  Write: Name : n_<int>
+**END: Abstract Syntax Tree
