@@ -13,7 +13,7 @@ void p(){
         }
     }
     print b;
-    a=c*b;
+    a=c+b;
 }
 void main()
 {

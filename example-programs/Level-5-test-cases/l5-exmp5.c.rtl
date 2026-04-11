@@ -1,0 +1,69 @@
+**PROCEDURE: func4
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 4			;; Loading integer number 4
+    store:	i1_ <- v0
+    load:	v0 <- i1_			;; Loading variable i1_ into register
+    load:	t1 <- i1_			;; Loading variable i1_ into register
+    add:	t0 <- v0 , t1
+    store:	stemp0 <- t0
+    goto:		Label2
+Label2:
+**END: RTL Statements
+**PROCEDURE: func1
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 5			;; Loading integer number 5
+    store:	i2_ <- v0
+    iLoad.d:	f2 <- 5.00			;; Loading integer number 5.00
+    store.d:	f2_ <- f2
+**END: RTL Statements
+**PROCEDURE: func2
+**BEGIN: RTL Statements
+    load:	v0 <- a_			;; Loading variable a_ into register
+    iLoad:	t1 <- 10			;; Loading integer number 10
+    add:	t0 <- v0 , t1
+    store:	a_ <- t0
+    iLoad:	v0 <- 5			;; Loading integer number 5
+    store:	i1_ <- v0
+    load:	v0 <- a_			;; Loading variable a_ into register
+    load:	t1 <- i1_			;; Loading variable i1_ into register
+    add:	t0 <- v0 , t1
+    load:	t1 <- i2_			;; Loading variable i2_ into register
+    add:	v0 <- t0 , t1
+    iLoad:	t1 <- 2			;; Loading integer number 2
+    add:	t0 <- v0 , t1
+    store:	stemp0 <- t0
+    goto:		Label0
+Label0:
+**END: RTL Statements
+**PROCEDURE: func3
+**BEGIN: RTL Statements
+    load.d:	f2 <- b_			;; Loading variable b_ into register
+    load.d:	f6 <- f2_			;; Loading variable f2_ into register
+    add.d:	f4 <- f2 , f6
+    store.d:	b_ <- f4
+    load.d:	f2 <- c_			;; Loading variable c_ into register
+    iLoad.d:	f6 <- 10.50			;; Loading integer number 10.50
+    add.d:	f4 <- f2 , f6
+    store.d:	c_ <- f4
+    load.d:	f2 <- b_			;; Loading variable b_ into register
+    load.d:	f6 <- c_			;; Loading variable c_ into register
+    add.d:	f4 <- f2 , f6
+    store.d:	stemp0 <- f4
+    goto:		Label1
+Label1:
+**END: RTL Statements
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    load:	v0 <- temp0			;; Loading variable temp0 into register
+    store:	i2_ <- v0
+    load:	v0 <- temp1			;; Loading variable temp1 into register
+    store:	i2_ <- v0
+    load.d:	f2 <- temp2			;; Loading variable temp2 into register
+    store.d:	f2_ <- f2
+    iLoad:	v0 <- 3			;; Loading integer number 3
+    load.d:	f12 <- f1_			;; Loading variable f1_ into register
+    write				;; This is where syscall will be made
+    iLoad:	v0 <- 3			;; Loading integer number 3
+    load.d:	f12 <- f2_			;; Loading variable f2_ into register
+    write				;; This is where syscall will be made
+**END: RTL Statements

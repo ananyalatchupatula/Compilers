@@ -1,0 +1,30 @@
+**PROCEDURE: p
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    store:	a_ <- v0
+**END: RTL Statements
+**PROCEDURE: q
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- a_			;; Moving the value to be printed into register a0
+    write				;; This is where syscall will be made
+**END: RTL Statements
+**PROCEDURE: r
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- b_			;; Moving the value to be printed into register a0
+    write				;; This is where syscall will be made
+**END: RTL Statements
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    store:	a_ <- v0
+    iLoad:	v0 <- 2			;; Loading integer number 2
+    store:	c_ <- v0
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- a_			;; Moving the value to be printed into register a0
+    write				;; This is where syscall will be made
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- c_			;; Moving the value to be printed into register a0
+    write				;; This is where syscall will be made
+**END: RTL Statements
