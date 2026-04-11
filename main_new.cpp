@@ -83,26 +83,21 @@ void process_deferred_functions()
         }
     }
     
-    // For each function: pre_allocate, then generate TAC
-    // Process main first, then others in alphabetical order
+    // For each function: pre_allocate temps in declaration order (non-main first, then main)
+    // This ensures temps get allocated in the right order
     
+    // Pre-allocate non-main functions in declaration order
+    for (int i = 0; i < deferred_functions.size(); i++) {
+        if (i != main_index) {
+            TAC_Generator::get_instance()->reset_counters();
+            deferred_functions[i].body->pre_allocate_temps();
+        }
+    }
+    
+    // Pre-allocate main last
     if (main_index >= 0) {
         TAC_Generator::get_instance()->reset_counters();
         deferred_functions[main_index].body->pre_allocate_temps();
-    }
-    
-    // Collect non-main functions and sort them alphabetically
-    vector<pair<string, int>> others;  // (name, index)
-    for (int i = 0; i < deferred_functions.size(); i++) {
-        if (i != main_index) {
-            others.push_back({deferred_functions[i].name, i});
-        }
-    }
-    sort(others.begin(), others.end());  // Sort by name
-    
-    for (auto& [name, idx] : others) {
-        TAC_Generator::get_instance()->reset_counters();
-        deferred_functions[idx].body->pre_allocate_temps();
     }
     
     // Now generate TAC in declaration order
@@ -158,12 +153,17 @@ void process_deferred_functions()
             list<RTL_Stmt*> rtl_stmts =
                 RTL_Generator::get_instance()->generate_rtl(tac_stmts);
             
-            fprintf(rtl_file, "**PROCEDURE: %s\n", df.name.c_str());
+            if (df.name == "main") {
+                fprintf(rtl_file, "**PROCEDURE: main\n");
+            } else {
+                fprintf(rtl_file, "**PROCEDURE: %s_\n", df.name.c_str());
+            }
             fprintf(rtl_file, "**BEGIN: RTL Statements\n");
             for (auto stmt : rtl_stmts) {
                 stmt->print(rtl_file);
             }
             fprintf(rtl_file, "**END: RTL Statements\n");
+            fprintf(rtl_file, "\n\n");  // Two blank lines between procedures
         }
     }
 }
@@ -342,6 +342,13 @@ int main(int argc, char *argv[])
     if (show_tac) {
         char cmd[512];
         snprintf(cmd, sizeof(cmd), "python3 reorder_tac.py '%s.tac' '%s' 2>/dev/null", input_file, input_file);
+        system(cmd);
+    }
+
+    /* Reorder functions in RTL file */
+    if (show_rtl) {
+        char cmd[512];
+        snprintf(cmd, sizeof(cmd), "python3 reorder_rtl.py '%s.rtl' '%s' 2>/dev/null", input_file, input_file);
         system(cmd);
     }
     

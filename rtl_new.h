@@ -201,4 +201,64 @@ public:
     void print(FILE *file);
 };
 
+class Call_RTL_Stmt : public RTL_Stmt {
+private:
+    string func_name;
+
+public:
+    Call_RTL_Stmt(string name);
+    ~Call_RTL_Stmt();
+    void print(FILE *file);
+};
+
+class Return_RTL_Stmt : public RTL_Stmt {
+private:
+    RTL_Opd *return_reg;  // NULL for void return
+
+public:
+    Return_RTL_Stmt(RTL_Opd *reg = NULL);
+    ~Return_RTL_Stmt();
+    void print(FILE *file);
+};
+
+class Push_RTL_Stmt : public RTL_Stmt {
+private:
+    RTL_Opd *value;
+
+public:
+    Push_RTL_Stmt(RTL_Opd *val);
+    ~Push_RTL_Stmt();
+    void print(FILE *file);
+};
+
+class Pop_RTL_Stmt : public RTL_Stmt {
+public:
+    Pop_RTL_Stmt();
+    ~Pop_RTL_Stmt();
+    void print(FILE *file);
+};
+
+class CallAssign_RTL_Stmt : public RTL_Stmt {
+private:
+    RTL_Opd *result_reg;  // v1 or f0
+    string func_name;
+
+public:
+    CallAssign_RTL_Stmt(RTL_Opd *reg, string name);
+    ~CallAssign_RTL_Stmt();
+    void print(FILE *file);
+};
+
+class Move_RTL_Stmt : public RTL_Stmt {
+private:
+    RTL_Opd *dest;
+    RTL_Opd *src;
+    bool is_float;
+
+public:
+    Move_RTL_Stmt(RTL_Opd *d, RTL_Opd *s, bool flt = false);
+    ~Move_RTL_Stmt();
+    void print(FILE *file);
+};
+
 #endif

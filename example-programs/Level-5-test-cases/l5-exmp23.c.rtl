@@ -1,0 +1,90 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    load:	v0 <- a_			;; Loading variable a_ into register
+    load:	t1 <- b_			;; Loading variable b_ into register
+    mul:	t0 <- v0 , t1
+    store:	c_ <- t0
+    load:	v0 <- a_			;; Loading variable a_ into register
+    push:      v0		;; Push parameter onto stack
+    v1 = call p_
+    pop				;; Pop parameter from stack
+    move:      v0 <- v1
+    store:	a_ <- v0
+    load:	v0 <- c_			;; Loading variable c_ into register
+    push:      v0		;; Push parameter onto stack
+    v1 = call p_
+    pop				;; Pop parameter from stack
+    move:      v0 <- v1
+    store:	c_ <- v0
+    load:	v0 <- a_			;; Loading variable a_ into register
+    load:	v0 <- b_			;; Loading variable b_ into register
+    mul:	v0 <- v0 , v0
+    store:	a_ <- v0
+**END: RTL Statements
+
+
+**PROCEDURE: p_
+**BEGIN: RTL Statements
+    load:	v0 <- k_			;; Loading variable k_ into register
+    iLoad:	t1 <- 0			;; Loading integer number 0
+    slt:	t0 <- v0 , t1
+    not:	v0 <- t0
+    bgtz:	v0 , Label1
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    store:	stemp0 <- v0
+    goto:		Label0
+    goto:		Label1
+
+Label1:
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    iLoad:	t1 <- 2			;; Loading integer number 2
+    slt:	t0 <- v0 , t1
+    not:	v0 <- t0
+    bgtz:	v0 , Label3
+    load:	v0 <- k_			;; Loading variable k_ into register
+    iLoad:	t1 <- 1			;; Loading integer number 1
+    sub:	t0 <- v0 , t1
+    push:      t0		;; Push parameter onto stack
+    v1 = call p_
+    pop				;; Pop parameter from stack
+    move:      v0 <- v1
+    store:	b_ <- v0
+    load:	v0 <- a_			;; Loading variable a_ into register
+    load:	t1 <- b_			;; Loading variable b_ into register
+    mul:	v0 <- v0 , t1
+    store:	a_ <- v0
+    goto:		Label2
+
+Label3:
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    iLoad:	t2 <- 4			;; Loading integer number 4
+    slt:	t1 <- v0 , t2
+    not:	v0 <- t1
+    bgtz:	v0 , Label4
+    load:	v0 <- a_			;; Loading variable a_ into register
+    load:	t2 <- b_			;; Loading variable b_ into register
+    mul:	t1 <- v0 , t2
+    store:	c_ <- t1
+    load:	v0 <- k_			;; Loading variable k_ into register
+    iLoad:	t2 <- 1			;; Loading integer number 1
+    sub:	t1 <- v0 , t2
+    push:      t1		;; Push parameter onto stack
+    v1 = call p_
+    pop				;; Pop parameter from stack
+    move:      v0 <- v1
+    store:	c_ <- v0
+    goto:		Label4
+
+Label4:
+
+Label2:
+    iLoad:	v0 <- 0			;; Loading integer number 0
+    store:	stemp0 <- v0
+    goto:		Label0
+
+Label0:
+    load:	v1 <- stemp0			;; Loading variable stemp0 into register
+    return      v1
+**END: RTL Statements
+
+

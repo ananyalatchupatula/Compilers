@@ -1,6 +1,7 @@
 #include "rtl_generator.h"
 #include <iostream>
 #include <algorithm>
+#include <vector>
 
 
 
@@ -551,6 +552,117 @@ else if (auto r = dynamic_cast<Read_TAC_Stmt*>(stmt)) {
         )
     );
 }
+
+else if (auto call = dynamic_cast<Call_TAC_Stmt*>(stmt)) {
+    // Function call without assignment
+    string func_name = call->get_func()->to_string();
+    rtl_list.push_back(
+        new Call_RTL_Stmt(func_name)
+    );
+}
+
+else if (auto acall = dynamic_cast<AssignCall_TAC_Stmt*>(stmt)) {
+    // Function call with assignment: temp = f_(args)
+    string func_name = acall->get_func_name()->to_string();
+    bool result_float = acall->get_lhs()->get_data_type() == FLOAT_DATA_TYPE;
+    
+    // Push arguments in REVERSE order (right-to-left for stack convention)
+    vector<TAC_Opd*> args(acall->get_arguments().begin(), acall->get_arguments().end());
+    for (int i = args.size() - 1; i >= 0; i--) {
+        auto arg = args[i];
+        bool arg_float = arg->get_data_type() == FLOAT_DATA_TYPE;
+        string arg_reg;
+        bool arg_is_temp;
+        
+        // Use materialize_operand to handle temps from registers or load other operands
+        RTL_Opd *arg_opd = materialize_operand(arg, arg_reg, arg_is_temp);
+        
+        if (arg_opd) {
+            // Push to stack (arg_opd could be a register from active_temp_map or a freshly loaded value)
+            rtl_list.push_back(
+                new Push_RTL_Stmt(arg_opd)
+            );
+            
+            // Don't erase yet - temp might be used again, free will happen naturally
+            if (!arg_is_temp) {
+                free_any_reg(arg_reg);
+            }
+        }
+    }
+    
+    // Call function with result assignment
+    string result_reg = result_float ? "f0" : "v1";
+    rtl_list.push_back(
+        new CallAssign_RTL_Stmt(new Register_RTL_Opd(result_reg), func_name)
+    );
+    
+    // Pop arguments
+    for (size_t i = 0; i < acall->get_arguments().size(); i++) {
+        rtl_list.push_back(
+            new Pop_RTL_Stmt()
+        );
+    }
+    
+    // Add move statement: move v0 <- v1 (or move.d f2 <- f0 for float)
+    string dest_reg = result_float ? "f2" : "v0";
+    rtl_list.push_back(
+        new Move_RTL_Stmt(
+            new Register_RTL_Opd(dest_reg),
+            new Register_RTL_Opd(result_reg),
+            result_float
+        )
+    );
+    
+    // Track result in temp map
+    if (dynamic_cast<Temp_TAC_Opd*>(acall->get_lhs())) {
+        active_temp_map[acall->get_lhs()->to_string()] = dest_reg;
+    }
+}
+
+else if (auto ret = dynamic_cast<Return_TAC_Stmt*>(stmt)) {
+    // Return statement - load return value directly to v1/f0
+    if (ret->get_return_val()) {
+        bool is_float = ret->get_return_val()->get_data_type() == FLOAT_DATA_TYPE;
+        string return_reg = is_float ? "f0" : "v1";
+        
+        // Create RTL operand for the return value
+        RTL_Opd *rtl_opd = NULL;
+        string ret_str = ret->get_return_val()->to_string();
+        
+        if (dynamic_cast<Temp_TAC_Opd*>(ret->get_return_val())) {
+            // For temps, load directly from memory (stemp0, etc.)
+            rtl_opd = new Memory_RTL_Opd(ret_str);
+        } else if (dynamic_cast<Var_TAC_Opd*>(ret->get_return_val())) {
+            rtl_opd = new Memory_RTL_Opd(ret_str);
+        } else if (dynamic_cast<Const_TAC_Opd*>(ret->get_return_val())) {
+            if (is_float) {
+                rtl_opd = new Const_RTL_Opd(atoi(ret_str.c_str()));  // For now, treat as int
+            } else {
+                rtl_opd = new Const_RTL_Opd(atoi(ret_str.c_str()));
+            }
+        }
+        
+        if (rtl_opd) {
+            rtl_list.push_back(
+                new Load_RTL_Stmt(
+                    new Register_RTL_Opd(return_reg),
+                    rtl_opd,
+                    is_float
+                )
+            );
+        }
+        
+        rtl_list.push_back(
+            new Return_RTL_Stmt(new Register_RTL_Opd(return_reg))
+        );
+    } else {
+        // Void return
+        rtl_list.push_back(
+            new Return_RTL_Stmt()
+        );
+    }
+}
+
 
     }
 

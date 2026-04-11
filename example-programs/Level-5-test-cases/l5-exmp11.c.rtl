@@ -1,0 +1,60 @@
+**PROCEDURE: convert_centigrade_to_fahrenheit_
+**BEGIN: RTL Statements
+    load.d:	f2 <- ct_			;; Loading variable ct_ into register
+    iLoad.d:	f4 <- 0.00			;; Loading integer number 0.00
+    seq.d:	f2 , f4
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    move:	t0 <- zero
+    movt:	t0 <- v0 , 0
+    not:	v0 <- t0
+    bgtz:	v0 , Label1
+    iLoad.d:	f2 <- 0.00			;; Loading integer number 0.00
+    store.d:	stemp0 <- f2
+    goto:		Label2
+
+Label1:
+    load.d:	f2 <- ct_			;; Loading variable ct_ into register
+    iLoad.d:	f6 <- 9.00			;; Loading integer number 9.00
+    mul.d:	f4 <- f2 , f6
+    iLoad.d:	f6 <- 5.00			;; Loading integer number 5.00
+    div.d:	f2 <- f4 , f6
+    iLoad.d:	f6 <- 32.00			;; Loading integer number 32.00
+    add.d:	f4 <- f2 , f6
+    store.d:	stemp0 <- f4
+
+Label2:
+    load.d:	f2 <- stemp0			;; Loading variable stemp0 into register
+    store.d:	ft_ <- f2
+    load.d:	f2 <- ft_			;; Loading variable ft_ into register
+    store.d:	stemp0 <- f2
+    goto:		Label0
+
+Label0:
+    load.d:	f0 <- stemp0			;; Loading variable stemp0 into register
+    return      f0
+**END: RTL Statements
+
+
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 4			;; Loading integer number 4
+    load_addr:	a0 <- _str_0
+    write				;; This is where syscall will be made
+    iLoad:	v0 <- 7			;; Loading integer number 7
+    read				;; This is where syscall will be made
+    store.d:	in_ <- f0
+    load.d:	f2 <- in_			;; Loading variable in_ into register
+    push:      f2		;; Push parameter onto stack
+    f0 = call convert_centigrade_to_fahrenheit_
+    pop				;; Pop parameter from stack
+    move.d:      f2 <- f0
+    store.d:	out_ <- f2
+    iLoad:	v0 <- 4			;; Loading integer number 4
+    load_addr:	a0 <- _str_1
+    write				;; This is where syscall will be made
+    iLoad:	v0 <- 3			;; Loading integer number 3
+    load.d:	f12 <- out_			;; Loading variable out_ into register
+    write				;; This is where syscall will be made
+**END: RTL Statements
+
+

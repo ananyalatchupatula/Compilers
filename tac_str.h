@@ -322,6 +322,7 @@ public:
     
     TAC_Opd* get_func() { return func_name; }
     void add_argument(TAC_Opd *arg);  // Add argument to function call
+    list<TAC_Opd*>& get_arguments() { return arguments; }
 };
 
 // Assignment with function call: temp = f_(args)
@@ -338,6 +339,10 @@ public:
     void add_argument(TAC_Opd *arg);
     void print(FILE *file = stdout);
     string to_string();
+    
+    TAC_Opd* get_lhs() { return lhs; }
+    TAC_Opd* get_func_name() { return func_name; }
+    list<TAC_Opd*>& get_arguments() { return arguments; }
 };
 
 // Return TAC Statement: RETURN opd1 (or RETURN with no value)

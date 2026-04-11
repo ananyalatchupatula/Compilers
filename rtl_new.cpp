@@ -280,7 +280,7 @@ Label_RTL_Stmt::Label_RTL_Stmt(string name) : label_name(name) {}
 Label_RTL_Stmt::~Label_RTL_Stmt() {}
 
 void Label_RTL_Stmt::print(FILE *file) {
-    fprintf(file, "%s:\n", label_name.c_str());
+    fprintf(file, "\n%s:\n", label_name.c_str());
 }
 
 Goto_RTL_Stmt::Goto_RTL_Stmt(string name) : label_name(name) {}
@@ -313,4 +313,70 @@ Read_RTL_Stmt::~Read_RTL_Stmt() {}
 
 void Read_RTL_Stmt::print(FILE *file) {
     fprintf(file, "    read\t\t\t\t;; This is where syscall will be made\n");
+}
+
+Call_RTL_Stmt::Call_RTL_Stmt(string name) : func_name(name) {}
+Call_RTL_Stmt::~Call_RTL_Stmt() {}
+
+void Call_RTL_Stmt::print(FILE *file) {
+    fprintf(file, "    call %s\n", func_name.c_str());
+}
+
+Return_RTL_Stmt::Return_RTL_Stmt(RTL_Opd *reg) : return_reg(reg) {}
+Return_RTL_Stmt::~Return_RTL_Stmt() {
+    if (return_reg) delete return_reg;
+}
+
+void Return_RTL_Stmt::print(FILE *file) {
+    if (return_reg) {
+        fprintf(file, "    return      ");
+        return_reg->print(file);
+        fprintf(file, "\n");
+    } else {
+        fprintf(file, "    return\n");
+    }
+}
+
+Push_RTL_Stmt::Push_RTL_Stmt(RTL_Opd *val) : value(val) {}
+Push_RTL_Stmt::~Push_RTL_Stmt() {
+    if (value) delete value;
+}
+
+void Push_RTL_Stmt::print(FILE *file) {
+    fprintf(file, "    push:      ");
+    value->print(file);
+    fprintf(file, "\t\t;; Push parameter onto stack\n");
+}
+
+Pop_RTL_Stmt::Pop_RTL_Stmt() {}
+Pop_RTL_Stmt::~Pop_RTL_Stmt() {}
+
+void Pop_RTL_Stmt::print(FILE *file) {
+    fprintf(file, "    pop\t\t\t\t;; Pop parameter from stack\n");
+}
+
+CallAssign_RTL_Stmt::CallAssign_RTL_Stmt(RTL_Opd *reg, string name) : result_reg(reg), func_name(name) {}
+CallAssign_RTL_Stmt::~CallAssign_RTL_Stmt() {
+    if (result_reg) delete result_reg;
+}
+
+void CallAssign_RTL_Stmt::print(FILE *file) {
+    fprintf(file, "    ");
+    result_reg->print(file);
+    fprintf(file, " = call %s\n", func_name.c_str());
+}
+
+Move_RTL_Stmt::Move_RTL_Stmt(RTL_Opd *d, RTL_Opd *s, bool flt) : dest(d), src(s), is_float(flt) {}
+Move_RTL_Stmt::~Move_RTL_Stmt() {
+    if (dest) delete dest;
+    if (src) delete src;
+}
+
+void Move_RTL_Stmt::print(FILE *file) {
+    const char *instr = is_float ? "move.d" : "move";
+    fprintf(file, "    %s:      ", instr);
+    dest->print(file);
+    fprintf(file, " <- ");
+    src->print(file);
+    fprintf(file, "\n");
 }
