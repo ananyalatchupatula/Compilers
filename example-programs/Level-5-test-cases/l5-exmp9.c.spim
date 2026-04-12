@@ -5,35 +5,32 @@ main:                # .globl makes main know to the outside of the program.
     sw $ra, 0($sp)    # Save the return address
     sw $fp, -4($sp)   # Save the frame pointer
     sub $fp, $sp, 4   # Update the frame pointer
-    sub $sp, $sp, 12  # Make space for the locals
+    sub $sp, $sp, 20  # Make space for the locals
 # Prologue ends
 
-        iLoad:	v0 <- 2			;; Loading integer number 2
-        store:	a_ <- v0
-        iLoad:	v0 <- 3			;; Loading integer number 3
-        store:	D1234_ <- v0
-        load:	v0 <- a_			;; Loading variable a_ into register
-        iLoad:	t1 <- 5			;; Loading integer number 5
-        sgt:	t0 <- v0 , t1
-        not:	v0 <- t0
-        bgtz:	v0 , Label2
-        iLoad:	v0 <- 10			;; Loading integer number 10
-        store:	stemp0 <- v0
-        goto:		Label0
-        goto:		Label1
-    
+    li $v0, 2
+    sw $v0, -8($fp)
+    li $v0, 3
+    sw $v0, -12($fp)
+    lw $v0, -8($fp)
+    li $t1, 5
+    sgt $t0, $v0, $t1
+    xori $v0, $t0, 1
+    bgtz $v0, Label2
+    li $v0, 10
+    sw $v0, -4($fp)
+    j Label0
+    j Label1
 Label2:
-        load:	v0 <- a_			;; Loading variable a_ into register
-        store:	stemp0 <- v0
-        goto:		Label0
-    
+    lw $v0, -8($fp)
+    sw $v0, -4($fp)
+    j Label0
 Label1:
-    
 Label0:
-        load:	v1 <- stemp0			;; Loading variable stemp0 into register
-        return      v1
+    lw $v1, -4($fp)
+    j epilogue_main
 epilogue_main:
-    add $sp, $sp, 12  # Increment stack pointer for local variables
+    add $sp, $sp, 20  # Increment stack pointer for local variables
     lw $fp, -4($sp)   # Set $fp to $sp-4
     lw $ra, 0($sp)    # Save ra
     jr $ra            # Jump back to the called procedure

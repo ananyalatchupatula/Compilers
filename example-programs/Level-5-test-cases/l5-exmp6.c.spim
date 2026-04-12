@@ -1,26 +1,7 @@
-.text          # The .text assembler directive indicates
-    .globl f_      # The following is the code (as opposed to data)
-f_:                # .globl makes main know to the outside of the program.
-# Prologue begins
-    sw $ra, 0($sp)    # Save the return address
-    sw $fp, -4($sp)   # Save the frame pointer
-    sub $fp, $sp, 4   # Update the frame pointer
-    sub $sp, $sp, 12  # Make space for the locals
-# Prologue ends
-
-        load.d:	f2 <- p_			;; Loading variable p_ into register
-        store.d:	stemp0 <- f2
-        goto:		Label0
-    
-Label0:
-        load.d:	f0 <- stemp0			;; Loading variable stemp0 into register
-        return      f0
-epilogue_f_:
-    add $sp, $sp, 12  # Increment stack pointer for local variables
-    lw $fp, -4($sp)   # Set $fp to $sp-4
-    lw $ra, 0($sp)    # Save ra
-    jr $ra            # Jump back to the called procedure
-# Epilogue Ends
+.data
+x_: .word 0
+y_: .word 0
+z_: .word 0
 
 .text          # The .text assembler directive indicates
     .globl f2_      # The following is the code (as opposed to data)
@@ -29,18 +10,40 @@ f2_:                # .globl makes main know to the outside of the program.
     sw $ra, 0($sp)    # Save the return address
     sw $fp, -4($sp)   # Save the frame pointer
     sub $fp, $sp, 4   # Update the frame pointer
-    sub $sp, $sp, 12  # Make space for the locals
+    sub $sp, $sp, 16  # Make space for the locals
 # Prologue ends
 
-        load.d:	f2 <- p_			;; Loading variable p_ into register
-        store.d:	stemp0 <- f2
-        goto:		Label1
-    
+    l.d $f2, 8($fp)
+    s.d $f2, -8($fp)
+    j Label1
 Label1:
-        load.d:	f0 <- stemp0			;; Loading variable stemp0 into register
-        return      f0
+    l.d $f0, -8($fp)
+    j epilogue_f2_
 epilogue_f2_:
-    add $sp, $sp, 12  # Increment stack pointer for local variables
+    add $sp, $sp, 16  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+
+.text          # The .text assembler directive indicates
+    .globl f_      # The following is the code (as opposed to data)
+f_:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 16  # Make space for the locals
+# Prologue ends
+
+    l.d $f2, 8($fp)
+    s.d $f2, -8($fp)
+    j Label0
+Label0:
+    l.d $f0, -8($fp)
+    j epilogue_f_
+epilogue_f_:
+    add $sp, $sp, 16  # Increment stack pointer for local variables
     lw $fp, -4($sp)   # Set $fp to $sp-4
     lw $ra, 0($sp)    # Save ra
     jr $ra            # Jump back to the called procedure
@@ -53,30 +56,32 @@ main:                # .globl makes main know to the outside of the program.
     sw $ra, 0($sp)    # Save the return address
     sw $fp, -4($sp)   # Save the frame pointer
     sub $fp, $sp, 4   # Update the frame pointer
-    sub $sp, $sp, 12  # Make space for the locals
+    sub $sp, $sp, 16  # Make space for the locals
 # Prologue ends
 
-        iLoad.d:	f2 <- 2.00			;; Loading integer number 2.00
-        store.d:	r_ <- f2
-        iLoad.d:	f2 <- 2.00			;; Loading integer number 2.00
-        iLoad.d:	f6 <- 3.00			;; Loading integer number 3.00
-        add.d:	f4 <- f2 , f6
-        load.d:	f2 <- r_			;; Loading variable r_ into register
-        mul.d:	f6 <- f2 , f4
-        store.d:	r_ <- f6
-        load.d:	f2 <- r_			;; Loading variable r_ into register
-        iLoad.d:	f6 <- 2.00			;; Loading integer number 2.00
-        mul.d:	f4 <- f2 , f6
-        iLoad:	v0 <- 3			;; Loading integer number 3
-        push:      v0		;; Push parameter onto stack
-        push:      f4		;; Push parameter onto stack
-        f0 = call f_
-        pop				;; Pop parameter from stack
-        pop				;; Pop parameter from stack
-        move.d:      f2 <- f0
-        store.d:	r_ <- f2
+    li.d $f2, 2.00
+    s.d $f2, -8($fp)
+    li.d $f2, 2.00
+    li.d $f6, 3.00
+    add.d $f4, $f2, $f6
+    l.d $f2, -8($fp)
+    mul.d $f6, $f2, $f4
+    s.d $f6, -8($fp)
+    l.d $f2, -8($fp)
+    li.d $f6, 2.00
+    mul.d $f4, $f2, $f6
+    li $v0, 3
+    sw $v0, 0($sp)
+    sub $sp, $sp, 4
+    s.d $f4, -4($sp)
+    sub $sp, $sp, 8
+    jal f_
+    add $sp, $sp, 8
+    add $sp, $sp, 4
+    mov.d $f2, $f0
+    s.d $f2, -8($fp)
 epilogue_main:
-    add $sp, $sp, 12  # Increment stack pointer for local variables
+    add $sp, $sp, 16  # Increment stack pointer for local variables
     lw $fp, -4($sp)   # Set $fp to $sp-4
     lw $ra, 0($sp)    # Save ra
     jr $ra            # Jump back to the called procedure

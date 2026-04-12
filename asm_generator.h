@@ -56,6 +56,11 @@ public:
     // Main entry point
     list<ASM_Stmt*> generate_asm(list<RTL_Stmt*>& rtl_statements);
     
+    // Set variable offsets (for proper stack frame layout)
+    void set_var_offsets(const map<string, int>& offsets) {
+        local_var_offsets = offsets;
+    }
+    
     // Reset for new compilation
     void reset();
 };

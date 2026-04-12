@@ -1,0 +1,63 @@
+.text          # The .text assembler directive indicates
+    .globl main      # The following is the code (as opposed to data)
+main:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 16  # Make space for the locals
+# Prologue ends
+
+    li $v0, 1990
+    sw $v0, -4($fp)
+    lw $v0, -4($fp)
+    li $t1, 400
+    div $t0, $v0, $t1
+    li $t1, 400
+    mul $v0, $t0, $t1
+    lw $t1, -4($fp)
+    seq $t0, $v0, $t1
+    xori $v0, $t0, 1
+    bgtz $v0, Label1
+    li $v0, 1
+    sw $v0, -8($fp)
+    j Label0
+Label1:
+    lw $v0, -4($fp)
+    li $t1, 100
+    div $t0, $v0, $t1
+    li $t1, 100
+    mul $v0, $t0, $t1
+    lw $t1, -4($fp)
+    seq $t0, $v0, $t1
+    xori $v0, $t0, 1
+    bgtz $v0, Label3
+    li $v0, 0
+    sw $v0, -8($fp)
+    j Label2
+Label3:
+    lw $v0, -4($fp)
+    li $t1, 4
+    div $t0, $v0, $t1
+    li $t1, 4
+    mul $v0, $t0, $t1
+    lw $t1, -4($fp)
+    seq $t0, $v0, $t1
+    xori $v0, $t0, 1
+    bgtz $v0, Label5
+    li $v0, 1
+    sw $v0, -8($fp)
+    j Label4
+Label5:
+    li $v0, 0
+    sw $v0, -8($fp)
+Label4:
+Label2:
+Label0:
+epilogue_main:
+    add $sp, $sp, 16  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+

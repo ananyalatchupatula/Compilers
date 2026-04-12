@@ -1,4 +1,5 @@
 int x,y;
+float f(int a, int b);
 int z;
 
 float f(int p, int q){

@@ -1,0 +1,57 @@
+.text          # The .text assembler directive indicates
+    .globl main      # The following is the code (as opposed to data)
+main:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 48  # Make space for the locals
+# Prologue ends
+
+    li.d $f2, 2.30
+    s.d $f2, -8($fp)
+    li.d $f2, 3.40
+    s.d $f2, -16($fp)
+    li.d $f2, 4.50
+    s.d $f2, -24($fp)
+    li.d $f2, 5.60
+    s.d $f2, -32($fp)
+    li.d $f2, 6.70
+    s.d $f2, -40($fp)
+    l.d $f2, -16($fp)
+    l.d $f6, -24($fp)
+    add.d $f4, $f2, $f6
+    l.d $f2, -8($fp)
+    add $f7, $f2, $f4
+    li $v0, 1
+    l.d $f2, -40($fp)
+    l.d $f6, -32($fp)
+    mul.d $f4, $f2, $f6
+    l.d $f6, -24($fp)
+    div.d $f2, $f4, $f6
+    l.d $f4, -32($fp)
+    add $f7, $f4, $f2
+    li $v0, 1
+    and $v0, $t0, $t1
+    xori $t0, $v0, 1
+    bgtz $t0, Label1
+    l.d $f2, -8($fp)
+    l.d $f6, -32($fp)
+    mul.d $f4, $f2, $f6
+    l.d $f6, -40($fp)
+    div.d $f2, $f4, $f6
+    s.d $f2, -8($fp)
+    j Label0
+Label1:
+    l.d $f2, -40($fp)
+    l.d $f6, -32($fp)
+    add.d $f4, $f2, $f6
+    s.d $f4, -40($fp)
+Label0:
+epilogue_main:
+    add $sp, $sp, 48  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+

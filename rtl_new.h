@@ -73,6 +73,8 @@ public:
     void print(FILE *file);
     string to_string();
     bool get_is_float() { return is_float; }
+    int get_int_value() { return int_value; }
+    double get_float_value() { return float_value; }
 };
 
 class RTL_Stmt {
@@ -152,6 +154,7 @@ public:
     void print(FILE *file);
     RTL_Opd *get_dest() { return dest; }
     RTL_Opd *get_source() { return source; }
+    string get_string_value() { return string_value; }
 };
 
 class Store_RTL_Stmt : public RTL_Stmt {

@@ -72,8 +72,16 @@ struct DeferredFunction {
     int return_type;
     Statement_Ast* body;
     int return_label_id;  // Pre-allocated label ID
+    vector<FuncParam> parameters;  // List of parameter names
 };
 vector<DeferredFunction> deferred_functions;
+
+/* Global variable tracking */
+struct GlobalVar {
+    string name;
+    int type;
+};
+vector<GlobalVar> global_vars;
 
 /* TYPE DEFINITIONS */
 #define TYPE_INT    1
@@ -291,8 +299,10 @@ id_list
           }
           if(in_function)
               local_symtab.add($1,current_decl_type);
-          else
+          else {
               global_symtab.add($1,current_decl_type);
+              global_vars.push_back(GlobalVar{string($1), current_decl_type});
+          }
       }
     | id_list COMMA NAME
       {
@@ -302,8 +312,10 @@ id_list
           }
           if(in_function)
               local_symtab.add($3,current_decl_type);
-          else
+          else {
               global_symtab.add($3,current_decl_type);
+              global_vars.push_back(GlobalVar{string($3), current_decl_type});
+          }
       }
     ;
 
@@ -450,6 +462,7 @@ else
             df.return_type = ret_type;
             df.body = $3;
             df.return_label_id = ret_label_id;
+            df.parameters = current_func_params;  // Store parameter list
             deferred_functions.push_back(df);
         }
 

@@ -1,37 +1,6 @@
-.text          # The .text assembler directive indicates
-    .globl main      # The following is the code (as opposed to data)
-main:                # .globl makes main know to the outside of the program.
-# Prologue begins
-    sw $ra, 0($sp)    # Save the return address
-    sw $fp, -4($sp)   # Save the frame pointer
-    sub $fp, $sp, 4   # Update the frame pointer
-    sub $sp, $sp, 12  # Make space for the locals
-# Prologue ends
-
-        iLoad:	v0 <- 4			;; Loading integer number 4
-        load_addr:	a0 <- _str_0
-        write				;; This is where syscall will be made
-        iLoad:	v0 <- 7			;; Loading integer number 7
-        read				;; This is where syscall will be made
-        store.d:	in_ <- f0
-        load.d:	f2 <- in_			;; Loading variable in_ into register
-        push:      f2		;; Push parameter onto stack
-        f0 = call convert_centigrade_to_fahrenheit_
-        pop				;; Pop parameter from stack
-        move.d:      f2 <- f0
-        store.d:	out_ <- f2
-        iLoad:	v0 <- 4			;; Loading integer number 4
-        load_addr:	a0 <- _str_1
-        write				;; This is where syscall will be made
-        iLoad:	v0 <- 3			;; Loading integer number 3
-        load.d:	f12 <- out_			;; Loading variable out_ into register
-        write				;; This is where syscall will be made
-epilogue_main:
-    add $sp, $sp, 12  # Increment stack pointer for local variables
-    lw $fp, -4($sp)   # Set $fp to $sp-4
-    lw $ra, 0($sp)    # Save ra
-    jr $ra            # Jump back to the called procedure
-# Epilogue Ends
+.data
+_str_0: .ascii "Input temperature in centigrade"
+_str_1: .ascii "Temperature in fahrenheit is "
 
 .text          # The .text assembler directive indicates
     .globl convert_centigrade_to_fahrenheit_      # The following is the code (as opposed to data)
@@ -40,43 +9,73 @@ convert_centigrade_to_fahrenheit_:                # .globl makes main know to th
     sw $ra, 0($sp)    # Save the return address
     sw $fp, -4($sp)   # Save the frame pointer
     sub $fp, $sp, 4   # Update the frame pointer
-    sub $sp, $sp, 12  # Make space for the locals
+    sub $sp, $sp, 32  # Make space for the locals
 # Prologue ends
 
-        load.d:	f2 <- ct_			;; Loading variable ct_ into register
-        iLoad.d:	f4 <- 0.00			;; Loading integer number 0.00
-        seq.d:	f7 , f2 , f4
-        iLoad:	v0 <- 1			;; Loading integer number 1
-        move:	t0 <- zero
-        movt:	t0 <- v0 , 0
-        not:	v0 <- t0
-        bgtz:	v0 , Label1
-        iLoad.d:	f2 <- 0.00			;; Loading integer number 0.00
-        store.d:	stemp1 <- f2
-        goto:		Label2
-    
+    l.d $f2, 8($fp)
+    li.d $f4, 0.00
+    seq $f7, $f2, $f4
+    li $v0, 1
+    xori $v0, $t0, 1
+    bgtz $v0, Label1
+    li.d $f2, 0.00
+    s.d $f2, -8($fp)
+    j Label2
 Label1:
-        load.d:	f2 <- ct_			;; Loading variable ct_ into register
-        iLoad.d:	f6 <- 9.00			;; Loading integer number 9.00
-        mul.d:	f4 <- f2 , f6
-        iLoad.d:	f6 <- 5.00			;; Loading integer number 5.00
-        div.d:	f2 <- f4 , f6
-        iLoad.d:	f6 <- 32.00			;; Loading integer number 32.00
-        add.d:	f4 <- f2 , f6
-        store.d:	stemp1 <- f4
-    
+    l.d $f2, 8($fp)
+    li.d $f6, 9.00
+    mul.d $f4, $f2, $f6
+    li.d $f6, 5.00
+    div.d $f2, $f4, $f6
+    li.d $f6, 32.00
+    add.d $f4, $f2, $f6
+    s.d $f4, -8($fp)
 Label2:
-        load.d:	f2 <- stemp1			;; Loading variable stemp1 into register
-        store.d:	ft_ <- f2
-        load.d:	f2 <- ft_			;; Loading variable ft_ into register
-        store.d:	stemp0 <- f2
-        goto:		Label0
-    
+    l.d $f2, -8($fp)
+    s.d $f2, -16($fp)
+    l.d $f2, -16($fp)
+    s.d $f2, -24($fp)
+    j Label0
 Label0:
-        load.d:	f0 <- stemp0			;; Loading variable stemp0 into register
-        return      f0
+    l.d $f0, -24($fp)
+    j epilogue_convert_centigrade_to_fahrenheit_
 epilogue_convert_centigrade_to_fahrenheit_:
-    add $sp, $sp, 12  # Increment stack pointer for local variables
+    add $sp, $sp, 32  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+
+.text          # The .text assembler directive indicates
+    .globl main      # The following is the code (as opposed to data)
+main:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 24  # Make space for the locals
+# Prologue ends
+
+    li $v0, 4
+    la $a0, _str_0
+    syscall
+    li $v0, 7
+    s.d $f0, -8($fp)
+    l.d $f2, -8($fp)
+    s.d $f2, -4($sp)
+    sub $sp, $sp, 8
+    jal convert_centigrade_to_fahrenheit_
+    add $sp, $sp, 8
+    mov.d $f2, $f0
+    s.d $f2, -16($fp)
+    li $v0, 4
+    la $a0, _str_1
+    syscall
+    li $v0, 3
+    l.d $f12, -16($fp)
+    syscall
+epilogue_main:
+    add $sp, $sp, 24  # Increment stack pointer for local variables
     lw $fp, -4($sp)   # Set $fp to $sp-4
     lw $ra, 0($sp)    # Save ra
     jr $ra            # Jump back to the called procedure

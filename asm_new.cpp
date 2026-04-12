@@ -133,7 +133,13 @@ Load_ASM_Stmt::~Load_ASM_Stmt() {
 }
 
 void Load_ASM_Stmt::print(FILE *file) {
-    fprintf(file, "    lw ");
+    fprintf(file, "    ");
+    // If source is a constant, use li (load immediate), otherwise use lw (load word)
+    if (dynamic_cast<ASM_Int_Const_Opd*>(source)) {
+        fprintf(file, "li ");
+    } else {
+        fprintf(file, "lw ");
+    }
     dest->print(file);
     fprintf(file, ", ");
     source->print(file);

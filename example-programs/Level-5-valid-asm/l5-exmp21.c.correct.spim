@@ -94,7 +94,7 @@ p_:                     # .globl makes main know to the outside of the program.
     sub $sp, $sp, 16    # Make space for the locals
 # Prologue ends
 
-Labell2:
+Label2:
     lw $v0, a_          # Source:a_
     lw $t1, b_          # Source:b_
     sgt $t0, $v0, $t1   # Comparing $v0 and $t1, Result in $t0

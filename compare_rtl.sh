@@ -8,8 +8,8 @@ set -e  # Exit on any error
 
 # Define compiler paths
 NEW_COMPILER="./new-compiler"
-EXPECTED_DIR="example-programs/Level-5-valid-rtl"
-TEST_DIR="example-programs/Level-5-test-cases"
+EXPECTED_DIR="example-programs/Level-4-valid-rtl"
+TEST_DIR="example-programs/Level-4-test-cases"
 
 # Check if new compiler exists
 if [ ! -f "$NEW_COMPILER" ]; then
@@ -32,8 +32,8 @@ echo "RTL Comparison Test Suite"
 echo "=========================================="
 echo ""
 
-# Process all Level-5 test cases
-# Process all Level-5 test cases
+# Process all Level-4 test cases
+# Process all Level-4 test cases
 for testfile in "$TEST_DIR"/*.c; do
     if [ -f "$testfile" ]; then
         testname=$(basename "$testfile")

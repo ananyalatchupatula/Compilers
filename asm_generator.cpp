@@ -84,10 +84,11 @@ void ASM_Generator::process_load(Load_RTL_Stmt* stmt) {
     RTL_Opd* src = stmt->get_source();
     
     if (auto const_opd = dynamic_cast<Const_RTL_Opd*>(src)) {
-        // Load immediate
+        // Load immediate - extract the actual value
+        int value = const_opd->get_int_value();
         asm_statements.push_back(new Load_ASM_Stmt(
             dest,
-            new ASM_Int_Const_Opd(0)  // Will be handled by print
+            new ASM_Int_Const_Opd(value)
         ));
     } else {
         // Load from memory
