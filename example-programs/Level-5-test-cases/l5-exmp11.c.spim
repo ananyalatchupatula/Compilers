@@ -16,6 +16,7 @@ convert_centigrade_to_fahrenheit_:                # .globl makes main know to th
     li.d $f4, 0.00
     c.eq.d $f2, $f4
     li $v0, 1
+    move $t0, $zero
     movt $t0, $v0, 0
     xori $v0, $t0, 1
     bgtz $v0, Label1

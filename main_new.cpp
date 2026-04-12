@@ -520,6 +520,13 @@ void process_deferred_functions()
                 }
             }
             int stack_size = 8 + max_local_depth;
+            // Match the reference compiler's behaviour for completely
+            // empty, non-main functions (such as g_ in l5-exmp1.c),
+            // which still allocate 12 bytes of stack even though they
+            // have no RTL statements or local slots.
+            if (df.name != "main" && rtl_stmts.empty()) {
+                stack_size = 12;
+            }
 
             // Output SPIM prologue for this function
             fprintf(asm_file, ".text          # The .text assembler directive indicates\n");
@@ -621,6 +628,32 @@ void process_deferred_functions()
                                     fprintf(asm_file, "    xori $%s, $%s, 1\n",
                                         dest_reg->get_name().c_str(),
                                         op1_reg->get_name().c_str());
+                                }
+                            }
+                            // Simple move between operands (RTL_OP_MOVE), used
+                            // for patterns like "move: t0 <- zero" in RTL.
+                            else if (compute->get_op() == Compute_RTL_Stmt::RTL_OP_MOVE) {
+                                if (auto op1_reg = dynamic_cast<Register_RTL_Opd*>(opd1)) {
+                                    bool is_float_mov = dest_reg->is_float_register() ||
+                                                        op1_reg->is_float_register();
+                                    if (is_float_mov) {
+                                        fprintf(asm_file, "    mov.d $%s, $%s\n",
+                                            dest_reg->get_name().c_str(),
+                                            op1_reg->get_name().c_str());
+                                    } else {
+                                        fprintf(asm_file, "    move $%s, $%s\n",
+                                            dest_reg->get_name().c_str(),
+                                            op1_reg->get_name().c_str());
+                                    }
+                                }
+                                else if (auto const_op = dynamic_cast<Const_RTL_Opd*>(opd1)) {
+                                    // Fallback: move from an integer constant, used
+                                    // only for integer temps; emit li to match intent.
+                                    if (!const_op->get_is_float()) {
+                                        fprintf(asm_file, "    li $%s, %d\n",
+                                            dest_reg->get_name().c_str(),
+                                            const_op->get_int_value());
+                                    }
                                 }
                             }
                             // movt/movf use the floating-point condition flag
@@ -752,6 +785,15 @@ void process_deferred_functions()
                                     fprintf(asm_file, "    move $%s, $%s\n",
                                         dest_reg->get_name().c_str(),
                                         src_reg->get_name().c_str());
+                                }
+                            }
+                            else if (auto src_const = dynamic_cast<Const_RTL_Opd*>(move->get_src())) {
+                                // Handle moves from the constant zero, which the
+                                // reference RTL prints as "move: t0 <- zero" and
+                                // the reference ASM emits as "move $t0, $zero".
+                                if (!move->get_is_float() && src_const->get_int_value() == 0) {
+                                    fprintf(asm_file, "    move $%s, $zero\n",
+                                        dest_reg->get_name().c_str());
                                 }
                             }
                         }
