@@ -1,0 +1,81 @@
+.text          # The .text assembler directive indicates
+    .globl p_      # The following is the code (as opposed to data)
+p_:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 12  # Make space for the locals
+# Prologue ends
+
+        load:	v0 <- x_			;; Loading variable x_ into register
+        iLoad:	t1 <- 0			;; Loading integer number 0
+        sgt:	t0 <- v0 , t1
+        not:	v0 <- t0
+        bgtz:	v0 , Label1
+        call p_
+        goto:		Label0
+    
+Label1:
+    
+Label2:
+        load:	v0 <- a_			;; Loading variable a_ into register
+        load:	t1 <- b_			;; Loading variable b_ into register
+        sgt:	t0 <- v0 , t1
+        not:	v0 <- t0
+        bgtz:	v0 , Label3
+        iLoad:	v0 <- 1			;; Loading integer number 1
+        load:	a0 <- a_			;; Moving the value to be printed into register a0
+        write				;; This is where syscall will be made
+        load:	v0 <- c_			;; Loading variable c_ into register
+        iLoad:	t1 <- 1			;; Loading integer number 1
+        add:	t0 <- v0 , t1
+        store:	x_ <- t0
+        goto:		Label2
+    
+Label3:
+    
+Label0:
+        iLoad:	v0 <- 1			;; Loading integer number 1
+        load:	a0 <- b_			;; Moving the value to be printed into register a0
+        write				;; This is where syscall will be made
+        load:	v0 <- c_			;; Loading variable c_ into register
+        load:	t1 <- b_			;; Loading variable b_ into register
+        add:	t0 <- v0 , t1
+        store:	a_ <- t0
+epilogue_p_:
+    add $sp, $sp, 12  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+
+.text          # The .text assembler directive indicates
+    .globl main      # The following is the code (as opposed to data)
+main:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 12  # Make space for the locals
+# Prologue ends
+
+        load:	v0 <- b_			;; Loading variable b_ into register
+        load:	t1 <- c_			;; Loading variable c_ into register
+        mul:	t0 <- v0 , t1
+        store:	a_ <- t0
+        call p_
+        load:	v0 <- a_			;; Loading variable a_ into register
+        load:	t1 <- c_			;; Loading variable c_ into register
+        add:	t0 <- v0 , t1
+        store:	b_ <- t0
+        iLoad:	v0 <- 1			;; Loading integer number 1
+        load:	a0 <- a_			;; Moving the value to be printed into register a0
+        write				;; This is where syscall will be made
+epilogue_main:
+    add $sp, $sp, 12  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+

@@ -1,0 +1,52 @@
+.text          # The .text assembler directive indicates
+    .globl f1_      # The following is the code (as opposed to data)
+f1_:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 12  # Make space for the locals
+# Prologue ends
+
+        load:	v0 <- s_			;; Loading variable s_ into register
+        store:	stemp0 <- v0
+        goto:		Label0
+    
+Label0:
+        load:	v1 <- stemp0			;; Loading variable stemp0 into register
+        return      v1
+epilogue_f1_:
+    add $sp, $sp, 12  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+
+.text          # The .text assembler directive indicates
+    .globl main      # The following is the code (as opposed to data)
+main:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 12  # Make space for the locals
+# Prologue ends
+
+        load_addr:	v0 <- _str_0
+        store:	s1_ <- v0
+        load:	v0 <- s1_			;; Loading variable s1_ into register
+        push:      v0		;; Push parameter onto stack
+        v1 = call f1_
+        pop				;; Pop parameter from stack
+        move:      v0 <- v1
+        store:	s2_ <- v0
+        iLoad:	v0 <- 4			;; Loading integer number 4
+        load:	a0 <- s1_			;; Moving the value to be printed into register a0
+        write				;; This is where syscall will be made
+epilogue_main:
+    add $sp, $sp, 12  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+

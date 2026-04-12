@@ -121,6 +121,10 @@ public:
     Compute_RTL_Stmt(RTL_Opd *d, RTL_Opd *op1, RTL_Op operation, RTL_Opd *op2);
     ~Compute_RTL_Stmt();
     void print(FILE *file);
+    RTL_Opd *get_dest() { return dest; }
+    RTL_Opd *get_opd1() { return opd1; }
+    RTL_Opd *get_opd2() { return opd2; }
+    RTL_Op get_op() { return op; }
 };
 
 class Load_RTL_Stmt : public RTL_Stmt {
@@ -132,6 +136,9 @@ public:
     Load_RTL_Stmt(RTL_Opd *d, RTL_Opd *s, bool float_op = false);
     ~Load_RTL_Stmt();
     void print(FILE *file);
+    RTL_Opd *get_dest() { return dest; }
+    RTL_Opd *get_source() { return source; }
+    bool get_is_float() { return is_float; }
 };
 
 class Loadaddr_RTL_Stmt : public RTL_Stmt {
@@ -143,6 +150,8 @@ public:
     Loadaddr_RTL_Stmt(RTL_Opd *d, RTL_Opd *s, string str_val = "");
     ~Loadaddr_RTL_Stmt();
     void print(FILE *file);
+    RTL_Opd *get_dest() { return dest; }
+    RTL_Opd *get_source() { return source; }
 };
 
 class Store_RTL_Stmt : public RTL_Stmt {
@@ -154,6 +163,9 @@ public:
     Store_RTL_Stmt(RTL_Opd *d, RTL_Opd *s, bool float_op = false);
     ~Store_RTL_Stmt();
     void print(FILE *file);
+    RTL_Opd *get_dest() { return dest; }
+    RTL_Opd *get_source() { return source; }
+    bool get_is_float() { return is_float; }
 };
 
 class Label_RTL_Stmt : public RTL_Stmt {
@@ -164,6 +176,7 @@ public:
     Label_RTL_Stmt(string name);
     ~Label_RTL_Stmt();
     void print(FILE *file);
+    string get_label() { return label_name; }
 };
 
 class Goto_RTL_Stmt : public RTL_Stmt {
@@ -174,6 +187,7 @@ public:
     Goto_RTL_Stmt(string name);
     ~Goto_RTL_Stmt();
     void print(FILE *file);
+    string get_label() { return label_name; }
 };
 
 class Bgtz_RTL_Stmt : public RTL_Stmt {
@@ -185,6 +199,8 @@ public:
     Bgtz_RTL_Stmt(RTL_Opd *o, string label);
     ~Bgtz_RTL_Stmt();
     void print(FILE *file);
+    RTL_Opd *get_opd() { return opd; }
+    string get_label() { return label_name; }
 };
 
 class Write_RTL_Stmt : public RTL_Stmt {
@@ -209,6 +225,7 @@ public:
     Call_RTL_Stmt(string name);
     ~Call_RTL_Stmt();
     void print(FILE *file);
+    string get_func_name() { return func_name; }
 };
 
 class Return_RTL_Stmt : public RTL_Stmt {
@@ -219,6 +236,7 @@ public:
     Return_RTL_Stmt(RTL_Opd *reg = NULL);
     ~Return_RTL_Stmt();
     void print(FILE *file);
+    RTL_Opd *get_return_reg() { return return_reg; }
 };
 
 class Push_RTL_Stmt : public RTL_Stmt {
@@ -229,6 +247,7 @@ public:
     Push_RTL_Stmt(RTL_Opd *val);
     ~Push_RTL_Stmt();
     void print(FILE *file);
+    RTL_Opd *get_value() { return value; }
 };
 
 class Pop_RTL_Stmt : public RTL_Stmt {
@@ -247,6 +266,8 @@ public:
     CallAssign_RTL_Stmt(RTL_Opd *reg, string name);
     ~CallAssign_RTL_Stmt();
     void print(FILE *file);
+    RTL_Opd *get_result_reg() { return result_reg; }
+    string get_func_name() { return func_name; }
 };
 
 class Move_RTL_Stmt : public RTL_Stmt {
@@ -259,6 +280,9 @@ public:
     Move_RTL_Stmt(RTL_Opd *d, RTL_Opd *s, bool flt = false);
     ~Move_RTL_Stmt();
     void print(FILE *file);
+    RTL_Opd *get_dest() { return dest; }
+    RTL_Opd *get_src() { return src; }
+    bool get_is_float() { return is_float; }
 };
 
 #endif

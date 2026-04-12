@@ -1,0 +1,170 @@
+.text          # The .text assembler directive indicates
+    .globl func4_      # The following is the code (as opposed to data)
+func4_:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 12  # Make space for the locals
+# Prologue ends
+
+        iLoad:	v0 <- 4			;; Loading integer number 4
+        store:	i1_ <- v0
+        load:	v0 <- i1_			;; Loading variable i1_ into register
+        load:	t1 <- i1_			;; Loading variable i1_ into register
+        add:	t0 <- v0 , t1
+        store:	stemp0 <- t0
+        goto:		Label0
+    
+Label0:
+        load:	v1 <- stemp0			;; Loading variable stemp0 into register
+        return      v1
+epilogue_func4_:
+    add $sp, $sp, 12  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+
+.text          # The .text assembler directive indicates
+    .globl func1_      # The following is the code (as opposed to data)
+func1_:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 12  # Make space for the locals
+# Prologue ends
+
+        iLoad:	v0 <- 5			;; Loading integer number 5
+        store:	i2_ <- v0
+        iLoad.d:	f2 <- 5.00			;; Loading integer number 5.00
+        store.d:	f2_ <- f2
+epilogue_func1_:
+    add $sp, $sp, 12  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+
+.text          # The .text assembler directive indicates
+    .globl func2_      # The following is the code (as opposed to data)
+func2_:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 12  # Make space for the locals
+# Prologue ends
+
+        load:	v0 <- a_			;; Loading variable a_ into register
+        iLoad:	t1 <- 10			;; Loading integer number 10
+        add:	t0 <- v0 , t1
+        store:	a_ <- t0
+        iLoad:	v0 <- 5			;; Loading integer number 5
+        store:	i1_ <- v0
+        load:	v0 <- a_			;; Loading variable a_ into register
+        load:	t1 <- i1_			;; Loading variable i1_ into register
+        add:	t0 <- v0 , t1
+        load:	t1 <- i2_			;; Loading variable i2_ into register
+        add:	v0 <- t0 , t1
+        iLoad:	t1 <- 2			;; Loading integer number 2
+        add:	t0 <- v0 , t1
+        store:	stemp0 <- t0
+        goto:		Label1
+    
+Label1:
+        load:	v1 <- stemp0			;; Loading variable stemp0 into register
+        return      v1
+epilogue_func2_:
+    add $sp, $sp, 12  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+
+.text          # The .text assembler directive indicates
+    .globl func3_      # The following is the code (as opposed to data)
+func3_:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 12  # Make space for the locals
+# Prologue ends
+
+        load.d:	f2 <- b_			;; Loading variable b_ into register
+        load.d:	f6 <- f2_			;; Loading variable f2_ into register
+        add.d:	f4 <- f2 , f6
+        store.d:	b_ <- f4
+        load.d:	f2 <- c_			;; Loading variable c_ into register
+        iLoad.d:	f6 <- 10.50			;; Loading integer number 10.50
+        add.d:	f4 <- f2 , f6
+        store.d:	c_ <- f4
+        load.d:	f2 <- b_			;; Loading variable b_ into register
+        load.d:	f6 <- c_			;; Loading variable c_ into register
+        add.d:	f4 <- f2 , f6
+        store.d:	stemp0 <- f4
+        goto:		Label2
+    
+Label2:
+        load.d:	f0 <- stemp0			;; Loading variable stemp0 into register
+        return      f0
+epilogue_func3_:
+    add $sp, $sp, 12  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+
+.text          # The .text assembler directive indicates
+    .globl main      # The following is the code (as opposed to data)
+main:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 12  # Make space for the locals
+# Prologue ends
+
+        call func1_
+        v1 = call func4_
+        move:      v0 <- v1
+        store:	i2_ <- v0
+        load:	v0 <- i2_			;; Loading variable i2_ into register
+        push:      v0		;; Push parameter onto stack
+        load.d:	f2 <- f2_			;; Loading variable f2_ into register
+        push:      f2		;; Push parameter onto stack
+        load:	v0 <- i1_			;; Loading variable i1_ into register
+        push:      v0		;; Push parameter onto stack
+        v1 = call func2_
+        pop				;; Pop parameter from stack
+        pop				;; Pop parameter from stack
+        pop				;; Pop parameter from stack
+        move:      v0 <- v1
+        store:	i2_ <- v0
+        load.d:	f2 <- f2_			;; Loading variable f2_ into register
+        push:      f2		;; Push parameter onto stack
+        load.d:	f2 <- f1_			;; Loading variable f1_ into register
+        push:      f2		;; Push parameter onto stack
+        load:	v0 <- i1_			;; Loading variable i1_ into register
+        push:      v0		;; Push parameter onto stack
+        f0 = call func3_
+        pop				;; Pop parameter from stack
+        pop				;; Pop parameter from stack
+        pop				;; Pop parameter from stack
+        move.d:      f2 <- f0
+        store.d:	f2_ <- f2
+        iLoad:	v0 <- 3			;; Loading integer number 3
+        load.d:	f12 <- f1_			;; Loading variable f1_ into register
+        write				;; This is where syscall will be made
+        iLoad:	v0 <- 3			;; Loading integer number 3
+        load.d:	f12 <- f2_			;; Loading variable f2_ into register
+        write				;; This is where syscall will be made
+epilogue_main:
+    add $sp, $sp, 12  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+

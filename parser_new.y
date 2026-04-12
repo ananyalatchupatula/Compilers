@@ -443,17 +443,14 @@ else
                 $3->set_return_label_id(ret_label_id);
             }
             
-            if(show_tac || show_rtl) {
-                // Store function body for deferred TAC generation (after all pre_allocate_temps)
-                DeferredFunction df;
-                df.name = current_function_name;
-                df.return_type = ret_type;
-                df.body = $3;
-                df.return_label_id = ret_label_id;
-                deferred_functions.push_back(df);
-            } else {
-                delete $3;
-            }
+            // Always store function body for deferred TAC/RTL/ASM generation
+            // This is needed for ASM generation even without show_tac/show_rtl flags
+            DeferredFunction df;
+            df.name = current_function_name;
+            df.return_type = ret_type;
+            df.body = $3;
+            df.return_label_id = ret_label_id;
+            deferred_functions.push_back(df);
         }
 
         in_function = false;

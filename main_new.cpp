@@ -1,6 +1,7 @@
 #include "ast_new.h"
 #include "rtl_new.h"
 #include "rtl_generator.h"
+#include "asm_generator.h"
 #include "tac_generator.h"
 #include "tac_str.h"
 #include <stdio.h>
@@ -59,6 +60,7 @@ extern FILE *ast_file;
 extern FILE *tac_file;
 
 FILE *rtl_file = NULL;
+FILE *asm_file = NULL;
 
 FILE *tok_file = NULL;
 
@@ -66,6 +68,7 @@ int show_tokens = 0;
 int show_ast = 0;
 int show_tac = 0;
 int show_rtl = 0;
+int show_asm = 0;
 
 int sa_scan = 0;
 int sa_parse = 0;
@@ -182,23 +185,58 @@ void process_deferred_functions()
             fprintf(tac_file, "**END: Three Address Code Statements\n");
         }
         
-        // Generate RTL
-        if (show_rtl && rtl_file && !tac_stmts.empty()) {
+        // Generate RTL (always for ASM, but only write file if show_rtl)
+        if (!tac_stmts.empty()) {
             RTL_Generator::get_instance()->reset();
             list<RTL_Stmt*> rtl_stmts =
                 RTL_Generator::get_instance()->generate_rtl(tac_stmts);
             
-            if (df.name == "main") {
-                fprintf(rtl_file, "**PROCEDURE: main\n");
-            } else {
-                fprintf(rtl_file, "**PROCEDURE: %s_\n", df.name.c_str());
+            // Write to RTL file only if show_rtl flag is set
+            if (show_rtl && rtl_file) {
+                if (df.name == "main") {
+                    fprintf(rtl_file, "**PROCEDURE: main\n");
+                } else {
+                    fprintf(rtl_file, "**PROCEDURE: %s_\n", df.name.c_str());
+                }
+                fprintf(rtl_file, "**BEGIN: RTL Statements\n");
+                for (auto stmt : rtl_stmts) {
+                    stmt->print(rtl_file);
+                }
+                fprintf(rtl_file, "**END: RTL Statements\n");
+                fprintf(rtl_file, "\n\n");
             }
-            fprintf(rtl_file, "**BEGIN: RTL Statements\n");
-            for (auto stmt : rtl_stmts) {
-                stmt->print(rtl_file);
+            
+            // Always generate ASM from RTL - use RTL output directly since it has correct registers
+            if (asm_file && !rtl_stmts.empty()) {
+                // Output SPIM prologue
+                fprintf(asm_file, ".text          # The .text assembler directive indicates\n");
+                string func_label = (df.name == "main") ? "main" : (df.name + "_");
+                fprintf(asm_file, "    .globl %s      # The following is the code (as opposed to data)\n", func_label.c_str());
+                fprintf(asm_file, "%s:                # .globl makes main know to the outside of the program.\n", func_label.c_str());
+                fprintf(asm_file, "# Prologue begins\n");
+                fprintf(asm_file, "    sw $ra, 0($sp)    # Save the return address\n");
+                fprintf(asm_file, "    sw $fp, -4($sp)   # Save the frame pointer\n");
+                fprintf(asm_file, "    sub $fp, $sp, 4   # Update the frame pointer\n");
+                
+                // Calculate stack size - count local variables from RTL
+                int stack_size = 12;
+                fprintf(asm_file, "    sub $sp, $sp, %d  # Make space for the locals\n", stack_size);
+                fprintf(asm_file, "# Prologue ends\n\n");
+                
+                // Output function body - print RTL statements (they contain MIPS-style operands)
+                for (auto rtl_stmt : rtl_stmts) {
+                    fprintf(asm_file, "    ");  // Indent MIPS instructions
+                    rtl_stmt->print(asm_file);
+                }
+                
+                // Output SPIM epilogue
+                fprintf(asm_file, "epilogue_%s:\n", func_label.c_str());
+                fprintf(asm_file, "    add $sp, $sp, %d  # Increment stack pointer for local variables\n", stack_size);
+                fprintf(asm_file, "    lw $fp, -4($sp)   # Set $fp to $sp-4\n");
+                fprintf(asm_file, "    lw $ra, 0($sp)    # Save ra\n");
+                fprintf(asm_file, "    jr $ra            # Jump back to the called procedure\n");
+                fprintf(asm_file, "# Epilogue Ends\n\n");
             }
-            fprintf(rtl_file, "**END: RTL Statements\n");
-            fprintf(rtl_file, "\n\n");
         }
     }
 }
@@ -239,6 +277,10 @@ int main(int argc, char *argv[])
 
         else if (strcmp(argv[i], "--show-rtl") == 0 || strcmp(argv[i], "-rtl") == 0)
             show_rtl = 1;
+
+        else if (strcmp(argv[i], "--show-asm") == 0 || strcmp(argv[i], "-asm") == 0) {
+            show_asm = 1;
+        }
 
         else if ((argv[i][0] != '-') && (input_file == NULL))
             input_file = argv[i];
@@ -314,6 +356,15 @@ int main(int argc, char *argv[])
         }
     }
 
+    /* open ASM file - always generate .spim */
+    char asm_name[256];
+    snprintf(asm_name, sizeof(asm_name), "%s.spim", input_file);
+    asm_file = fopen(asm_name, "w");
+    if (!asm_file)
+    {
+        perror("asm file open failed");
+        return 1;
+    }
 
     if (sa_parse)
     {
@@ -365,6 +416,7 @@ int main(int argc, char *argv[])
     if (ast_file) fclose(ast_file);
     if (tac_file) fclose(tac_file);
     if (rtl_file) fclose(rtl_file);
+    if (asm_file) fclose(asm_file);
     
     /* Reorder functions in AST file */
     if (show_ast) {
