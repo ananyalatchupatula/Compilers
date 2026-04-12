@@ -6,8 +6,8 @@ d_: .word 0
 x_: .word 0
 z_: .word 0
 y_: .word 0
-_str_0: .ascii "Hello"
-_str_1: .ascii "hello"
+_str_0: .asciiz "Hello"
+_str_1: .asciiz "hello"
 
     .text               # The .text assembler directive indicates
     .globl main         # The following is the code (as opposed to data)

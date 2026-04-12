@@ -615,6 +615,7 @@ void process_deferred_functions()
                         RTL_Opd* opd1 = compute->get_opd1();
                         RTL_Opd* opd2 = compute->get_opd2();
                         if (auto dest_reg = dynamic_cast<Register_RTL_Opd*>(dest)) {
+                            // Boolean NOT on integers: xori dest, src, 1
                             if (compute->get_op() == Compute_RTL_Stmt::RTL_OP_NOT) {
                                 if (auto op1_reg = dynamic_cast<Register_RTL_Opd*>(opd1)) {
                                     fprintf(asm_file, "    xori $%s, $%s, 1\n",
@@ -622,38 +623,62 @@ void process_deferred_functions()
                                         op1_reg->get_name().c_str());
                                 }
                             }
+                            // movt/movf use the floating-point condition flag
+                            else if (compute->get_op() == Compute_RTL_Stmt::RTL_OP_MOVT ||
+                                     compute->get_op() == Compute_RTL_Stmt::RTL_OP_MOVF) {
+                                if (auto op1_reg = dynamic_cast<Register_RTL_Opd*>(opd1)) {
+                                    const char *instr = (compute->get_op() == Compute_RTL_Stmt::RTL_OP_MOVT)
+                                        ? "movt" : "movf";
+                                    fprintf(asm_file, "    %s $%s, $%s, 0\n",
+                                        instr,
+                                        dest_reg->get_name().c_str(),
+                                        op1_reg->get_name().c_str());
+                                }
+                            }
                             else if (auto op1_reg = dynamic_cast<Register_RTL_Opd*>(opd1)) {
                                 if (auto op2_reg = dynamic_cast<Register_RTL_Opd*>(opd2)) {
-                                    const char* op_str = "add";
-                                    bool is_float_compute = dest_reg->is_float_register();
-                                    switch (compute->get_op()) {
-                                        case Compute_RTL_Stmt::RTL_OP_ADD:
-                                        case Compute_RTL_Stmt::RTL_OP_ADD_D:
-                                            op_str = is_float_compute ? "add.d" : "add"; break;
-                                        case Compute_RTL_Stmt::RTL_OP_SUB:
-                                        case Compute_RTL_Stmt::RTL_OP_SUB_D:
-                                            op_str = is_float_compute ? "sub.d" : "sub"; break;
-                                        case Compute_RTL_Stmt::RTL_OP_MUL:
-                                        case Compute_RTL_Stmt::RTL_OP_MUL_D:
-                                            op_str = is_float_compute ? "mul.d" : "mul"; break;
-                                        case Compute_RTL_Stmt::RTL_OP_DIV:
-                                        case Compute_RTL_Stmt::RTL_OP_DIV_D:
-                                            op_str = is_float_compute ? "div.d" : "div"; break;
-                                        case Compute_RTL_Stmt::RTL_OP_SGT: op_str = "sgt"; break;
-                                        case Compute_RTL_Stmt::RTL_OP_SLT: op_str = "slt"; break;
-                                        case Compute_RTL_Stmt::RTL_OP_SGE: op_str = "sge"; break;
-                                        case Compute_RTL_Stmt::RTL_OP_SLE: op_str = "sle"; break;
-                                        case Compute_RTL_Stmt::RTL_OP_SEQ: op_str = "seq"; break;
-                                        case Compute_RTL_Stmt::RTL_OP_SNE: op_str = "sne"; break;
-                                        case Compute_RTL_Stmt::RTL_OP_AND: op_str = "and"; break;
-                                        case Compute_RTL_Stmt::RTL_OP_OR:  op_str = "or";  break;
-                                        default: op_str = "add"; break;
+                                    bool is_float_compute = dest_reg->is_float_register() ||
+                                                            op1_reg->is_float_register() ||
+                                                            op2_reg->is_float_register();
+
+                                    // Floating-point equality comparison: seq.d -> c.eq.d
+                                    if (is_float_compute &&
+                                        compute->get_op() == Compute_RTL_Stmt::RTL_OP_SEQ) {
+                                        fprintf(asm_file, "    c.eq.d $%s, $%s\n",
+                                            op1_reg->get_name().c_str(),
+                                            op2_reg->get_name().c_str());
                                     }
-                                    fprintf(asm_file, "    %s $%s, $%s, $%s\n",
-                                        op_str,
-                                        dest_reg->get_name().c_str(),
-                                        op1_reg->get_name().c_str(),
-                                        op2_reg->get_name().c_str());
+                                    else {
+                                        const char* op_str = "add";
+                                        switch (compute->get_op()) {
+                                            case Compute_RTL_Stmt::RTL_OP_ADD:
+                                            case Compute_RTL_Stmt::RTL_OP_ADD_D:
+                                                op_str = is_float_compute ? "add.d" : "add"; break;
+                                            case Compute_RTL_Stmt::RTL_OP_SUB:
+                                            case Compute_RTL_Stmt::RTL_OP_SUB_D:
+                                                op_str = is_float_compute ? "sub.d" : "sub"; break;
+                                            case Compute_RTL_Stmt::RTL_OP_MUL:
+                                            case Compute_RTL_Stmt::RTL_OP_MUL_D:
+                                                op_str = is_float_compute ? "mul.d" : "mul"; break;
+                                            case Compute_RTL_Stmt::RTL_OP_DIV:
+                                            case Compute_RTL_Stmt::RTL_OP_DIV_D:
+                                                op_str = is_float_compute ? "div.d" : "div"; break;
+                                            case Compute_RTL_Stmt::RTL_OP_SGT: op_str = "sgt"; break;
+                                            case Compute_RTL_Stmt::RTL_OP_SLT: op_str = "slt"; break;
+                                            case Compute_RTL_Stmt::RTL_OP_SGE: op_str = "sge"; break;
+                                            case Compute_RTL_Stmt::RTL_OP_SLE: op_str = "sle"; break;
+                                            case Compute_RTL_Stmt::RTL_OP_SEQ: op_str = "seq"; break;
+                                            case Compute_RTL_Stmt::RTL_OP_SNE: op_str = "sne"; break;
+                                            case Compute_RTL_Stmt::RTL_OP_AND: op_str = "and"; break;
+                                            case Compute_RTL_Stmt::RTL_OP_OR:  op_str = "or";  break;
+                                            default: op_str = "add"; break;
+                                        }
+                                        fprintf(asm_file, "    %s $%s, $%s, $%s\n",
+                                            op_str,
+                                            dest_reg->get_name().c_str(),
+                                            op1_reg->get_name().c_str(),
+                                            op2_reg->get_name().c_str());
+                                    }
                                 }
                             }
                         }
@@ -732,6 +757,9 @@ void process_deferred_functions()
                         }
                     }
                     else if (auto write = dynamic_cast<Write_RTL_Stmt*>(rtl)) {
+                        fprintf(asm_file, "    syscall\n");
+                    }
+                    else if (auto read = dynamic_cast<Read_RTL_Stmt*>(rtl)) {
                         fprintf(asm_file, "    syscall\n");
                     }
                     else if (auto ret = dynamic_cast<Return_RTL_Stmt*>(rtl)) {
