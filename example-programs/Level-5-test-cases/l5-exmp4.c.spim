@@ -62,16 +62,16 @@ main:                # .globl makes main know to the outside of the program.
 # Prologue ends
 
     li $v0, 5
-    sw $v0, -4($fp)
-    lw $v0, -4($fp)
+    sw $v0, -8($fp)
+    lw $v0, -8($fp)
     sw $v0, 0($sp)
     sub $sp, $sp, 4
     jal f_
     add $sp, $sp, 4
     move $v0, $v1
-    sw $v0, -8($fp)
+    sw $v0, -4($fp)
     li $v0, 1
-    lw $a0, -8($fp)
+    lw $a0, -4($fp)
     syscall
     li $v0, 2
     sw $v0, m_

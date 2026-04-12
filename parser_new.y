@@ -47,6 +47,12 @@ struct FuncParam {
     string name;
     int type;
 };
+
+/* Local variable tracking per function (including main) */
+struct LocalVar {
+    string name;
+    int type;
+};
 vector<FuncParam> current_func_params;
 
 class FunctionInfo {
@@ -73,6 +79,7 @@ struct DeferredFunction {
     Statement_Ast* body;
     int return_label_id;  // Pre-allocated label ID
     vector<FuncParam> parameters;  // List of parameter names
+    vector<LocalVar> locals;       // List of local variables in this function
 };
 vector<DeferredFunction> deferred_functions;
 
@@ -463,6 +470,13 @@ else
             df.body = $3;
             df.return_label_id = ret_label_id;
             df.parameters = current_func_params;  // Store parameter list
+            // Capture local variables for this function (including parameters
+            // and block-scoped locals) so the backend can distinguish them
+            // from globals when laying out stack frames.
+            df.locals.clear();
+            for (auto &sym : local_symtab.table) {
+                df.locals.push_back(LocalVar{sym.name, sym.type});
+            }
             deferred_functions.push_back(df);
         }
 

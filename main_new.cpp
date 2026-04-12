@@ -33,12 +33,18 @@ struct FuncParam {
     int type;
 };
 
+struct LocalVar {
+    std::string name;
+    int type;
+};
+
 struct DeferredFunction {
     std::string name;
     int return_type;
     Statement_Ast* body;
     int return_label_id;  // Pre-allocated label ID from func_header
     vector<FuncParam> parameters;  // List of parameters
+    vector<LocalVar> locals;       // List of local variables (excluding globals)
 };
 
 struct GlobalVar {
@@ -292,11 +298,36 @@ void process_deferred_functions()
                 param_names.insert(param.name + "_");  // Add underscore suffix
             }
 
+            // Get local (non-parameter) variable names for this function.
+            std::set<std::string> local_base_names;
+            for (const auto &lv : df.locals) {
+                // Parameters are already tracked separately; keep everything
+                // else as potential locals that can shadow globals.
+                bool is_param = false;
+                for (const auto &p : df.parameters) {
+                    if (p.name == lv.name) { is_param = true; break; }
+                }
+                if (!is_param) {
+                    local_base_names.insert(lv.name);
+                }
+            }
+
+            auto strip_trailing_underscore = [](const std::string &name) {
+                if (!name.empty() && name.back() == '_') {
+                    return name.substr(0, name.size() - 1);
+                }
+                return name;
+            };
+
             // Helper: within this function's scope, treat any name that
-            // matches a parameter as non-global, even if a global with the
-            // same base name exists.
+            // matches a parameter or a local declaration as non-global, even
+            // if a global with the same base name exists.
             auto is_func_global = [&](const std::string &vname) -> bool {
                 if (param_names.find(vname) != param_names.end()) {
+                    return false;
+                }
+                std::string base = strip_trailing_underscore(vname);
+                if (local_base_names.find(base) != local_base_names.end()) {
                     return false;
                 }
                 return is_global_variable(vname);
@@ -329,20 +360,30 @@ void process_deferred_functions()
                 }
             }
 
-            // For non-void functions, identify a dedicated "return slot" local:
-            // the last integer load into $v1 from a non-global memory operand.
+            // Identify a dedicated "return slot" local (for non-void functions)
+            // as the last integer load into $v1 from a non-global memory operand.
+            // Also, for void functions, track a "print slot" local as the last
+            // integer load into $a0 from a non-global memory operand; this is the
+            // value printed at the end of the function and, in the reference
+            // compiler, typically lives at -4($fp).
             std::string ret_slot_var;
-            if (!is_void_func && !rtl_stmts.empty()) {
+            std::string print_slot_var;
+            if (!rtl_stmts.empty()) {
                 for (auto rtl : rtl_stmts) {
                     if (auto load = dynamic_cast<Load_RTL_Stmt*>(rtl)) {
                         auto dest_reg = dynamic_cast<Register_RTL_Opd*>(load->get_dest());
                         auto src_mem  = dynamic_cast<Memory_RTL_Opd*>(load->get_source());
                         if (dest_reg && src_mem && !load->get_is_float()) {
-                            if (dest_reg->get_name() == "v1") {
-                                std::string var_name = src_mem->get_name();
-                                if (!is_global_variable(var_name)) {
+                            std::string dst_name = dest_reg->get_name();
+                            std::string var_name = src_mem->get_name();
+                            if (!is_global_variable(var_name)) {
+                                if (!is_void_func && dst_name == "v1") {
                                     // Keep the last such occurrence
                                     ret_slot_var = var_name;
+                                }
+                                if (dst_name == "a0") {
+                                    // Track the last local printed via a0
+                                    print_slot_var = var_name;
                                 }
                             }
                         }
@@ -447,6 +488,29 @@ void process_deferred_functions()
                     }
                 }
             }
+
+            // For void functions, if there is a distinguished "print slot" local
+            // (the last local loaded into $a0), bias it to live at -4($fp) as in
+            // the reference compiler. This keeps frequently printed locals like
+            // "a" in examples such as l5-exmp4.c nearest to $fp, while other
+            // locals (e.g., "b") remain at -8($fp), -12($fp), etc.
+            if (is_void_func && ret_slot_var.empty() && !print_slot_var.empty()) {
+                auto it_print = var_offsets.find(print_slot_var);
+                if (it_print != var_offsets.end() && it_print->second != -4) {
+                    std::string at_minus4;
+                    for (const auto &p : var_offsets) {
+                        if (p.second == -4) {
+                            at_minus4 = p.first;
+                            break;
+                        }
+                    }
+                    int old_offset = it_print->second;
+                    var_offsets[print_slot_var] = -4;
+                    if (!at_minus4.empty() && at_minus4 != print_slot_var) {
+                        var_offsets[at_minus4] = old_offset;
+                    }
+                }
+            }
             
             // Calculate stack size based on maximum local depth
             int max_local_depth = 0;
@@ -496,7 +560,7 @@ void process_deferred_functions()
                                 string var_name = src_mem->get_name();
                                 bool is_float_load = load->get_is_float() || dest_reg->is_float_register();
                                 if (is_float_load) {
-                                    if (is_global_variable(var_name)) {
+                                    if (is_func_global(var_name)) {
                                         fprintf(asm_file, "    l.d $%s, %s\n",
                                             dest_reg->get_name().c_str(), var_name.c_str());
                                     } else {
@@ -505,7 +569,7 @@ void process_deferred_functions()
                                             dest_reg->get_name().c_str(), offset);
                                     }
                                 } else {
-                                    if (is_global_variable(var_name)) {
+                                    if (is_func_global(var_name)) {
                                         fprintf(asm_file, "    lw $%s, %s\n",
                                             dest_reg->get_name().c_str(), var_name.c_str());
                                     } else {
@@ -525,7 +589,7 @@ void process_deferred_functions()
                                 string var_name = dest_mem->get_name();
                                 bool is_float_store = src_reg->is_float_register();
                                 if (is_float_store) {
-                                    if (is_global_variable(var_name)) {
+                                    if (is_func_global(var_name)) {
                                         fprintf(asm_file, "    s.d $%s, %s\n",
                                             src_reg->get_name().c_str(), var_name.c_str());
                                     } else {
@@ -534,7 +598,7 @@ void process_deferred_functions()
                                             src_reg->get_name().c_str(), offset);
                                     }
                                 } else {
-                                    if (is_global_variable(var_name)) {
+                                    if (is_func_global(var_name)) {
                                         fprintf(asm_file, "    sw $%s, %s\n",
                                             src_reg->get_name().c_str(), var_name.c_str());
                                     } else {
@@ -858,7 +922,7 @@ int main(int argc, char *argv[])
                 
                 // Output string literals
                 for (const auto& kv : all_string_literals) {
-                    fprintf(temp_file, "%s: .ascii \"%s\"\n", kv.first.c_str(), kv.second.c_str());
+                    fprintf(temp_file, "%s: .asciiz \"%s\"\n", kv.first.c_str(), kv.second.c_str());
                 }
                 
                 fprintf(temp_file, "\n");

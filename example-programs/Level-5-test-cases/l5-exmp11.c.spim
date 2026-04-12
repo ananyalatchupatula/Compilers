@@ -1,6 +1,6 @@
 .data
-_str_0: .ascii "Input temperature in centigrade"
-_str_1: .ascii "Temperature in fahrenheit is "
+_str_0: .asciiz "Input temperature in centigrade"
+_str_1: .asciiz "Temperature in fahrenheit is "
 
 .text          # The .text assembler directive indicates
     .globl convert_centigrade_to_fahrenheit_      # The following is the code (as opposed to data)

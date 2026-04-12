@@ -10,20 +10,20 @@ main:                # .globl makes main know to the outside of the program.
     sw $ra, 0($sp)    # Save the return address
     sw $fp, -4($sp)   # Save the frame pointer
     sub $fp, $sp, 4   # Update the frame pointer
-    sub $sp, $sp, 8  # Make space for the locals
+    sub $sp, $sp, 16  # Make space for the locals
 # Prologue ends
 
-    lw $v0, a_
-    lw $t1, b_
+    lw $v0, -4($fp)
+    lw $t1, -8($fp)
     mul $t0, $v0, $t1
     sw $t0, c_
-    lw $v0, a_
+    lw $v0, -4($fp)
     sw $v0, 0($sp)
     sub $sp, $sp, 4
     jal p_
     add $sp, $sp, 4
     move $v0, $v1
-    sw $v0, a_
+    sw $v0, -4($fp)
     lw $v0, c_
     sw $v0, 0($sp)
     sub $sp, $sp, 4
@@ -31,12 +31,12 @@ main:                # .globl makes main know to the outside of the program.
     add $sp, $sp, 4
     move $v0, $v1
     sw $v0, c_
-    lw $v0, a_
-    lw $t1, b_
+    lw $v0, -4($fp)
+    lw $t1, -8($fp)
     mul $t0, $v0, $t1
-    sw $t0, a_
+    sw $t0, -4($fp)
 epilogue_main:
-    add $sp, $sp, 8  # Increment stack pointer for local variables
+    add $sp, $sp, 16  # Increment stack pointer for local variables
     lw $fp, -4($sp)   # Set $fp to $sp-4
     lw $ra, 0($sp)    # Save ra
     jr $ra            # Jump back to the called procedure

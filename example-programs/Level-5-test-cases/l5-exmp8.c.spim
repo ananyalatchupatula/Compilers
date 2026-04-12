@@ -1,5 +1,5 @@
 .data
-_str_0: .ascii "Hello"
+_str_0: .asciiz "Hello"
 
 .text          # The .text assembler directive indicates
     .globl f1_      # The following is the code (as opposed to data)
