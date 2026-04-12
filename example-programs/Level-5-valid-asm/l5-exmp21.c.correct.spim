@@ -115,7 +115,7 @@ Label2:
     li $t1, 1           # Source:1
     add $t0, $v0, $t1   # Result: $t0, Opd1: $v0, Opd2:$t1
     sw $t0, -4($fp)     # Dest: $t0
-    j Labell2
+    j Label2
 Label3:
     li $v0, 1           # Loading 1 in v0 to indicate syscall to print integer value
     lw $a0, b_          # Moving the value to be printed into register a0

@@ -57,6 +57,7 @@ p_:                     # .globl makes main know to the outside of the program.
     li $v0, 1           # Source:1
     sw $v0, -4($fp)     # Dest: $v0
     j Label1
+    j Label2
 Label2:
     lw $v0, -8($fp)     # Source:x_
     li $t1, 0           # Source:0

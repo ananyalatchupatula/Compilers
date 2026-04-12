@@ -65,7 +65,7 @@ p_:                     # .globl makes main know to the outside of the program.
     li $v0, 2           # Source:2
     sw $v0, a_          # Dest: $v0
     la $v0, _str_0      # String = "Hello"
-    sw $v0, 8($sp)      # Dest: $v0
+    sw $v0, 8($fp)      # Dest: $v0
     li $v0, 1           # Loading 1 in v0 to indicate syscall to print integer value
     lw $a0, b_          # Moving the value to be printed into register a0
     syscall
@@ -83,7 +83,7 @@ Label4:
     lw $a0, a_          # Moving the value to be printed into register a0
     syscall
 Label3:
-    lw $v0, 8($sp)      # Source:y_
+    lw $v0, 8($fp)      # Source:y_
     sw $v0, x_          # Dest: $v0
     lw $v0, x_          # Source:x_
     sw $v0, -4($fp)     # Dest: $v0
