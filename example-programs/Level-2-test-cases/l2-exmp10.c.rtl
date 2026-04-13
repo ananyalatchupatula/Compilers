@@ -1,0 +1,14 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 2			;; Loading integer number 2
+    store:	a_ <- v0
+    iLoad:	v0 <- 3			;; Loading integer number 3
+    store:	b_ <- v0
+    iLoad:	v0 <- 4			;; Loading integer number 4
+    store:	c_ <- v0
+    load:	v0 <- c_			;; Loading variable c_ into register
+    load:	t1 <- b_			;; Loading variable b_ into register
+    mul:	t0 <- v0 , t1
+    uminus:	v0 <- t0
+    store:	a_ <- v0
+**END: RTL Statements

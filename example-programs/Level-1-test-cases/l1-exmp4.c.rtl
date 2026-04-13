@@ -1,0 +1,36 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad.d:	f2 <- 3.14			;; Loading integer number 3.14
+    store.d:	pi_ <- f2
+    iLoad:	v0 <- 3			;; Loading integer number 3
+    store:	l_ <- v0
+    iLoad:	v0 <- 4			;; Loading integer number 4
+    store:	u_ <- v0
+    iLoad.d:	f2 <- 3.14			;; Loading integer number 3.14
+    store.d:	gpi_ <- f2
+    load_addr:	v0 <- _str_0
+    store:	m_ <- v0
+    iLoad:	v0 <- 3			;; Loading integer number 3
+    load.d:	f12 <- pi_			;; Loading variable pi_ into register
+    write				;; This is where syscall will be made
+    iLoad:	v0 <- 3			;; Loading integer number 3
+    load.d:	f12 <- gpi_			;; Loading variable gpi_ into register
+    write				;; This is where syscall will be made
+    load.d:	f2 <- gpi_			;; Loading variable gpi_ into register
+    store.d:	pi_ <- f2
+    iLoad:	v0 <- 3			;; Loading integer number 3
+    load.d:	f12 <- pi_			;; Loading variable pi_ into register
+    write				;; This is where syscall will be made
+    iLoad:	v0 <- 4			;; Loading integer number 4
+    load_addr:	a0 <- _str_1
+    write				;; This is where syscall will be made
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- l_			;; Moving the value to be printed into register a0
+    write				;; This is where syscall will be made
+    iLoad:	v0 <- 4			;; Loading integer number 4
+    load:	a0 <- m_			;; Moving the value to be printed into register a0
+    write				;; This is where syscall will be made
+    iLoad:	v0 <- 1			;; Loading integer number 1
+    load:	a0 <- u_			;; Moving the value to be printed into register a0
+    write				;; This is where syscall will be made
+**END: RTL Statements

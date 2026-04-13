@@ -1,0 +1,80 @@
+.data
+a_: .word 0
+b_: .word 0
+c_: .word 0
+_str_0: .asciiz "Enter value of a: "
+_str_1: .asciiz "Enter value of b: "
+_str_2: .asciiz "a"
+_str_3: .asciiz "b"
+_str_4: .asciiz "none"
+
+.text          # The .text assembler directive indicates
+    .globl main      # The following is the code (as opposed to data)
+main:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 28  # Make space for the locals
+# Prologue ends
+
+    li $v0, 4
+    la $a0, _str_0
+    syscall
+    li $v0, 5
+    syscall
+    sw $v0, a_
+    li $v0, 4
+    la $a0, _str_1
+    syscall
+    li $v0, 5
+    syscall
+    sw $v0, b_
+    lw $v0, a_
+    lw $t1, a_
+    mul $t0, $v0, $t1
+    lw $v0, b_
+    lw $t2, b_
+    mul $t1, $v0, $t2
+    sgt $v0, $t0, $t1
+    sw $v0, -20($fp)
+    lw $v0, b_
+    lw $t1, b_
+    mul $t0, $v0, $t1
+    lw $v0, a_
+    lw $t2, a_
+    mul $t1, $v0, $t2
+    sgt $v0, $t0, $t1
+    sw $v0, -8($fp)
+    lw $v0, -20($fp)
+    xori $t0, $v0, 1
+    bgtz $t0, Label0
+    la $v0, _str_2
+    sw $v0, -12($fp)
+    j Label1
+Label0:
+    lw $v0, -8($fp)
+    xori $t0, $v0, 1
+    bgtz $t0, Label2
+    la $v0, _str_3
+    sw $v0, -16($fp)
+    j Label3
+Label2:
+    la $v0, _str_4
+    sw $v0, -16($fp)
+Label3:
+    lw $v0, -16($fp)
+    sw $v0, -12($fp)
+Label1:
+    lw $v0, -12($fp)
+    sw $v0, -4($fp)
+    li $v0, 4
+    lw $a0, -4($fp)
+    syscall
+epilogue_main:
+    add $sp, $sp, 28  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+

@@ -1,0 +1,46 @@
+.data
+_str_0: .asciiz "Enter weight (in kilograms): "
+_str_1: .asciiz "Enter height (in meters): "
+_str_2: .asciiz "BMI is "
+
+.text          # The .text assembler directive indicates
+    .globl main      # The following is the code (as opposed to data)
+main:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 32  # Make space for the locals
+# Prologue ends
+
+    li $v0, 4
+    la $a0, _str_0
+    syscall
+    li $v0, 7
+    syscall
+    s.d $f0, -8($fp)
+    li $v0, 4
+    la $a0, _str_1
+    syscall
+    li $v0, 7
+    syscall
+    s.d $f0, -16($fp)
+    l.d $f2, -16($fp)
+    l.d $f6, -16($fp)
+    mul.d $f4, $f2, $f6
+    l.d $f2, -8($fp)
+    div.d $f6, $f2, $f4
+    s.d $f6, -24($fp)
+    li $v0, 4
+    la $a0, _str_2
+    syscall
+    li $v0, 3
+    l.d $f12, -24($fp)
+    syscall
+epilogue_main:
+    add $sp, $sp, 32  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+

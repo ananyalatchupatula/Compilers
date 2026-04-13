@@ -1,0 +1,30 @@
+**PROCEDURE: main
+Return Type: <void>
+Formal Parameters:
+**BEGIN: Abstract Syntax Tree
+Asgn:
+ LHS (Name : averageWorkingHoursPerDay_<float>)
+ RHS (Num : 8.5<float>)
+Asgn:
+ LHS (Name : salary_<float>)
+ RHS (Num : 10000.0<float>)
+Read: Name : employeeDailyWorkingHours_<float>
+Asgn:
+ LHS (Name : bonus_<float>)
+ RHS (Condition: GT<bool>
+ L_Opd (Name : employeeDailyWorkingHours_<float>)
+ R_Opd (Name : averageWorkingHoursPerDay_<float>)
+ True_Part (
+  Arith: Mult<float>
+ L_Opd (Name : salary_<float>)
+ R_Opd (Num : 0.2<float>))
+ False_Part (
+  Arith: Mult<float>
+ L_Opd (Name : salary_<float>)
+ R_Opd (Num : 0.1<float>)))
+Asgn:
+ LHS (Name : salary_<float>)
+ RHS (Arith: Plus<float>
+ L_Opd (Name : salary_<float>)
+ R_Opd (Name : bonus_<float>))
+Write: Name : salary_<float>**END: Abstract Syntax Tree

@@ -1,0 +1,31 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad.d:	f2 <- 3.00			;; Loading integer number 3.00
+    store.d:	x_ <- f2
+    iLoad.d:	f2 <- 9.90			;; Loading integer number 9.90
+    store.d:	y_ <- f2
+    load.d:	f2 <- x_			;; Loading variable x_ into register
+    load.d:	f6 <- y_			;; Loading variable y_ into register
+    mul.d:	f4 <- f2 , f6
+    store.d:	area_ <- f4
+    load.d:	f2 <- x_			;; Loading variable x_ into register
+    load.d:	f6 <- y_			;; Loading variable y_ into register
+    add.d:	f4 <- f2 , f6
+    iLoad.d:	f2 <- 2.00			;; Loading integer number 2.00
+    mul.d:	f6 <- f2 , f4
+    store.d:	perimeter_ <- f6
+    iLoad.d:	f2 <- 3.14			;; Loading integer number 3.14
+    load.d:	f6 <- x_			;; Loading variable x_ into register
+    mul.d:	f4 <- f2 , f6
+    load.d:	f6 <- x_			;; Loading variable x_ into register
+    mul.d:	f2 <- f4 , f6
+    store.d:	area_ <- f2
+    iLoad.d:	f2 <- 2.00			;; Loading integer number 2.00
+    iLoad.d:	f6 <- 22.00			;; Loading integer number 22.00
+    mul.d:	f4 <- f2 , f6
+    load.d:	f6 <- x_			;; Loading variable x_ into register
+    mul.d:	f2 <- f4 , f6
+    iLoad.d:	f6 <- 7.00			;; Loading integer number 7.00
+    div.d:	f4 <- f2 , f6
+    store.d:	perimeter_ <- f4
+**END: RTL Statements

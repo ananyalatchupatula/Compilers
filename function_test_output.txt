@@ -1,0 +1,67 @@
+
+======================================================================
+FUNCTION CALL AND RECURSION SUPPORT TESTS
+======================================================================
+
+======================================================================
+Test 1: Simple Function Call
+======================================================================
+AST:
+Asgn:
+  LHS (Name : x<int>)
+  RHS (FN CALL: f()<int>)
+TAC:
+  call f
+  x = temp0
+
+======================================================================
+Test 2: Function Call with Arguments
+======================================================================
+AST:
+Asgn:
+  LHS (Name : z<int>)
+  RHS (FN CALL: add(Name : x<void>, Name : y<void>)<int>)
+TAC:
+  param x
+  param y
+  call add
+  z = temp1
+
+======================================================================
+Test 3: Recursive Function Definition (Factorial)
+======================================================================
+AST:
+PROCEDURE: factorial
+  Return Type: int
+  Formal Parameters:
+    n<int>
+**BEGIN: Abstract Syntax Tree
+  If:
+    Condition (
+      Condition: LE<bool>
+       L_Opd (Name : n<void>)
+       R_Opd (Num : 1<int>))
+    Then (
+      Return (Num : 1<int>))
+Return (
+     Arith: Mult<int>
+     L_Opd (Name : n<void>)
+     R_Opd (FN CALL: factorial(
+         Arith: Minus<int>
+         L_Opd (Name : n<void>)
+         R_Opd (Num : 1<int>))<int>))
+**END: Abstract Syntax Tree
+TAC:
+  Label0:
+  temp2 = n <= 1
+  temp4294967295 = ! temp2
+  if(temp4294967295) goto Label0
+  return 1
+  goto Label0
+  Label0:
+  temp3 = n - 1
+  param temp3
+  call factorial
+  temp5 = n * temp4
+  return temp5
+  Label0:

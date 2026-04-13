@@ -1,0 +1,85 @@
+.text          # The .text assembler directive indicates
+    .globl f1_      # The following is the code (as opposed to data)
+f1_:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 16  # Make space for the locals
+# Prologue ends
+
+    lw $v0, 8($fp)
+    lw $t1, 12($fp)
+    add $t0, $v0, $t1
+    sw $t0, -8($fp)
+    lw $v0, -8($fp)
+    li $t1, 2
+    add $t0, $v0, $t1
+    sw $t0, -4($fp)
+    j Label0
+Label0:
+    lw $v1, -4($fp)
+    j epilogue_f1_
+epilogue_f1_:
+    add $sp, $sp, 16  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+
+.text          # The .text assembler directive indicates
+    .globl g_      # The following is the code (as opposed to data)
+g_:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 16  # Make space for the locals
+# Prologue ends
+
+    lw $v0, -8($fp)
+    sw $v0, -4($fp)
+    j Label1
+Label1:
+    lw $v1, -4($fp)
+    j epilogue_g_
+epilogue_g_:
+    add $sp, $sp, 16  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+
+.text          # The .text assembler directive indicates
+    .globl main      # The following is the code (as opposed to data)
+main:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 12  # Make space for the locals
+# Prologue ends
+
+    li $v0, 3
+    sw $v0, -4($fp)
+    lw $v0, -4($fp)
+    sw $v0, 0($sp)
+    sub $sp, $sp, 4
+    lw $v0, -4($fp)
+    sw $v0, 0($sp)
+    sub $sp, $sp, 4
+    jal f1_
+    add $sp, $sp, 4
+    add $sp, $sp, 4
+    move $v0, $v1
+    sw $v0, -4($fp)
+    li $v0, 1
+    lw $a0, -4($fp)
+    syscall
+epilogue_main:
+    add $sp, $sp, 12  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+

@@ -1,0 +1,82 @@
+.data
+_str_0: .asciiz "Hi"
+
+.text          # The .text assembler directive indicates
+    .globl main      # The following is the code (as opposed to data)
+main:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 40  # Make space for the locals
+# Prologue ends
+
+    li $v0, 2
+    sw $v0, -8($fp)
+    li $v0, 3
+    sw $v0, -12($fp)
+    la $v0, _str_0
+    sw $v0, -16($fp)
+    li.d $f2, 3.50
+    s.d $f2, -20($fp)
+    li $v0, 1
+    li $a0, 5
+    syscall
+    li $v0, 3
+    li.d $f12, 5.60
+    syscall
+    li $v0, 4
+    la $a0, _str_0
+    syscall
+    li $v0, 1
+    lw $a0, -4($fp)
+    syscall
+    li $v0, 5
+    syscall
+    sw $v0, -12($fp)
+    lw $v0, -4($fp)
+    lw $t1, -12($fp)
+    slt $t0, $v0, $t1
+    lw $v0, -12($fp)
+    lw $t2, -8($fp)
+    sgt $t1, $v0, $t2
+    lw $v0, -8($fp)
+    lw $t3, -12($fp)
+    seq $t2, $v0, $t3
+    xori $v0, $t2, 1
+    and $t2, $t1, $v0
+    or $v0, $t0, $t2
+    xori $t0, $v0, 1
+    bgtz $t0, Label0
+    lw $v0, -8($fp)
+    lw $t1, -4($fp)
+    mul $v0, $t0, $t1
+    lw $t1, -4($fp)
+    add $t0, $v0, $t1
+    lw $t1, -4($fp)
+    add $v0, $t0, $t1
+    lw $t0, -8($fp)
+    lw $t0, -12($fp)
+    add $t2, $t0, $t1
+    lw $t0, -8($fp)
+    div $t1, $t0, $t2
+    sub $t0, $v0, $t1
+    sw $t0, -32($fp)
+    j Label1
+Label0:
+    lw $v0, -8($fp)
+    li $t1, 20
+    mul $t0, $v0, $t1
+    li $t1, 30
+    sub $v0, $t0, $t1
+    sw $v0, -32($fp)
+Label1:
+    lw $v0, -32($fp)
+    sw $v0, -4($fp)
+epilogue_main:
+    add $sp, $sp, 40  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+

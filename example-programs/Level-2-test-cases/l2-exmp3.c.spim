@@ -1,0 +1,36 @@
+.data
+value1_: .double 0.0
+_str_0: .asciiz "Provide a floating point value:"
+
+.text          # The .text assembler directive indicates
+    .globl main      # The following is the code (as opposed to data)
+main:                # .globl makes main know to the outside of the program.
+# Prologue begins
+    sw $ra, 0($sp)    # Save the return address
+    sw $fp, -4($sp)   # Save the frame pointer
+    sub $fp, $sp, 4   # Update the frame pointer
+    sub $sp, $sp, 24  # Make space for the locals
+# Prologue ends
+
+    li.d $f2, 2.40
+    s.d $f2, value1_
+    li $v0, 4
+    la $a0, _str_0
+    syscall
+    li $v0, 7
+    syscall
+    s.d $f0, -8($fp)
+    l.d $f2, value1_
+    l.d $f6, -8($fp)
+    mul.d $f4, $f2, $f6
+    s.d $f4, -16($fp)
+    li $v0, 3
+    l.d $f12, -16($fp)
+    syscall
+epilogue_main:
+    add $sp, $sp, 24  # Increment stack pointer for local variables
+    lw $fp, -4($sp)   # Set $fp to $sp-4
+    lw $ra, 0($sp)    # Save ra
+    jr $ra            # Jump back to the called procedure
+# Epilogue Ends
+

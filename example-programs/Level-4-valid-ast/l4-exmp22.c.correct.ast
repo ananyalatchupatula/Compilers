@@ -1,0 +1,31 @@
+**PROCEDURE: main
+  Return Type: <void>
+  Formal Parameters:
+**BEGIN: Abstract Syntax Tree
+    Asgn:
+      LHS (Name : a_<float>)
+      RHS (Num : 2.30<float>)
+    Asgn:
+      LHS (Name : b_<float>)
+      RHS (Num : 3.40<float>)
+    Asgn:
+      LHS (Name : d_<float>)
+      RHS (
+        Condition: LT<bool>
+          L_Opd (
+            Arith: Plus<float>
+              L_Opd (Name : a_<float>)
+              R_Opd (Name : b_<float>))
+          R_Opd (
+            Arith: Minus<float>
+              L_Opd (Name : a_<float>)
+              R_Opd (Name : b_<float>))
+        True_Part (
+          Arith: Mult<float>
+            L_Opd (Name : a_<float>)
+            R_Opd (Name : b_<float>))
+        False_Part (
+          Arith: Minus<float>
+            L_Opd (Name : a_<float>)
+            R_Opd (Name : b_<float>)))
+**END: Abstract Syntax Tree

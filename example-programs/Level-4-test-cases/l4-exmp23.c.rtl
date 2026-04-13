@@ -1,0 +1,35 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 3			;; Loading integer number 3
+    store:	a_ <- v0
+    iLoad:	v0 <- 4			;; Loading integer number 4
+    store:	b_ <- v0
+    iLoad:	v0 <- 5			;; Loading integer number 5
+    store:	c_ <- v0
+    load:	v0 <- b_			;; Loading variable b_ into register
+    load:	t1 <- c_			;; Loading variable c_ into register
+    add:	t0 <- v0 , t1
+    load:	v0 <- a_			;; Loading variable a_ into register
+    div:	t1 <- v0 , t0
+    store:	d_ <- t1
+    load:	v0 <- a_			;; Loading variable a_ into register
+    load:	t1 <- b_			;; Loading variable b_ into register
+    div:	t0 <- v0 , t1
+    load:	t1 <- c_			;; Loading variable c_ into register
+    add:	v0 <- t0 , t1
+    store:	e_ <- v0
+    load:	v0 <- a_			;; Loading variable a_ into register
+    load:	t1 <- b_			;; Loading variable b_ into register
+    add:	t0 <- v0 , t1
+    load:	t1 <- c_			;; Loading variable c_ into register
+    div:	v0 <- t0 , t1
+    store:	f_ <- v0
+    load:	v0 <- b_			;; Loading variable b_ into register
+    load:	t1 <- c_			;; Loading variable c_ into register
+    sub:	t0 <- v0 , t1
+    load:	v0 <- a_			;; Loading variable a_ into register
+    add:	t1 <- v0 , t0
+    store:	g_ <- t1
+**END: RTL Statements
+
+

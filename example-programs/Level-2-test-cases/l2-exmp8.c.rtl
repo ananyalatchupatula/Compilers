@@ -1,0 +1,15 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+    iLoad:	v0 <- 2			;; Loading integer number 2
+    store:	f_ <- v0
+    iLoad:	v0 <- 8			;; Loading integer number 8
+    store:	g_ <- v0
+    iLoad:	v0 <- 1111111111			;; Loading integer number 1111111111
+    store:	a_ <- v0
+    load:	v0 <- a_			;; Loading variable a_ into register
+    load:	t1 <- f_			;; Loading variable f_ into register
+    add:	t0 <- v0 , t1
+    load:	t1 <- g_			;; Loading variable g_ into register
+    sub:	v0 <- t0 , t1
+    store:	a_ <- v0
+**END: RTL Statements
